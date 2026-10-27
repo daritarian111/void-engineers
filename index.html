@@ -124,6 +124,7 @@ body[data-tool="1"] #blk{display:flex}
 #main{display:grid;gap:8px;pointer-events:auto}
 .tb{width:44px;height:40px;border:0;background:var(--panel);box-shadow:inset 0 0 0 1px var(--edge);font:600 10px var(--mono);letter-spacing:.04em;touch-action:none;padding:0}
 .tb.big{width:88px;height:62px;font:700 17px var(--display);letter-spacing:.16em}
+#main #dampbtn{height:40px;font-size:14px}
 #act{background:var(--hazard);color:var(--hazard-ink);box-shadow:none}
 body[data-tool="1"] #act{background:var(--ice)}
 body[data-tool="2"] #act{background:var(--bad)}
@@ -139,7 +140,7 @@ body[data-tool="2"] #cross::before,body[data-tool="2"] #cross::after{background:
 #scen[hidden]{display:none!important}
 #scenok,#how{border:0;background:var(--hazard);color:var(--hazard-ink);font:700 18px var(--display);letter-spacing:.2em;text-transform:uppercase;padding:11px 28px;cursor:pointer}
 #how{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px var(--edge);font:600 15px var(--display);letter-spacing:.16em;padding:10px 20px}
-body:not(.devon) [data-tap=shot],body:not(.devon) [data-tap=noclip]{display:none}
+body:not(.devon) [data-tap=shot],body:not(.devon) [data-tap=noclip],body:not(.devon) [data-tap=drone]{display:none}
 #shotv[hidden]{display:none!important}
 #start.cover[hidden]{display:none}
 #start.cover{display:block;padding:0;overflow:hidden;background:linear-gradient(180deg,rgba(3,5,9,.55) 0%,rgba(3,5,9,0) 30%,rgba(3,5,9,0) 100%),var(--cover) center/cover no-repeat #03050a}
@@ -311,21 +312,21 @@ body.termopen #tut{display:none}
 #aux{grid-auto-flow:row;grid-template-rows:auto repeat(2,40px);grid-template-columns:62px repeat(5,44px);grid-auto-columns:unset}
 #aux .tb{display:block!important;visibility:hidden;width:auto}
 #aux #usebtn{grid-column:1;grid-row:2/4;visibility:visible;width:auto}
-#aux #dampbtn{grid-column:2;grid-row:2}#aux [data-tap=cam]{grid-column:2;grid-row:3}
+#aux [data-tap=cam]{grid-column:2;grid-row:3}
 #aux [data-tap=lamp]{grid-column:3;grid-row:2}#aux [data-tap=refuel]{grid-column:3;grid-row:3}
 #aux [data-tap=menu]{grid-column:4;grid-row:2}#aux #termbtn{grid-column:4;grid-row:3}
 #aux #dockbtn{grid-column:5;grid-row:2}
 #aux #rotbtn{grid-column:6;grid-row:2}#aux #spinbtn{grid-column:6;grid-row:3}
-#aux [data-tap=shot]{grid-column:2;grid-row:1;height:34px}#aux [data-tap=noclip]{grid-column:3;grid-row:1;height:34px}
-#aux #dampbtn,#aux [data-tap=cam],#aux [data-tap=menu]{visibility:visible}
+#aux [data-tap=shot]{grid-column:2;grid-row:1;height:34px}#aux [data-tap=noclip]{grid-column:3;grid-row:1;height:34px}#aux [data-tap=drone]{grid-column:4;grid-row:1;height:34px}
+#aux [data-tap=cam],#aux [data-tap=menu]{visibility:visible}
 #aux [data-tap=lamp],#aux [data-tap=refuel]{visibility:visible}
 body.gravity #aux #termbtn,.piloting #aux #termbtn{visibility:visible}
 #aux #dockbtn:not([hidden]){visibility:visible}
 body[data-tool="1"] #aux #rotbtn,body[data-tool="4"] #aux #rotbtn{visibility:visible}
 body.shaped #aux #spinbtn{visibility:visible}
-body.devon #aux [data-tap=shot],body.devon #aux [data-tap=noclip]{visibility:visible}
-body:not(.devon) #aux [data-tap=shot],body:not(.devon) #aux [data-tap=noclip]{display:none!important}
-@media (max-width:460px){#aux{grid-template-rows:repeat(2,36px) auto;grid-template-columns:56px repeat(5,38px);gap:4px}#aux #shot{height:30px}}
+body.devon #aux [data-tap=shot],body.devon #aux [data-tap=noclip],body.devon #aux [data-tap=drone]{visibility:visible}
+body:not(.devon) #aux [data-tap=shot],body:not(.devon) #aux [data-tap=noclip],body:not(.devon) #aux [data-tap=drone]{display:none!important}
+@media (max-width:460px){#aux{grid-template-rows:auto repeat(2,36px);grid-template-columns:56px repeat(5,38px);gap:4px}#aux #shot{height:30px}}
 
 .mkr{display:grid;grid-template-columns:minmax(0,1.3fr) .8fr .8fr 1.25fr 1.25fr;gap:4px 6px;align-items:center;font-size:12px;font-variant-numeric:tabular-nums;padding:3px 0}
 .mkr.h{color:var(--dim);font:600 10px var(--display);letter-spacing:.14em;text-transform:uppercase}
@@ -374,7 +375,6 @@ body:not(.devon) #aux [data-tap=shot],body:not(.devon) #aux [data-tap=noclip]{di
       <div id="rgt">
         <div id="aux">
           <button class="tb" id="usebtn" data-tap="use">INTERACT</button>
-          <button class="tb" id="dampbtn" data-tap="damp">DAMP</button>
           <button class="tb" data-tap="cam">CAM</button>
           <button class="tb" data-tap="lamp">LAMP</button>
           <button class="tb" data-tap="refuel">FUEL</button>
@@ -385,6 +385,7 @@ body:not(.devon) #aux [data-tap=shot],body:not(.devon) #aux [data-tap=noclip]{di
           <button class="tb" id="spinbtn" data-tap="spin">SPIN</button>
           <button class="tb" data-tap="shot">SHOT</button>
           <button class="tb" data-tap="noclip">CLIP</button>
+          <button class="tb" data-tap="drone">DRONE</button>
         </div>
         <div id="vert">
           <button class="tb" data-hold="up">UP</button>
@@ -393,6 +394,7 @@ body:not(.devon) #aux [data-tap=shot],body:not(.devon) #aux [data-tap=noclip]{di
           <button class="tb" data-hold="rr">&#8631;</button>
         </div>
         <div id="main">
+          <button class="tb big" id="dampbtn" data-tap="damp">DAMP</button>
           <button class="tb big" id="toolbtn" data-tap="tool">TOOL</button>
           <button class="tb big" id="act" data-hold="fire">DRILL</button>
         </div>
@@ -493,7 +495,7 @@ body:not(.devon) #aux [data-tap=shot],body:not(.devon) #aux [data-tap=noclip]{di
 'use strict';
 /* =====================  Void Engineers  =====================
    Part A: renderer, sky, procedural voxel asteroids, particles */
-const GAME_VER='102';
+const GAME_VER='109';
 /* no page zoom while playing: pinch, double-tap and ctrl+wheel are swallowed */
 (()=>{const no=e=>{e.preventDefault();};
   for(const n of['gesturestart','gesturechange','gestureend','dblclick'])document.addEventListener(n,no,{passive:false});
@@ -1075,6 +1077,7 @@ const BDEF={
   steps:{name:'Steps',cost:{fe:8},mass:500,part:true,spin:true,spec:'climbable \u00b7 SPIN turns the rise \u00b7 0.5 t'},
   thruster:{name:'Thruster',cost:{fe:12,si:8},mass:1500,thrust:50,spec:'50 kN · 1.5 t'},
   mthruster:{name:'Maneuvering Thruster',cost:{fe:12,si:8},mass:1500,thrust:50,spec:'50 kN \u00b7 a hull block with a vent \u00b7 1.5 t'},
+  gun:{name:'Gun',cost:{fe:20,si:6},mass:800,gun:true,spec:'fires along its barrel \u00b7 1 damage, 4 shots/s \u00b7 0.8 t'},
   bigthruster:{name:'Large Thruster',cost:{fe:30,si:20,pt:4},mass:4200,thrust:160,spec:'160 kN · 4.2 t'},
   gyro:{name:'Gyroscope',cost:{fe:15,si:10,pt:2},mass:3000,spec:'turn rate · 3.0 t'},
   seat:{name:'Pilot Seat',cost:{fe:15,si:12},mass:400,part:true,spin:true,spec:'sit to fly \u00b7 SPIN sets the ship\u2019s forward \u00b7 0.4 t'},
@@ -1094,13 +1097,14 @@ const BDEF={
   pad:{name:'Landing Pad',cost:{fe:30,si:10},mass:2000,spec:'6 m deck \u00b7 DOCK snaps craft from 12 m \u00b7 faster transfers \u00b7 2.0 t'},
   beacon:{name:'Trade Beacon',cost:{plate:3,constr:3,comp:1},mass:1500,panel:true,spec:'calls freight traders \u00b7 1.5 t'}
 };
-const BORDER=['hull','slope','corner','icorner','window','glass','glassd','door','steps','seat','light','powergen','thruster','mthruster','bigthruster','gyro','lgyro','tank','bigtank','drill','bigdrill','cargo','leg','gravgen'];
+const BORDER=['hull','slope','corner','icorner','window','glass','glassd','door','steps','seat','light','powergen','thruster','mthruster','gun','bigthruster','gyro','lgyro','tank','bigtank','drill','bigdrill','cargo','leg','gravgen'];
 const kf=(i,j,k)=>(i+512)+((j+512)<<10)+((k+512)<<20);
 
 const ICONS={
   hull:'<rect x="4" y="4" width="16" height="16"/><rect x="8" y="8" width="8" height="8" opacity=".5"/>',
   window:'<rect x="4" y="4" width="16" height="16"/><path d="M4 4l16 16M20 4L4 20" opacity=".45"/>',
   thruster:'<path d="M8 3h8v6H8z"/><path d="M9 9l-2 5h10l-2-5"/><path d="M10 16l2 5 2-5" opacity=".6"/>',
+  gun:'<path d="M6 19h12v-3H6z"/><path d="M10.5 4h3v12h-3z"/>',
   mthruster:'<path d="M5 5h14v14H5z"/><path d="M9 9h6M9 12h6M9 15h6" opacity=".7"/>',
   bigthruster:'<path d="M6 3h12v6H6z"/><path d="M7 9l-3 6h16l-3-6"/><path d="M8 17l2 4M12 17v4M16 17l-2 4" opacity=".6"/>',
   gyro:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 4v5M12 15v5M4 12h5M15 12h5" opacity=".5"/>',
@@ -1314,10 +1318,14 @@ const GLASS_FRAME=(()=>{   // the 12 edges of a glass block as ONE mesh (draw ca
 })();
 const THR_SIDES=[MAT.thrT,MAT.thrT,MAT.noz,MAT.thrT,MAT.thrT,MAT.thrT];   // box faces +x -x +y -y +z -z; +y is the exhaust side
 /* ---- the vent of a Maneuvering Thruster, and the frames of blocks that are still being welded ---- */
+G.gnBase=new THREE.BoxGeometry(1.9,.8,1.9);G.gnBar=new THREE.CylinderGeometry(.2,.26,1.5,10);G.gnTip=new THREE.CylinderGeometry(.3,.3,.22,10);
 G.mtVent=new THREE.BoxGeometry(1.2,.08,1.2);G.mtFl=cone(.3,1.1,8);G.mtFlc=cone(.15,.7,8);
 G.mtBars=triGeo([].concat(boxTris(0,0,-.38,1.0,.08,.12),boxTris(0,0,0,1.0,.08,.12),boxTris(0,0,.38,1.0,.08,.12)));
 const WIP_LINE=std({color:0x3a3f47,roughness:.55,metalness:.75}),WIP_PLATE=std({color:0x454a53,roughness:.7,metalness:.6,side:THREE.DoubleSide});   // dark gunmetal
 const wipOn=b=>b.wt>0&&b.wp<b.wt;
+/* ---- damage: 10 hit points a cell (double once upgraded); worn down past 25% it works at half, past 75% it stops, at 100% it is gone ---- */
+const hpOf=b=>10*(b.n||1)*(tierOf(b)>1?2:1);
+const dmgEff=b=>{const d=(b.dmg||0)/hpOf(b);return d<.25?1:d<.75?.5:0;};
 const wipStage=b=>{const p=b.wp/b.wt;return p>=.75?2:p>=.5?1:0;};
 // every unfinished block of a grid is drawn by TWO meshes (frame lines, and plates), however many there are
 function rebuildWip(g){
@@ -1415,6 +1423,8 @@ function buildBlock(type,f,ghostMat,rot,tier){
       add(G.box,MAT.win,0,0,0);break;   // framed glass pane on every face
     case 'thruster':
       add(G.thBase,THR_SIDES,0,-.5,0);add(G.thNoz,MAT.noz,0,.5,0);mkFlame(G.fl,G.flc,1.05);break;
+    case 'gun':
+      add(G.gnBase,MAT.hull,0,-.55,0);add(G.gnBar,MAT.dark,0,.4,0);add(G.gnTip,MAT.metal,0,1.15,0);break;
     case 'mthruster':
       add(G.box,MAT.hull,0,0,0);add(G.mtVent,MAT.noz,0,1.0,0);add(G.mtBars,MAT.metal,0,1.04,0);mkFlame(G.mtFl,G.mtFlc,1.05);break;
     case 'bigthruster':
@@ -1517,21 +1527,23 @@ function recalc(g){
   if(g.bulk)return;   // a big structure is being built in one go; it is worked out once at the end
   let M=0,gy=0,fc=400,bs=2;const c=new V3();
   g.ver++;
-  g.T=[[0,0],[0,0],[0,0]];g.seat=null;g.drills=[];g.thr=[];g.gravs=[];g.machines=[];g.cargos=[];g.beacons=[];g.legs=[];g.pads=[];g.lights=[];g.gens=[];g.doors=[];g.steps=[];
+  g.T=[[0,0],[0,0],[0,0]];g.seat=null;g.drills=[];g.guns=[];g.thr=[];g.gravs=[];g.machines=[];g.cargos=[];g.beacons=[];g.legs=[];g.pads=[];g.lights=[];g.gens=[];g.doors=[];g.steps=[];
   for(const b of g.blocks.values()){
     const d=BDEF[b.type],n=b.n||1,m=d.machine?d.mass*n/2:d.mass,x=b.i*2,y=(b.j+(n-1)/2)*2,z=b.k*2;
     if(b.wt>0&&b.wp<b.wt){const mm=Math.max(40,m*b.wp/b.wt);M+=mm;c.x+=x*mm;c.y+=y*mm;c.z+=z*mm;bs=Math.max(bs,Math.hypot(x,y,z)+2.6+(n-1)*2);continue;}   // still a frame: it holds the ship together and weighs what has been welded in, but does nothing
     M+=m;c.x+=x*m;c.y+=y*m;c.z+=z*m;
-    if(d.thrust&&b.f){const a=b.f[0]?0:b.f[1]?1:2,s=-b.f[a];g.T[a][s>0?1:0]+=d.thrust*POW[tierOf(b)-1];g.thr.push(b);}
-    if(b.type==='gyro')gy+=SPIN[tierOf(b)-1];else if(b.type==='lgyro')gy+=5*SPIN[tierOf(b)-1];
+    const ef=dmgEff(b);
+    if(d.thrust&&b.f&&ef){const a=b.f[0]?0:b.f[1]?1:2,s=-b.f[a];g.T[a][s>0?1:0]+=d.thrust*POW[tierOf(b)-1]*ef;g.thr.push(b);}
+    if(b.type==='gyro')gy+=SPIN[tierOf(b)-1]*ef;else if(b.type==='lgyro')gy+=5*SPIN[tierOf(b)-1]*ef;
     if(b.type==='tank')fc+=1500*STOR[tierOf(b)-1];else if(b.type==='bigtank')fc+=6000*STOR[tierOf(b)-1];
-    if(b.type==='gravgen')g.gravs.push(b);
+    if(b.type==='gravgen'&&ef)g.gravs.push(b);
     if(d.machine)g.machines.push(b);
     if(b.type==='cargo')g.cargos.push(b);if(b.type==='beacon')g.beacons.push(b);if(b.type==='leg')g.legs.push(b);if(b.type==='light'||b.type==='lightbar')g.lights.push(b);if(b.type==='powergen')g.gens.push(b);if(b.type==='pad')g.pads.push(b);
     if(b.type==='door')g.doors.push(b);
     if(b.type==='steps')g.steps.push(b);
     if(b.type==='seat'&&!g.seat)g.seat=b;
     if(b.type==='drill'||b.type==='bigdrill')g.drills.push(b);
+    if(d.gun&&ef)g.guns.push(b);
     bs=Math.max(bs,Math.hypot(x,y,z)+2.6+(n-1)*2);
   }
   g.mass=M;g.com.copy(c).multiplyScalar(1/M);g.gyros=gy;g.fuelCap=Math.round(fc);g.fuel=Math.min(g.fuel,fc);g.bs=bs;
@@ -1630,6 +1642,16 @@ function removeBlock(g,b){
   if(!g.blocks.size){clearHull(g);if(g.trade&&g.trade.ship){scene.remove(g.trade.ship);g.trade.ship=null;}scene.remove(g.group);const n=grids.indexOf(g);if(n>=0)grids.splice(n,1);return;}
   recalc(g);
   if(spill)relocStore(g,spill);
+}
+function damageBlock(g,b,amt){   // returns 2 when the block is destroyed
+  const was=dmgEff(b);b.dmg=(b.dmg||0)+amt;
+  if(b.dmg>=hpOf(b)){removeBlock(g,b);return 2;}
+  if(dmgEff(b)!==was)recalc(g);   // worn down to half or to nothing: the ship changes with it
+  return 1;
+}
+function repairBlock(g,b,amt){
+  const was=dmgEff(b);b.dmg=Math.max(0,(b.dmg||0)-amt);if(!b.dmg)b.dmg=0;
+  if(dmgEff(b)!==was)recalc(g);
 }
 /* ---- interior: the empty cells of a grid that are sealed in by blocks (doors, glass and windows seal; lights and the seat do not) ---- */
 function glassdNormal(f,s){   // unit-ish normal (components 0 or +-1) of an angled pane, in the grid frame
@@ -1964,7 +1986,11 @@ function toolGate(dt){   // runs on foot: keeps the tool valid and tracks ore ra
   if(!toolOK(player.tool))setTool(5);
   tool.visible=player.tool!==5&&!fcamOn;
 }
-function updateAct(){const a=$('act');if(a)a.textContent=player.ship?'DRILL':['DRILL','WELD','CUT','PING','PAINT',''][player.tool];}
+function updateAct(){
+  const a=$('act');if(!a)return;const s=player.ship;
+  const t=s?(s.guns&&s.guns.length?'FIRE':s.drills&&s.drills.length?'DRILL':''):['DRILL','WELD','CUT','PING','PAINT',''][player.tool];   // a ship fires its guns, else works its drills
+  if(a._t!==t){a._t=t;a.textContent=t;a.style.visibility=t?'':'hidden';}
+}
 function setBuildUI(){
   player.build=(player.tool===1);
   document.body.classList.toggle('build',player.build);
@@ -2134,6 +2160,13 @@ function buildUpdate(dt){
     }else weldAcc=0;
     return;
   }
+  // a damaged block under the crosshair: hold the torch on it to repair it
+  const rk=(pk&&pk.kind==='blk'&&pk.t<9&&(pk.h.b.dmg||0)>0)?pk:null;
+  if(rk){
+    hideGhost();
+    if(fire){const rb=rk.h.b;repairBlock(rk.g,rb,dt*WELD_RATE);const w=rk.g.group.localToWorld(new V3(rb.i*2,rb.j*2,rb.k*2));spawnP(w.x,w.y,w.z,(Math.random()-.5)*5,(Math.random()-.5)*5,(Math.random()-.5)*5,0x9fe8ff,.3);hudDirty=true;}
+    return;
+  }
   weldAcc=0;
   // torch: ghost preview and placement
   const type=BORDER[player.sel],def=BDEF[type];
@@ -2294,10 +2327,13 @@ function shipUpdate(g,dt){
   if(g.vel.length()>90)g.vel.setLength(90);
   g.fuel=Math.max(0,g.fuel-burn*dt*5e-5);
   // rotation
-  const alpha=clamp((.7+1.8*g.gyros)*20000/g.mass,.15,5),maxR=1.6;
+  const alpha=clamp((.2+.6*g.gyros)*20000/g.mass,.05,5),maxR=clamp(.3+.3*g.gyros,.3,1.6);   // a lone gyroscope turns a ship slowly; more (and bigger) ones swing it round
   const ks=coarse?.0034:.0024;
   const tgt=[clamp(-look[1]*ks/dt,-maxR,maxR),clamp(-look[0]*ks/dt,-maxR,maxR),rollIn()*1.2];
-  for(let i=0;i<3;i++)g.rate[i]+=clamp(tgt[i]-g.rate[i],-alpha*dt,alpha*dt);
+  for(let i=0;i<3;i++){
+    if(player.damp)g.rate[i]+=clamp(tgt[i]-g.rate[i],-alpha*dt,alpha*dt);   // dampers on: the turn settles to what you are asking for
+    else if(tgt[i])g.rate[i]=clamp(g.rate[i]+alpha*dt*clamp(tgt[i]/maxR,-1,1),-maxR,maxR);   // dampers off: you push the spin, and it keeps going when you let go
+  }
   const w=new V3().addScaledVector(g.right,g.rate[0]).addScaledVector(g.up,g.rate[1]).addScaledVector(g.fwd,g.rate[2]),wl=w.length();
   const comW=g.com.clone().applyQuaternion(q).add(g.group.position);
   if(wl>1e-5){_q1.setFromAxisAngle(w.clone().multiplyScalar(1/wl),wl*dt);q.multiply(_q1).normalize();}
@@ -2324,6 +2360,7 @@ function shipUpdate(g,dt){
   let drilling=false;
   const fireNow=mFire||tb.fire;
   for(const b of g.drills){
+    const ef=dmgEff(b);
     const sp=b.spin,big=b.type==='bigdrill',reach=big?14:9,off=big?2.1:1.8;
     const tip=g.group.localToWorld(new V3(b.i*2+b.f[0]*off,b.j*2+b.f[1]*off,b.k*2+b.f[2]*off));
     const dir=new V3(b.f[0],b.f[1],b.f[2]).applyQuaternion(q).normalize();
@@ -2338,18 +2375,22 @@ function shipUpdate(g,dt){
       const v=new V3(ax/al,ay/al,az/al);
       if(v.x*dir.x+v.y*dir.y+v.z*dir.z>.8){dir.copy(v);aimD=al;}
     }
-    if(fireNow){
+    if(fireNow&&ef){
       let best=null;
       for(const a of asteroids){const h=rayAst(a,tip,dir,reach);if(h&&(!best||h.t<best.h.t))best={a,h};}
       if(sp)sp.rotation.y+=dt*22;
       const dh=rayDep(tip,dir,reach);
       if(dh&&(!best||dh.t<best.h.t+dh.d.sz*.6)){
-        drilling=true;const pt=tip.clone().addScaledVector(dir,dh.t);beam(tip,pt);drainDep(dh.d,big?DRILL_RATE.big:DRILL_RATE.ship,dt,pt,shipIO(g));
+        drilling=true;const pt=tip.clone().addScaledVector(dir,dh.t);beam(tip,pt);drainDep(dh.d,(big?DRILL_RATE.big:DRILL_RATE.ship)*ef,dt,pt,shipIO(g));
       }else if(best){
         drilling=true;beam(tip,tip.clone().addScaledVector(dir,best.h.t));
-        b.t-=dt;if(b.t<=0){b.t=big?.15:.2;mineAt(best.a,best.h,big?2.7:1.7);}
+        b.t-=dt;if(b.t<=0){b.t=(big?.15:.2)/ef;mineAt(best.a,best.h,big?2.7:1.7);}
       }else if(aimD<1e9){beam(tip,tip.clone().addScaledVector(dir,Math.min(reach,aimD)));}   // nothing in reach: the beam still points at the reticle
     }
+  }
+  for(const b of g.guns){   // guns fire along their barrels while the action button is held
+    b.cd=(b.cd||0)-dt;
+    if(fireNow&&player.ship===g&&b.cd<=0){b.cd=.25/dmgEff(b);fireBolt(g,b,q);}
   }
   drillOn=drilling;
   if(g.fuel<=0&&burn===0&&(mv.x||mv.y||mv.z)&&!g._warned){g._warned=true;toast('Out of hydrogen. '+(coarse?'Tap FUEL':'Press R')+' to melt ice from the hold or your pack.','bad');}
@@ -2475,7 +2516,7 @@ function spawnStation(){
   addBlock(g,-4,1,-3,'cargo',null);
   addBlock(g,-4,1,4,'powergen',[0,1,0]);
   addBlock(g,-4,1,1,'gravgen',[0,1,0]);
-  g.fuel=0;
+  g.fuel=g.fuelCap;   // a full tank of hydrogen to start; after that it burns ice from the warehouse
 }
 
 /* ---------- MERIDIAN HUB: a derelict four-deck station, round and stepped like a pyramid, the algae farm blown open on one side ---------- */
@@ -2545,6 +2586,7 @@ function spawnDerelict(){
   fit('beacon',14,180,1,1);fit('pad',11,150,1,-1);fit('pad',11,210,1,W());
   for(const[r,dg] of[[5,0],[5,60],[5,120],[5,180],[5,240],[5,300],[8,30],[8,90],[8,150],[8,210],[8,270],[8,330]])fit('tank',r,dg,13,W()>0?W():-1);   // the farm's vats
   fit('seat',4.4,200,19,-1,[0,1,0]);
+  fit('powergen',6,45,7,1,[0,1,0]);fit('powergen',6,225,7,2,[0,1,0]);   // the station's generators: half built, and the tanks are dry
   for(const j of[3,9,15,21])M.set(key(0,j,0),{i:0,j,k:0,t:'gravgen',f:[0,1,0],s:0,feat:true,keep:true,w:-1,tier:4});   // gravity generators buried in the pillar keep the stairwell walkable
   for(const[r,dg] of[[30,0],[26,90],[26,180],[26,270]]){}
   // the blast: the algae deck blew out toward +x; everything near it is gone, and the rim is half rebuilt
@@ -2571,6 +2613,18 @@ function spawnDerelict(){
    Interior, front to back (port | centre | starboard): 3 wide with the pilot seat, a corridor, the door (port side), a corridor,
    the Assembler | aisle | Refinery, a corridor, and the cargo container at the stern. 11 floor tiles. */
 const SHIP_PIONEER=[["hull",0,0,0,0,0,1],["hull",0,3,0,0,0,1],["hull",0,0,1,0,0,1],["hull",0,3,1,0,0,1],["hull",0,0,2,0,0,1],["hull",0,3,2,0,0,1],["hull",-1,1,3,0,0,1],["hull",-1,2,3,0,0,1],["hull",0,0,3,0,0,1],["hull",0,3,3,0,0,1],["hull",1,1,3,0,0,1],["hull",1,2,3,0,0,1],["hull",0,3,4,0,0,1],["hull",-1,0,5,0,0,1],["hull",-1,0,6,0,0,1],["hull",0,0,6,0,0,1],["hull",-1,0,7,0,0,1],["hull",-1,2,7,0,0,1],["hull",0,0,7,0,0,1],["hull",0,2,7,0,0,1],["door",-1,1,2,[0,1,0],1,1],["assembler",-1,1,4,[0,1,0],1,1],["refinery",1,1,4,[0,1,0],3,1],["cargo",0,1,6,0,0,1],["light",0,2,2,[0,-1,0],0,1],["light",0,2,3,[0,-1,0],0,1],["slope",1,0,0,[0,-1,0],1,1],["slope",-1,0,0,[0,-1,0],3,1],["slope",-1,3,0,[-1,0,0],3,1],["slope",0,3,-1,[0,0,-1],2,1],["corner",-1,3,-1,[0,0,-1],1,1],["corner",-1,0,-1,[0,0,-1],0,1],["corner",1,0,-1,[0,0,-1],3,1],["slope",1,3,0,[0,1,0],3,1],["corner",1,3,-1,[0,1,0],3,1],["hull",0,0,-1,[0,1,0],0,1],["glass",-1,1,0,[-1,0,0],0,1],["glass",0,1,-1,[0,0,-1],0,1],["glass",-1,2,0,[-1,0,0],0,1],["glass",0,2,-1,[0,0,-1],0,1],["slope",1,3,1,[1,0,0],1,1],["slope",1,3,2,[1,0,0],1,1],["slope",1,3,3,[0,1,0],3,1],["slope",1,3,4,[0,1,0],3,1],["hull",1,2,2,[0,1,0],0,1],["hull",1,1,2,[0,1,0],0,1],["slope",2,2,3,[0,1,0],3,1],["slope",2,1,3,[1,0,0],3,1],["slope",1,0,1,[1,0,0],3,1],["slope",1,0,2,[1,0,0],3,1],["slope",1,0,3,[1,0,0],3,1],["slope",1,0,4,[1,0,0],3,1],["slope",2,1,4,[1,0,0],3,1],["glassd",1,1,-1,[1,0,0],2,1],["glassd",1,2,-1,[1,0,0],2,1],["glassd",-1,1,-1,[1,0,0],0,1],["glassd",-1,2,-1,[1,0,0],0,1],["corner",-2,1,1,[-1,0,0],0,1],["corner",-2,2,1,[-1,0,0],3,1],["slope",-1,3,2,[0,1,0],1,1],["slope",-1,3,1,[0,1,0],1,1],["slope",-1,3,4,[0,1,0],1,1],["slope",-1,3,3,[0,1,0],1,1],["slope",-2,2,3,[0,1,0],1,1],["slope",-2,2,4,[0,1,0],1,1],["slope",-2,2,5,[0,1,0],1,1],["slope",-2,2,7,[0,1,0],1,1],["slope",-1,3,5,[0,1,0],1,1],["slope",-1,3,6,[0,1,0],1,1],["slope",1,3,5,[0,1,0],3,1],["slope",1,3,6,[0,1,0],3,1],["hull",1,2,7,[0,1,0],0,1],["hull",1,0,7,[0,1,0],0,1],["hull",1,0,5,[0,1,0],0,1],["hull",1,0,6,[0,1,0],0,1],["slope",2,2,4,[0,1,0],3,1],["slope",2,2,5,[0,1,0],3,1],["slope",2,2,6,[0,1,0],3,1],["slope",2,2,7,[0,1,0],3,1],["hull",-2,1,7,[0,1,0],0,1],["slope",-2,2,6,[-1,0,0],3,1],["slope",-2,1,4,[-1,0,0],1,1],["slope",-2,1,3,[-1,0,0],1,1],["hull",-1,0,2,[-1,0,0],0,1],["steps",-2,0,2,[-1,0,0],2,1],["powergen",1,1,6,[0,1,0],0,1],["hull",0,0,4,[0,1,0],0,1],["gyro",-1,1,6,[0,1,0],0,1],["tank",-1,1,5,[0,1,0],0,1],["tank",-1,2,5,[0,1,0],0,1],["slope",1,2,1,[0,0,-1],1,1],["slope",1,1,1,[0,0,-1],1,1],["slope",-1,2,1,[0,0,-1],3,1],["slope",-1,1,1,[0,0,-1],3,1],["glass",1,1,0,[1,0,0],0,1],["glass",1,2,0,[1,0,0],0,1],["seat",0,1,0,[0,1,0],0,1],["slope",-1,0,4,[-1,0,0],1,1],["slope",-1,0,3,[-1,0,0],1,1],["slope",-1,0,1,[-1,0,0],1,1],["slope",-2,0,5,[-1,0,0],1,1],["slope",-2,0,6,[-1,0,0],1,1],["slope",-2,0,7,[-1,0,0],1,1],["slope",2,0,7,[0,-1,0],1,1],["slope",2,0,6,[0,-1,0],1,1],["slope",2,0,5,[0,-1,0],1,1],["leg",0,-1,6,[0,-1,0],0,1],["leg",0,-1,2,[0,-1,0],0,1],["drill",0,0,-2,[0,0,-1],0,1],["hull",2,2,2,[1,0,0],0,1],["thruster",2,2,1,[0,0,-1],0,1],["thruster",-2,1,6,[-1,0,0],0,1],["thruster",0,3,5,[0,1,0],0,1],["thruster",2,1,6,[1,0,0],0,1],["slope",0,3,7,[0,0,1],0,1],["corner",-1,3,7,[0,0,1],0,1],["corner",1,3,7,[0,0,1],3,1],["thruster",-1,1,7,[0,0,1],0,1],["thruster",0,1,7,[0,0,1],0,1],["thruster",1,1,7,[0,0,1],0,1],["hull",2,1,2,[0,0,1],0,1],["thruster",2,1,1,[0,0,-1],0,1],["hull",2,1,7,[1,0,0],0,1],["thruster",2,1,5,[1,0,0],0,1],["thruster",0,3,6,[0,1,0],0,1],["thruster",-2,1,5,[-1,0,0],0,1],["thruster",0,0,5,[0,-1,0],0,1],["steps",-3,-1,2,[-1,0,0],2,1]];   // the starter ship, as laid out by J. D. Steel (entries: type, i, j, k, facing, spin, tier)
+// the pilot's own interceptor: the same airframe with a seat, and a gun under each wing where the slopes were
+const WING_SLOPES=new Set(['1,0,1','-2,0,1']);
+function spawnPlayerDrone(pos){
+  const g=makeGrid('INTERCEPTOR',pos,null);g.bulk=true;
+  for(const e of DRONE_PLAN.b){
+    if(e[0]==='gun'||(e[0]==='slope'&&WING_SLOPES.has(e[1]+','+e[2]+','+e[3])))continue;
+    addBlock(g,e[1],e[2],e[3],e[0],e[4]||null,e[5]|0,e[6]||1);
+  }
+  addBlock(g,-1,2,2,'seat',[0,1,0]);addBlock(g,-2,0,1,'gun',[0,0,-1]);addBlock(g,1,0,1,'gun',[0,0,-1]);
+  g.bulk=false;recalc(g);g.fuel=g.fuelCap;g.group.updateMatrixWorld(true);
+  return g;
+}
 function spawnShip(){
   const g=makeGrid('PIONEER',new V3(0,0,0),null);g.kind='pioneer';
   for(const e of SHIP_PIONEER)addBlock(g,e[1],e[2],e[3],e[0],e[4]||null,e[5]|0,e[6]||1);
@@ -2622,7 +2676,7 @@ function updateHUD(dt){
   // INTERACT lights up when there is something to use; DAMP when the dampers are on
   {let av=!!player.ship;
    if(!av&&player.mode==='foot'&&!player.build&&player.tool!==1){av=!!nearestSeat();if(!av){const am=aimedMachine(USE_R);av=!!am;}}
-   const ub=$('usebtn'),db=$('dampbtn');if(ub&&ub._a!==av){ub._a=av;ub.classList.toggle('avail',av);}
+   updateAct();const ub=$('usebtn'),db=$('dampbtn');if(ub&&ub._a!==av){ub._a=av;ub.classList.toggle('avail',av);}
    if(db&&db._a!==player.damp){db._a=player.damp;db.classList.toggle('lit',player.damp);}}
   // prompt + target
   let pr='',t1='',t2='';
@@ -2642,6 +2696,7 @@ function updateHUD(dt){
         if(bd.machine)t2=['Idle','Working','Waiting for material'][pb.state||0];else if(bd.panel)t2=panelSummary(pk.g,pb);
       }else if(aimT>=2)t1=pk.g.name;
     }
+    if(pk&&pk.kind==='blk'&&pk.t<=9&&pk.h.b.dmg>0&&!wipOn(pk.h.b)){const pb2=pk.h.b;t1=BDEF[pb2.type].name;t2=Math.round(100*pb2.dmg/hpOf(pb2))+'% damaged'+(player.tool===1?' \u00b7 hold the Torch to repair':'');}
     if(!(pk&&pk.kind==='blk')){aimG=null;aimT=0;}
   }else if(g.fuel<g.fuelCap*.15&&inv.ice>0)pr=(coarse?'FUEL':'R')+' — melt ice into hydrogen';
   if(!g&&player.tool===4&&!termOpen){t1='PAINT \u00b7 '+PAINT_NAMES[paintSel].toUpperCase();t2='ROT changes the look';}
@@ -2652,7 +2707,7 @@ function updateHUD(dt){
 
 function driftGrids(dt){
   for(const g of grids){
-    if(g===player.ship)continue;
+    if(g===player.ship||g.ai)continue;
     for(const b of g.thr)if(b.flame)b.flame.visible=false;
     if(g.lock){g.vel.set(0,0,0);continue;}
     if(g.vel.lengthSq()>1e-4){
@@ -2663,8 +2718,124 @@ function driftGrids(dt){
   }
 }
 let last=0;
+/* ---- gun bolts: a short glowing streak that carries the ship's own speed and damages the first block it meets ---- */
+const BOLT_V=260,BOLT_LIFE=1.8,BOLT_DMG=1,bolts=[],_bp=new V3();
+const boltGeo=new THREE.BoxGeometry(.14,.14,1.8),boltMat=new THREE.MeshBasicMaterial({color:0xffd24a});
+function fireBolt(g,b,q){
+  const f=new V3(b.f[0],b.f[1],b.f[2]),dir=f.clone().applyQuaternion(q).normalize();
+  const muzzle=g.group.localToWorld(new V3(b.i*2+f.x*2.1,b.j*2+f.y*2.1,b.k*2+f.z*2.1));
+  if(player.ship===g){   // the shot converges on whatever the reticle is on (or 250 m out), so guns mounted off to the side still land
+    const ro=camera.position,cf=new V3(0,0,-1).applyQuaternion(camera.quaternion);
+    let tt=250;
+    for(const a of asteroids){const h=rayAst(a,ro,cf,400);if(h){const t2=astSurfT(a,ro,cf,h.t);if(t2<tt)tt=t2;}}
+    const stepP=new V3();
+    outer:for(let t=4;t<tt;t+=1.5){
+      stepP.copy(ro).addScaledVector(cf,t);
+      for(const g2 of grids){
+        if(g2===g)continue;
+        const rr=(g2.bs||10)+4;if(g2.group.position.distanceTo(stepP)>rr)continue;
+        _bp.copy(stepP);g2.group.worldToLocal(_bp);
+        if(cellAt(g2,kf(Math.round(_bp.x/2),Math.round(_bp.y/2),Math.round(_bp.z/2)))){tt=t;break outer;}
+      }
+    }
+    const v=ro.clone().addScaledVector(cf,tt).sub(muzzle).normalize();
+    if(v.dot(dir)>.9)dir.copy(v);
+  }
+  const m=new THREE.Mesh(boltGeo,boltMat);scene.add(m);
+  bolts.push({p:muzzle.clone(),v:dir.clone().multiplyScalar(BOLT_V).add(g.vel),life:BOLT_LIFE,src:g,mesh:m});
+  if(booted)beep(900,.04);
+}
+function boltsTick(dt){
+  for(let n=bolts.length-1;n>=0;n--){
+    const k=bolts[n];k.life-=dt;let hit=false;
+    const steps=Math.max(1,Math.ceil(k.v.length()*dt/1.5)),sd=dt/steps;
+    for(let s=0;s<steps&&!hit;s++){
+      k.p.addScaledVector(k.v,sd);
+      for(const g2 of grids){
+        if(g2===k.src)continue;
+        const rr=(g2.bs||10)+4;if(g2.group.position.distanceTo(k.p)>rr)continue;
+        _bp.copy(k.p);g2.group.worldToLocal(_bp);
+        const b=cellAt(g2,kf(Math.round(_bp.x/2),Math.round(_bp.y/2),Math.round(_bp.z/2)));
+        if(b){
+          for(let i=0;i<4;i++)spawnP(k.p.x,k.p.y,k.p.z,(Math.random()-.5)*14,(Math.random()-.5)*14,(Math.random()-.5)*14,0xffb030,.35);
+          damageBlock(g2,b,BOLT_DMG);hit=true;break;
+        }
+      }
+    }
+    if(hit||k.life<=0){scene.remove(k.mesh);bolts.splice(n,1);continue;}
+    k.mesh.position.copy(k.p);k.mesh.lookAt(k.p.x+k.v.x,k.p.y+k.v.y,k.p.z+k.v.z);
+  }
+}
+/* ---- hostile drones: fly the ship from its own thrusters and gyros, like a pilot would ---- */
+const DRONE_PLAN={"n":"Interceptor Drone","b":[["hull",0,0,4,[1,0,0],0,1],["hull",-1,0,4,[1,0,0],0,1],["gyro",-1,1,2,[1,0,0],0,1],["tank",0,1,3,[1,0,0],0,1],["cargo",-1,1,3,[0,1,0],0,1],["gyro",-1,1,4,[0,1,0],0,1],["gyro",0,1,4,[0,1,0],0,1],["mthruster",-1,0,1,[0,0,-1],0,1],["mthruster",0,0,1,[0,0,-1],0,1],["hull",-1,1,1,[0,0,-1],0,1],["hull",0,1,1,[0,0,-1],0,1],["slope",-1,1,0,[0,1,0],0,1],["slope",0,1,0,[0,1,0],0,1],["slope",1,1,1,[0,1,0],0,1],["slope",1,1,3,[0,0,1],0,1],["hull",1,1,2,[0,0,1],0,1],["hull",-2,1,2,[0,0,1],0,1],["slope",-2,1,3,[0,0,1],0,1],["slope",-2,1,1,[0,1,0],0,1],["slope",-2,0,1,[0,-1,0],0,1],["slope",1,0,1,[0,-1,0],0,1],["mthruster",0,0,2,[1,0,0],0,1],["mthruster",-1,0,2,[-1,0,0],0,1],["mthruster",-1,0,3,[0,-1,0],0,1],["mthruster",0,0,3,[0,-1,0],0,1],["mthruster",0,1,2,[0,1,0],0,1],["hull",0,0,5,[0,0,1],0,1],["slope",0,0,6,[0,0,1],3,1],["slope",-1,0,6,[0,0,1],1,1],["gyro",0,1,5,[0,1,0],0,1],["hull",-1,0,5,[-1,0,0],0,1],["gyro",-1,1,5,[0,1,0],0,1],["thruster",0,1,6,[0,0,1],0,1],["thruster",-1,1,6,[0,0,1],0,1],["gun",-1,0,0,[0,0,-1],0,1],["gun",0,0,0,[0,0,-1],0,1]]};
+function spawnDrone(pos,quat){
+  const g=makeGrid('DRONE-'+String(++gridSeq).padStart(2,'0'),pos,quat||null);g.kind='drone';g.bulk=true;
+  for(const e of DRONE_PLAN.b)addBlock(g,e[1],e[2],e[3],e[0],e[4]||null,e[5]|0,e[6]||1);
+  g.bulk=false;recalc(g);g.fuel=g.fuelCap;g.group.updateMatrixWorld(true);
+  g.ai={state:'approach',n0:g.blocks.size,dir:Math.random()<.5?1:-1,t:0,flip:5+Math.random()*4,orbit:70+Math.random()*30};
+  addMarker('HOSTILE','drone',g.group.position,g);
+  return g;
+}
+const _dq=new Q(),_dvw=new V3();
+function droneTarget(g){
+  if(player.ship&&player.ship!==g&&player.ship.kind!=='drone')return player.ship;
+  let best=null,bd=1e9;
+  for(const x of grids){if(x===g||x.kind==='drone'||x.kind==='derelict')continue;const d=x.group.position.distanceTo(g.group.position);if(d<bd){bd=d;best=x;}}
+  return best;
+}
+function droneTick(dt){
+  for(const g of grids.slice()){
+    const ai=g.ai;if(!ai||g.kind!=='drone')continue;
+    const q=g.group.quaternion,qi=q.clone().invert();
+    if(!g.thr.length||g.fuel<=0){g.ai=null;continue;}   // a dead ship just drifts
+    const tg=droneTarget(g);if(!tg)continue;
+    ai.t+=dt;
+    const gp=g.group.position,tp=tg.group.localToWorld(tg.com.clone()),rel=tp.clone().sub(gp),range=rel.length()||1,rh=rel.clone().multiplyScalar(1/range);
+    // what it is willing to do
+    if(!g.guns.length||g.blocks.size<ai.n0*.5)ai.state='flee';
+    else if(ai.state==='approach'&&range<110)ai.state='attack';
+    else if(ai.state==='attack'&&range>180)ai.state='approach';
+    if(ai.state==='flee'&&range>650){scene.remove(g.group);const n=grids.indexOf(g);if(n>=0)grids.splice(n,1);continue;}
+    // where it wants to be going
+    const vdes=tg.vel.clone();
+    if(ai.state==='approach')vdes.addScaledVector(rh,clamp((range-ai.orbit)*.3,8,45));   // slow down as it arrives
+    else if(ai.state==='attack'){
+      if(ai.t>ai.flip){ai.t=0;ai.flip=4+Math.random()*5;ai.dir=-ai.dir;}   // change which way it circles now and then
+      const tan=new V3().crossVectors(rh,new V3(0,1,0));if(tan.lengthSq()<1e-4)tan.set(1,0,0);tan.normalize();
+      vdes.addScaledVector(rh,clamp((range-ai.orbit)*.5,-22,28)).addScaledVector(tan,ai.dir*24).y+=Math.sin(performance.now()/1700+g.name.length)*6;
+    }else vdes.addScaledVector(rh,-60);
+    if(range<60)vdes.addScaledVector(rh,-45*(1-range/60)-12);   // never fly through what it is shooting at
+    if(vdes.length()>60)vdes.setLength(60);
+    // thrust: only the thrusters that face the right way push
+    const dv=vdes.sub(g.vel).applyQuaternion(qi),cmd=[dv.x,dv.y,dv.z],F=[0,0,0];let burn=0;
+    for(let k=0;k<3;k++){const c=clamp(cmd[k]*.3,-1,1);if(Math.abs(c)>.04){F[k]=c*g.T[k][c>0?1:0]*1000;burn+=Math.abs(F[k])*.5;}}
+    g.vel.addScaledVector(new V3(F[0]/g.mass,F[1]/g.mass,F[2]/g.mass).applyQuaternion(q),dt);
+    if(g.vel.length()>90)g.vel.setLength(90);
+    g.fuel=Math.max(0,g.fuel-burn*dt*5e-5);
+    // turning: swing the barrel (or the nose) onto the lead point
+    const gun=g.guns[0],a=gun?new V3(gun.f[0],gun.f[1],gun.f[2]):new V3(0,0,-1);
+    const lead=tp.clone().addScaledVector(tg.vel.clone().sub(g.vel),range/BOLT_V);
+    const aim=ai.state==='flee'?g.vel.clone().normalize():lead.sub(gp).normalize();
+    const dL=aim.applyQuaternion(qi);
+    const ax=new V3().crossVectors(a,dL),sn=ax.length(),dot=a.dot(dL),ang=Math.atan2(sn,dot);
+    if(sn<1e-5){if(dot<0)ax.set(0,1,0);}else ax.multiplyScalar(1/sn);
+    const alpha=clamp((.2+.6*g.gyros)*20000/g.mass,.05,5),maxR=clamp(.3+.3*g.gyros,.3,1.6);
+    const sp=ang<1e-3?0:Math.min(maxR,Math.sqrt(2*alpha*.5*ang)+.02);
+    const tgt=[ax.x*sp,ax.y*sp,-ax.z*sp];   // the third rate turns about the forward axis, which points down -z
+    for(let i=0;i<3;i++)g.rate[i]+=clamp(tgt[i]-g.rate[i],-alpha*dt,alpha*dt);
+    const w=_dvw.set(0,0,0).addScaledVector(g.right,g.rate[0]).addScaledVector(g.up,g.rate[1]).addScaledVector(g.fwd,g.rate[2]),wl=w.length();
+    const comW=g.com.clone().applyQuaternion(q).add(gp),pp=gp.clone(),pq=q.clone();
+    if(wl>1e-5){_dq.setFromAxisAngle(w.clone().multiplyScalar(1/wl),wl*dt);q.multiply(_dq).normalize();}
+    gp.copy(comW).sub(g.com.clone().applyQuaternion(q)).addScaledVector(g.vel,dt);
+    g.group.updateMatrixWorld(true);
+    if(shipHitsAst(g)){gp.copy(pp);q.copy(pq);g.vel.multiplyScalar(-.3);g.group.updateMatrixWorld(true);}
+    // shooting
+    const lined=ang<.07&&range<230&&ai.state!=='flee';
+    for(const b of g.guns){b.cd=(b.cd||0)-dt;if(lined&&b.cd<=0){b.cd=.4/dmgEff(b);fireBolt(g,b,q);}}
+  }
+}
 function update(dt){
-  hitCool-=dt;
+  hitCool-=dt;boltsTick(dt);droneTick(dt);
   for(const g of grids){if(g.hullDirty)rebuildHull(g);if(g.wipDirty)rebuildWip(g);g.group.updateMatrixWorld(true);}
   beamN=0;for(const m of beams)m.visible=false;
   const pg=player.ship;
@@ -2683,6 +2854,12 @@ function update(dt){
 
 /* ---------- input ---------- */
 const ACT={
+  drone(){   // dev: tap once for a hostile drone straight ahead, tap again to scrap it
+    const live=grids.filter(g=>g.kind==='drone');
+    if(live.length){for(const g of live){scene.remove(g.group);const n=grids.indexOf(g);if(n>=0)grids.splice(n,1);}toast('Drone scrapped');return;}
+    const f=new V3(0,0,-1).applyQuaternion(camera.quaternion),p=camera.position.clone().addScaledVector(f,420);
+    spawnDrone(p);toast('Hostile contact: one drone','bad');
+  },
   tool(){
     if(player.mode!=='foot'){toast('Stand up from the seat to switch tools');return;}
     setTool(nextTool(1));toast(TOOL_HINT[player.tool]);
@@ -2833,7 +3010,7 @@ Object.assign(RCOL,{feI:'#e0905a',siI:'#d3dcec',ptI:'#ffe9a0',plate:'#9fb2c8',co
 const SHORT={fe:'Iron',si:'Silicon',ice:'Ice',pt:'Platinum',feI:'Iron ingot',siI:'Silicon ingot',ptI:'Platinum ingot',plate:'Plate',constr:'Construction',motor:'Motor',comp:'Computer'};
 const ALLK=Object.keys(inv);
 // ship and structure parts can be built anywhere; station machines need a gravity field
-const PAGE_BASIC=['hull','slope','corner','icorner','window','glass','glassd','door','steps','seat','light','powergen','thruster','mthruster','bigthruster','gyro','lgyro','tank','bigtank','drill','bigdrill','cargo','refinery','assembler','leg','gravgen'];
+const PAGE_BASIC=['hull','slope','corner','icorner','window','glass','glassd','door','steps','seat','light','powergen','thruster','mthruster','gun','bigthruster','gyro','lgyro','tank','bigtank','drill','bigdrill','cargo','refinery','assembler','leg','gravgen'];
 const PAGE_STN=['beacon','pad','lightbar'];
 let page=0,inGrav=false,booted=false;
 BORDER.length=0;BORDER.push(...PAGE_BASIC,...PAGE_STN);   // one list; the picker groups it
@@ -2889,6 +3066,7 @@ function updateGravity(dt){
     if(!best)for(const g of grids){   // 2. gravity generator fields
       if(!g.gravs.length)continue;
       for(const b of g.gravs){
+        if(!b.pw)continue;   // a generator with no power makes no field
         _gw.set(b.i*2,b.j*2,b.k*2);g.group.localToWorld(_gw);
         const d=_gw.distanceTo(player.pos);
         if(d<gravR(b)&&d<bd){bd=d;best={g,b};}
@@ -3049,7 +3227,7 @@ function machineTick(dt){
         const r=RECIPES[b.job.id];
         if(!r)b.job=null;
         else{
-          if(b.job.t<r.t)b.job.t+=dt*SPD[tierOf(b)-1];
+          if(b.job.t<r.t&&b.pw)b.job.t+=dt*SPD[tierOf(b)-1]*dmgEff(b);
           if(b.job.t>=r.t&&io.space()>=sumOf(r.out)){
             for(const k in r.out)io.add(k,r.out[k]);
             b.job=null;hudDirty=true;
@@ -3057,7 +3235,7 @@ function machineTick(dt){
           }
         }
       }
-      if(!b.job&&b.queue.length){
+      if(!b.job&&b.queue.length&&b.pw){
         const r=RECIPES[b.queue[0]];
         if(!r)b.queue.shift();
         else if(Object.keys(r.in).every(k=>io.has(k)>=r.in[k])){for(const k in r.in)io.take(k,r.in[k]);b.job={id:b.queue.shift(),t:0};hudDirty=true;}
@@ -3554,27 +3732,35 @@ const GEN_CAP=[10,25,60,150],LIGHT_DRAW=.12;   // lights a generator can run; li
 const lensOn=new THREE.MeshBasicMaterial({color:0xfff1c8}),lensOff=new THREE.MeshBasicMaterial({color:0x3a4250});
 const LPOOL=[];for(let i=0;i<4;i++){const L=new THREE.PointLight(0xffe6b8,0,16,2);scene.add(L);LPOOL.push(L);}   // a few real lights, moved to the nearest lamps
 let powAcc=0;
+const GRAVGEN_LOAD=2,MACHINE_LOAD=2;   // what a gravity generator and a working machine ask of the generators, in lights
+const gridOn=g=>!!(g&&g.power&&g.power.on);
 function powerTick(dt){
   powAcc+=dt;if(powAcc<.5)return;const step=powAcc;powAcc=0;
   const lit=[];
   for(const g of grids){
     const room=g.gens.length>0&&interiorOf(g).size>0;
-    if(!g.lights.length&&!room){g.power=null;g.gravOn=false;continue;}
+    if(!g.lights.length&&!room&&!g.gens.length&&!g.gravs.length&&!g.machines.length){g.power=null;g.gravOn=false;continue;}
     let cap=0;for(const b of g.gens)cap+=GEN_CAP[tierOf(b)-1];
-    const gl=room?GRAV_LOAD:0,load=g.lights.length+gl,run=Math.min(load,cap);
-    let ok=run>0&&!g.powerOff;
+    // who gets power, in this order: gravity generators, the sealed room's gravity, working machines, lights
+    let budget=(cap>0&&!g.powerOff)?cap:0,used=0;
+    const take=n=>{if(budget>=n){budget-=n;used+=n;return true;}return false;};
+    const gp=g.gravs.map(()=>take(GRAVGEN_LOAD)),gr=room?take(GRAV_LOAD):false;
+    const mp=g.machines.map(b=>(b.job||(b.queue&&b.queue.length))?take(MACHINE_LOAD):null);
+    const lp=g.lights.map(()=>take(1));
+    let ok=cap>0&&!g.powerOff;
     if(ok){
-      const need=run*LIGHT_DRAW*step;
-      if(g.fuel<need&&g.cargos.length&&gridHas(g,'ice')>0){takeFromGrid(g,'ice',1);g.fuel=Math.min(g.fuelCap,g.fuel+60);}
-      if(g.fuel>=need)g.fuel-=need;else ok=false;
+      const need=used*LIGHT_DRAW*step;
+      if(g.fuel<Math.max(need,1)&&g.cargos.length&&gridHas(g,'ice')>0){takeFromGrid(g,'ice',1);g.fuel=Math.min(g.fuelCap,g.fuel+60);}
+      if(g.fuel>=need&&g.fuel>0)g.fuel-=need;else ok=false;
     }
     const was=g.power&&g.power.on;
-    g.power={cap,load,on:ok,run:ok?run:0,grav:room};
-    g.gravOn=ok&&room&&cap>=gl;
-    const avail=Math.max(0,(ok?run:0)-gl);
-    let n=0;
-    for(const b of g.lights){const on=ok&&n<avail;n++;if(b.lamp)b.lamp.material=on?lensOn:lensOff;if(on)lit.push(b.node);}
-    if(booted&&was&&!ok&&!g.powerOff&&g.group.position.distanceTo(player.pos)<120)toast(g.name+': power out — no hydrogen or ice for the generator'+(room?', gravity is off':''),'bad');
+    const nl=g.lights.length,nlit=ok?lp.filter(Boolean).length:0,ngp=ok?gp.filter(Boolean).length:0;
+    g.power={cap,load:g.gravs.length*GRAVGEN_LOAD+(room?GRAV_LOAD:0)+nl,on:ok,run:ok?used:0,grav:room,nl,nlit,ng:g.gravs.length,ngp};
+    g.gravOn=ok&&gr;
+    g.gravs.forEach((b,i)=>{b.pw=ok&&gp[i];});
+    g.machines.forEach((b,i)=>{b.pw=ok&&(mp[i]===null||mp[i]);});   // an idle machine is ready; a working one has to be fed
+    g.lights.forEach((b,i)=>{const on=ok&&lp[i];if(b.lamp)b.lamp.material=on?lensOn:lensOff;if(on)lit.push(b.node);});
+    if(booted&&was&&!ok&&!g.powerOff&&g.group.position.distanceTo(player.pos)<120)toast(g.name+': power out — no hydrogen or ice for the generator'+(g.gravs.length||room?', gravity is off':''),'bad');
   }
   // move the few real lights to the lamps nearest the camera
   const cp=camera.position;
@@ -3587,11 +3773,11 @@ function powerTick(dt){
 }
 const _lw=new V3(),_lw2=new V3();
 function powerSummary(g){
-  const p=g.power;if(!p)return 'no lights on this grid';
-  const gl=p.grav?GRAV_LOAD:0,nl=p.load-gl;
+  const p=g.power;if(!p)return 'no power on this grid';
   if(g.powerOff)return 'POWER OFF';
-  if(!p.cap)return (nl?nl+' lights · ':'')+'no Power Generator';
-  return (p.on?(p.grav?'gravity on · ':'')+(nl?Math.min(nl,Math.max(0,p.run-gl))+'/'+nl+' lights powered':'powered'):'unpowered — needs hydrogen or ice')+' · capacity '+p.cap;
+  if(!p.cap)return (p.nl?p.nl+' lights · ':'')+'no Power Generator';
+  if(!p.on)return 'unpowered \u2014 needs hydrogen or ice \u00b7 capacity '+p.cap;
+  return (p.grav?'gravity on \u00b7 ':'')+(p.ng?p.ngp+'/'+p.ng+' gravity gens \u00b7 ':'')+(p.nl?p.nlit+'/'+p.nl+' lights \u00b7 ':'')+'capacity '+p.cap+' \u00b7 drawing '+p.run;
 }
 function startXfer(from,to,only){xfer={from,to,acc:0,moved:0,only:only||null};}
 function dockTick(dt){
@@ -3608,6 +3794,7 @@ function dockTick(dt){
       else toast(g.name+' undocked');
     }
   }
+  if(xfer&&!gridOn(xfer.from)&&!gridOn(xfer.to)){toast('Transfer stopped: no power on either grid ('+xfer.moved+' units moved)','bad');xfer=null;}
   if(xfer){
     const f=xfer.from,t=xfer.to,c=isCraft(f)?f:t,o=c===f?t:f;
     if(!grids.includes(f)||!grids.includes(t)||!c.dock||c.dock.h!==o){toast('Transfer interrupted ('+xfer.moved+' units moved)','bad');xfer=null;}
@@ -3815,6 +4002,7 @@ function termRefresh(){
     const b=ent.b,gone=ent.g.blocks.get(kf(b.i,b.j,b.k))!==b;
     let st,cls='st',w=0;
     if(gone){st='Removed';}
+    else if(!b.pw&&(b.job||b.queue.length)){st='No power';cls='st wait';}
     else if(b.job){const r=RECIPES[b.job.id];w=Math.min(100,Math.floor(100*b.job.t/r.t));st=b.job.t>=r.t?'Output full':r.name+' '+w+'%';cls=b.job.t>=r.t?'st wait':'st work';}
     else if(b.queue.length){st='Waiting for material';cls='st wait';}
     else st='Idle';
@@ -3932,7 +4120,8 @@ $('tbody').addEventListener('click',e=>{
       const to=moveTarget(sel),k=btn.dataset.k;
       if(!sel||!to)toast('No other station or docked craft to move it to','bad');
       else if(!gridHas(sel,k))toast('No '+SHORT[k]+' in '+sel.name,'bad');
-      else if(isCraft(sel)||isCraft(to)){if(xfer)toast('A transfer is already running','bad');else{startXfer(sel,to,k);toast('Moving '+SHORT[k]+' to '+to.name+'\u2026');}}
+      else if(isCraft(sel)||isCraft(to)){if(xfer)toast('A transfer is already running','bad');else if(!gridOn(sel)&&!gridOn(to))toast('Transfers need power: neither grid has a running generator','bad');else{startXfer(sel,to,k);toast('Moving '+SHORT[k]+' to '+to.name+'\u2026');}}
+      else if(!gridOn(sel)&&!gridOn(to))toast('Transfers need power: neither grid has a running generator','bad');
       else{const m=Math.min(gridHas(sel,k),gridSpace(to));if(m>0){takeFromGrid(sel,k,m);addToGrid(to,k,m);}toast(m>0?'Moved '+m+' '+SHORT[k]+' to '+to.name:to.name+' storage is full',m>0?'good':'bad');}
     }
     else if(a==='moveall'){
@@ -3940,8 +4129,10 @@ $('tbody').addEventListener('click',e=>{
       if(sel&&to&&(isCraft(sel)||isCraft(to))){
         if(xfer&&xfer.from===sel){toast('Transfer stopped ('+xfer.moved+' units moved)');xfer=null;}
         else if(!gridUsed(sel))toast('Nothing to move','bad');
+        else if(!gridOn(sel)&&!gridOn(to))toast('Transfers need power: neither grid has a running generator','bad');
         else{startXfer(sel,to);toast('Moving cargo to '+to.name+'\u2026');}
       }
+      else if(sel&&to&&!gridOn(sel)&&!gridOn(to))toast('Transfers need power: neither grid has a running generator','bad');
       else if(sel&&to){let moved=0;for(const k of ITEMS){const m=Math.min(gridHas(sel,k),gridSpace(to));if(m>0){takeFromGrid(sel,k,m);addToGrid(to,k,m);moved+=m;}}
         toast(moved?'Moved '+moved+' units to '+to.name:(gridUsed(sel)?to.name+' storage is full':'Nothing to move'),moved?'good':'bad');}
     }
@@ -4115,10 +4306,10 @@ function serialize(){
     v:3,der:1,inv:Object.assign({},inv),eco:{cr:Math.round(eco.cr),debt:Math.round(eco.debt),won:eco.won,price:Object.assign({},price),mk:{tm:mk.tm.slice(),q:mk.q.concat(...grids.filter(x=>x.md&&x.md.state===1).map(x=>x.md.orders))}},gs:gridSeq,ast:asteroids.map(a=>rle(a.data)),dep:asteroids.map(a=>a.deps.map(d=>d.dead?0:Math.round(d.stock))),
     sv:asteroids.map(a=>a.surveyed?a.name:0),tut:tut,
     pl:{p:r3(player.pos),v:r3(player.vel),q:[q.x,q.y,q.z,q.w],tool:player.tool,damp:player.damp,pilot:player.ship?player.ship.name:null},
-    grids:grids.map(g=>{
+    grids:grids.filter(g=>g.kind!=='drone').map(g=>{
       const gq=g.group.quaternion;
       return{n:g.name,k:g.kind||0,s:g.station?1:0,p:r3(g.group.position),q:[gq.x,gq.y,gq.z,gq.w],v:r3(g.vel),f:Math.round(g.fuel),po:g.powerOff?1:0,
-        b:Array.from(g.blocks.values()).map(b=>[b.type,b.i,b.j,b.k,b.f||0,b.queue&&b.queue.length?b.queue.slice():0,b.job?[b.job.id,+b.job.t.toFixed(2)]:0,tierOf(b),b.store&&Object.keys(b.store).length?Object.assign({},b.store):0,b.s|0,b.pf?b.pf.join(''):0,wipOn(b)?Object.assign({},b.wi):0]),
+        b:Array.from(g.blocks.values()).map(b=>[b.type,b.i,b.j,b.k,b.f||0,b.queue&&b.queue.length?b.queue.slice():0,b.job?[b.job.id,+b.job.t.toFixed(2)]:0,tierOf(b),b.store&&Object.keys(b.store).length?Object.assign({},b.store):0,b.s|0,b.pf?b.pf.join(''):0,wipOn(b)?Object.assign({},b.wi):0,b.dmg?+b.dmg.toFixed(1):0]),
         tr:g.trade?[Math.round(g.trade.timer),g.trade.state===3?g.trade.pay:0]:0};
     })
   };
@@ -4285,6 +4476,7 @@ function restoreSave(S){
       const b=addBlock(g,e[1],e[2],e[3],e[0],e[4]||null,e[9]|0,Math.min(TIER_MAX,Math.max(1,e[7]|0)));
       if(b&&e[10]&&b.type==='hull'){b.pf=String(e[10]).split('').map(Number);g.hullDirty=true;}
       if(b&&e[11])wipRestore(g,b,e[11]);
+      if(b&&e[12])b.dmg=e[12];
       if(b&&b.queue){if(e[5])b.queue=e[5].slice();if(e[6])b.job={id:e[6][0],t:e[6][1]};}
       if(b&&b.tier>1)applyTier(b);
       if(b&&b.store&&e[8])for(const k in e[8])if(inv[k]!==undefined)b.store[k]=e[8][k];
@@ -4328,7 +4520,7 @@ function boot(){
   }
   if(!restored){
     showTutNote=true;showScen=true;
-    spawnStation();spawnShip();
+    spawnStation();spawnShip();spawnPlayerDrone(new V3(-20,7,-22));
     // the PIONEER starts set down on the landing platform; you start at the foot of its boarding steps, facing it
     const pi=grids.find(g=>g.kind==='pioneer'),os=grids.find(g=>g.station);
     if(pi&&os){
@@ -4345,7 +4537,7 @@ function boot(){
   if(restored)$('newg').hidden=false;
   booted=true;setBuildUI();hudDirty=true;
   try{if(window.claude&&window.claude.hot&&window.claude.hot.snapshot)window.claude.hot.snapshot(()=>({save:wiping?null:serialize()}));}catch(e){}
-  window.__VE={grindStep,wipOn,wipUnit,wipBegin,wipDone,mk,mktClick,mktTick,mktBuild,mktRefresh,MKT,mkFee,mkTier,player,grids,asteroids,update,begin,ACT,keys,tb,camera,inv,mineAt,rayAst,pickAll,aim,serialize,restoreSave,saveGame,
+  window.__VE={grindStep,gridOn,powerTick,spawnDrone,spawnPlayerDrone,droneTick,damageBlock,repairBlock,hpOf,dmgEff,fireBolt,boltsTick,bolts,wipOn,wipUnit,wipBegin,wipDone,mk,mktClick,mktTick,mktBuild,mktRefresh,MKT,mkFee,mkTier,player,grids,asteroids,update,begin,ACT,keys,tb,camera,inv,mineAt,rayAst,pickAll,aim,serialize,restoreSave,saveGame,
     addToGrid,gridHas,gridSpace,takeFromGrid,packUsed,packSpace,PACK_CAP,PACKIO,shipIO,spawnShip,interiorOf,bodyHit,bodyMove,cellAt,setTier,growCheck,doorTick,rideSync,seatWorld,nearestSeat,spawnStation,haveK,spend,upgradeBlock,gravR,qMax,tierOf,upCost,recalc,eco,price,PRICE0,ITEMS,loadItem,takeItem,whTotals,payDebt,tradeTick,BEACON,CARGO_CAP,panelSummary,openTerminal,closeTerminal,scanOre,setTool,setPage,addBlock,makeGrid,removeBlock,RECIPES,BDEF,BORDER,
     setDev:v=>{DEV=!!v;},openPicker,openUpg,connGrid,surveyAst,revealBuried,tutState:()=>tut,startTut,renameGrid,dockPlan,toggleDock,pointSolid,shipHitsAst,enterShip,exitShip,inReach,gridsTouch,isCraft,dockCheck,dockTick,startXfer,moveTarget,PAD_RATE,BASE_RATE,xferState:()=>xfer,
     state:()=>({inGrav,page,termOpen,detRange,detSummary,paused,running}),
