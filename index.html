@@ -493,7 +493,7 @@ body:not(.devon) #aux [data-tap=shot],body:not(.devon) #aux [data-tap=noclip]{di
 'use strict';
 /* =====================  Void Engineers  =====================
    Part A: renderer, sky, procedural voxel asteroids, particles */
-const GAME_VER='100';
+const GAME_VER='102';
 /* no page zoom while playing: pinch, double-tap and ctrl+wheel are swallowed */
 (()=>{const no=e=>{e.preventDefault();};
   for(const n of['gesturestart','gesturechange','gestureend','dblclick'])document.addEventListener(n,no,{passive:false});
@@ -1024,7 +1024,7 @@ const UPV=new V3(0,1,0);
 const GRAV_R=10;                       // field mesh reference radius (tier 1)
 /* ---- upgrade tiers: every upgradable block starts at tier 1 and can be raised in place ---- */
 const TIER_MAX=4;
-const GRAV_RT=[10,16,24,34];           // gravity field radius (m)
+const GRAV_RT=[10,16,24,45];           // gravity field radius (m)
 const QTIER=[10,20,40,80],SPD=[1,1.5,2,3];   // refinery / assembler queue length and speed
 const STOR=[1,1.6,2.4,3.5],POW=[1,1.3,1.7,2.2],SPIN=[1,1.4,1.9,2.5];
 const C_GRAV=[{plate:5,motor:2,comp:2},{plate:10,motor:5,comp:5,ptI:3},{plate:16,motor:8,comp:8,ptI:6}];
@@ -2493,7 +2493,9 @@ function spawnDerelict(){
     for(let i=-L.r-1;i<=L.r+1;i++)for(let k=-L.r-1;k<=L.r+1;k++){
       if(D(i,k)>R)continue;
       const edge=D(i+1,k)>R||D(i-1,k)>R||D(i,k+1)>R||D(i,k-1)>R;
-      for(const s of[L.f,L.c]){if(L.f===0||s!==L.f)put(i,s,k,'hull');}   // each deck adds its own ceiling; only the bottom deck adds a floor
+      for(const s of[L.f,L.c]){if(L.f===0||s!==L.f){
+        if(s===L.c&&edge){const sp=Math.abs(i)>=Math.abs(k)?(i<0?1:3):(k<0?0:2);put(i,s,k,'slope',[0,1,0],sp);}   // the roof edge is bevelled: low side outward
+        else put(i,s,k,'hull');}}   // each deck adds its own ceiling; only the bottom deck adds a floor
       if(edge)for(let j=L.f+1;j<L.c;j++){
         const mid=j===Math.round((L.f+L.c)/2)&&(L.r<=10),ang=Math.atan2(k,i);
         put(i,j,k,mid&&Math.round(ang*8/Math.PI)%2===0?'window':'hull');
@@ -2543,21 +2545,22 @@ function spawnDerelict(){
   fit('beacon',14,180,1,1);fit('pad',11,150,1,-1);fit('pad',11,210,1,W());
   for(const[r,dg] of[[5,0],[5,60],[5,120],[5,180],[5,240],[5,300],[8,30],[8,90],[8,150],[8,210],[8,270],[8,330]])fit('tank',r,dg,13,W()>0?W():-1);   // the farm's vats
   fit('seat',4.4,200,19,-1,[0,1,0]);
-  for(const j of[3,9,15,21])M.set(key(0,j,0),{i:0,j,k:0,t:'gravgen',f:[0,1,0],s:0,feat:true,keep:true,w:-1});   // gravity generators buried in the pillar keep the stairwell walkable
+  for(const j of[3,9,15,21])M.set(key(0,j,0),{i:0,j,k:0,t:'gravgen',f:[0,1,0],s:0,feat:true,keep:true,w:-1,tier:4});   // gravity generators buried in the pillar keep the stairwell walkable
   for(const[r,dg] of[[30,0],[26,90],[26,180],[26,270]]){}
   // the blast: the algae deck blew out toward +x; everything near it is gone, and the rim is half rebuilt
   const hits=[[7,15,0,6.5,10],[16,4,12,3.5,5.5],[12,9,-11,3,5]];
+  for(const o of M.values())if(o.t==='gravgen'&&!o.keep&&o.w<0)o.w=W();   // the scattered generators are dead; only the four in the stair core still run
   for(const o of M.values()){
     if(o.keep||(Math.abs(o.i)<=3&&Math.abs(o.k)<=3))continue;   // the armoured core survives the blast
     for(const h of hits){
       const d=Math.hypot(o.i-h[0],o.j-h[1],o.k-h[2]);
-      if(d<h[3]){M.delete(key(o.i,o.j,o.k));break;}
+      if(d<h[3]||(d<h[4]&&rnd()<.07)){M.delete(key(o.i,o.j,o.k));break;}   // a few missing blocks round the wound too
       if(d<h[4]&&o.w<0){const p=.92-.55*(d-h[3])/(h[4]-h[3]);if(rnd()<p)o.w=W();}
     }
   }
   for(const o of M.values()){if(o.w<0&&!o.keep&&o.i>3&&rnd()<.012&&o.t==='hull')o.w=W();}   // years of neglect on the damaged half
   for(const o of M.values()){
-    const b=addBlock(g,o.i,o.j,o.k,o.t,o.f,o.s,1);if(!b)continue;
+    const b=addBlock(g,o.i,o.j,o.k,o.t,o.f,o.s,o.tier||1);if(!b)continue;
     if(o.w>=0)wipSetStage(g,b,o.w);
     else if(o.t==='cargo'&&rnd()<.7){const loot=[['fe',60+Math.floor(rnd()*140)],['si',20+Math.floor(rnd()*60)]];for(const[k,n]of loot)b.store[k]=n;}
   }
