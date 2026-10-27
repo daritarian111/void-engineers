@@ -255,7 +255,7 @@ body[data-tool="3"] #cross::before,body[data-tool="3"] #cross::after{background:
 .fin-big{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-variant-numeric:tabular-nums}
 .fin-big b{font:600 18px var(--display);letter-spacing:.04em}.fin-big small{display:block;color:var(--dim);font:500 11px var(--mono)}
 .dbar{height:6px;background:rgba(255,255,255,.1)}.dbar i{display:block;height:100%;width:0;background:var(--good)}
-.grow2{display:grid;grid-template-columns:minmax(0,1.3fr) .9fr .7fr .7fr 186px;gap:6px 8px;align-items:center;font-size:12px;font-variant-numeric:tabular-nums}
+.grow2{display:grid;grid-template-columns:minmax(0,1.3fr) .9fr .7fr .7fr auto;gap:6px 8px;align-items:center;font-size:12px;font-variant-numeric:tabular-nums}
 .grow2 .bt{justify-content:flex-end}
 .sstrip{display:grid;gap:4px;padding:8px 12px;background:rgba(143,227,245,.07);box-shadow:inset 0 0 0 1px rgba(143,227,245,.35)}
 .srow{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;font-size:13px}
@@ -488,7 +488,7 @@ body:not(.devon) #aux [data-tap=shot],body:not(.devon) #aux [data-tap=noclip]{di
 'use strict';
 /* =====================  Void Engineers  =====================
    Part A: renderer, sky, procedural voxel asteroids, particles */
-const GAME_VER='91';
+const GAME_VER='95';
 /* no page zoom while playing: pinch, double-tap and ctrl+wheel are swallowed */
 (()=>{const no=e=>{e.preventDefault();};
   for(const n of['gesturestart','gesturechange','gestureend','dblclick'])document.addEventListener(n,no,{passive:false});
@@ -1044,6 +1044,7 @@ const TIER_DEF={
   tank:{cost:C_TANK,fx:t=>'+'+Math.round(1500*STOR[t-1])+' L'},
   bigtank:{cost:C_BTNK,fx:t=>'+'+Math.round(6000*STOR[t-1])+' L'},
   thruster:{cost:C_PWR,fx:t=>Math.round(50*POW[t-1])+' kN'},
+  mthruster:{cost:C_PWR,fx:t=>Math.round(50*POW[t-1])+' kN'},
   bigthruster:{cost:C_PWR,fx:t=>Math.round(160*POW[t-1])+' kN'},
   gyro:{cost:C_PWR,fx:t=>SPIN[t-1]+'\u00d7 turn rate'},
   lgyro:{cost:C_PWR,fx:t=>(5*SPIN[t-1]).toFixed(1).replace('.0','')+'\u00d7 turn rate'}
@@ -1068,6 +1069,7 @@ const BDEF={
   door:{name:'Door',cost:{fe:20,si:10},mass:800,part:true,spin:true,spec:'automatic \u00b7 1 wide, 2 tall \u00b7 SPIN turns it \u00b7 0.8 t'},
   steps:{name:'Steps',cost:{fe:8},mass:500,part:true,spin:true,spec:'climbable \u00b7 SPIN turns the rise \u00b7 0.5 t'},
   thruster:{name:'Thruster',cost:{fe:12,si:8},mass:1500,thrust:50,spec:'50 kN · 1.5 t'},
+  mthruster:{name:'Maneuvering Thruster',cost:{fe:12,si:8},mass:1500,thrust:50,spec:'50 kN \u00b7 a hull block with a vent \u00b7 1.5 t'},
   bigthruster:{name:'Large Thruster',cost:{fe:30,si:20,pt:4},mass:4200,thrust:160,spec:'160 kN · 4.2 t'},
   gyro:{name:'Gyroscope',cost:{fe:15,si:10,pt:2},mass:3000,spec:'turn rate · 3.0 t'},
   seat:{name:'Pilot Seat',cost:{fe:15,si:12},mass:400,part:true,spin:true,spec:'sit to fly \u00b7 SPIN sets the ship\u2019s forward \u00b7 0.4 t'},
@@ -1087,13 +1089,14 @@ const BDEF={
   pad:{name:'Landing Pad',cost:{fe:30,si:10},mass:2000,spec:'6 m deck \u00b7 DOCK snaps craft from 12 m \u00b7 faster transfers \u00b7 2.0 t'},
   beacon:{name:'Trade Beacon',cost:{plate:3,constr:3,comp:1},mass:1500,panel:true,spec:'calls freight traders \u00b7 1.5 t'}
 };
-const BORDER=['hull','slope','corner','icorner','window','glass','glassd','door','steps','seat','light','powergen','thruster','bigthruster','gyro','lgyro','tank','bigtank','drill','bigdrill','cargo','leg','gravgen'];
+const BORDER=['hull','slope','corner','icorner','window','glass','glassd','door','steps','seat','light','powergen','thruster','mthruster','bigthruster','gyro','lgyro','tank','bigtank','drill','bigdrill','cargo','leg','gravgen'];
 const kf=(i,j,k)=>(i+512)+((j+512)<<10)+((k+512)<<20);
 
 const ICONS={
   hull:'<rect x="4" y="4" width="16" height="16"/><rect x="8" y="8" width="8" height="8" opacity=".5"/>',
   window:'<rect x="4" y="4" width="16" height="16"/><path d="M4 4l16 16M20 4L4 20" opacity=".45"/>',
   thruster:'<path d="M8 3h8v6H8z"/><path d="M9 9l-2 5h10l-2-5"/><path d="M10 16l2 5 2-5" opacity=".6"/>',
+  mthruster:'<path d="M5 5h14v14H5z"/><path d="M9 9h6M9 12h6M9 15h6" opacity=".7"/>',
   bigthruster:'<path d="M6 3h12v6H6z"/><path d="M7 9l-3 6h16l-3-6"/><path d="M8 17l2 4M12 17v4M16 17l-2 4" opacity=".6"/>',
   gyro:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 4v5M12 15v5M4 12h5M15 12h5" opacity=".5"/>',
   seat:'<path d="M7 4h6v10H7z"/><path d="M7 14h11v4H7z"/><path d="M9 18v3M16 18v3" opacity=".6"/>',
@@ -1305,6 +1308,82 @@ const GLASS_FRAME=(()=>{   // the 12 edges of a glass block as ONE mesh (draw ca
   return triGeo(P);
 })();
 const THR_SIDES=[MAT.thrT,MAT.thrT,MAT.noz,MAT.thrT,MAT.thrT,MAT.thrT];   // box faces +x -x +y -y +z -z; +y is the exhaust side
+/* ---- the vent of a Maneuvering Thruster, and the frames of blocks that are still being welded ---- */
+G.mtVent=new THREE.BoxGeometry(1.2,.08,1.2);G.mtFl=cone(.3,1.1,8);G.mtFlc=cone(.15,.7,8);
+G.mtBars=triGeo([].concat(boxTris(0,0,-.38,1.0,.08,.12),boxTris(0,0,0,1.0,.08,.12),boxTris(0,0,.38,1.0,.08,.12)));
+const WIP_LINE=new THREE.LineBasicMaterial({color:0x7fe0ff}),WIP_PLATE=std({color:0x8f99a8,roughness:.8,metalness:.3,side:THREE.DoubleSide});
+const wipOn=b=>b.wt>0&&b.wp<b.wt;
+const wipStage=b=>{const p=b.wp/b.wt;return p>=.75?2:p>=.5?1:0;};
+// every unfinished block of a grid is drawn by TWO meshes (frame lines, and plates), however many there are
+function rebuildWip(g){
+  g.wipDirty=false;
+  if(g.wipMeshes)for(const m of g.wipMeshes){g.group.remove(m);if(m.geometry&&m.geometry.dispose)m.geometry.dispose();}
+  g.wipMeshes=[];if(!g.wip||!g.wip.size)return;
+  const L=[],P=[],E=[[0,1],[1,3],[3,2],[2,0],[4,5],[5,7],[7,6],[6,4],[0,4],[1,5],[2,6],[3,7]];
+  for(const b of g.wip){
+    const n=b.n||1,cx=b.i*2,cy=(b.j+(n-1)/2)*2,cz=b.k*2,hy=n,h=1.0,pt=[];
+    for(let c=0;c<8;c++)pt.push([cx+((c&1)?h:-h),cy+((c&2)?hy:-hy),cz+((c&4)?h:-h)]);
+    for(const e of E)L.push(...pt[e[0]],...pt[e[1]]);
+    const s=b.fs|0;if(!s)continue;
+    const q=.97,x0=cx-q,x1=cx+q,y0=cy-hy*q,y1=cy+hy*q,z0=cz-q,z1=cz+q;
+    const quad=(a,b2,c,d)=>P.push(...a,...b2,...c,...a,...c,...d);
+    quad([x0,y0,z0],[x1,y0,z0],[x1,y0,z1],[x0,y0,z1]);   // floor
+    quad([x0,y0,z0],[x0,y0,z1],[x0,y1,z1],[x0,y1,z0]);   // -x wall
+    if(s>1){quad([x1,y0,z0],[x1,y0,z1],[x1,y1,z1],[x1,y1,z0]);quad([x0,y0,z0],[x1,y0,z0],[x1,y1,z0],[x0,y1,z0]);quad([x0,y1,z0],[x1,y1,z0],[x1,y1,z1],[x0,y1,z1]);}
+  }
+  if(L.length){const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(L),3));const m=new THREE.LineSegments(geo,WIP_LINE);m.frustumCulled=false;g.group.add(m);g.wipMeshes.push(m);}
+  if(P.length){const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(P),3));geo.computeVertexNormals&&geo.computeVertexNormals();const m=new THREE.Mesh(geo,WIP_PLATE);m.frustumCulled=false;g.group.add(m);g.wipMeshes.push(m);}
+}
+function wipShow(b){const s=wipStage(b);if(s===b.fs)return false;b.fs=s;return true;}   // true when the look of the frame changed
+function wipBegin(g,b){   // a block is placed as a bare frame; it must be welded up
+  let t=0;for(const k in BDEF[b.type].cost)t+=BDEF[b.type].cost[k];
+  b.wt=t;b.wp=0;b.wi={};b.fs=0;
+  if(b.node)b.node.visible=false;
+  (g.wip||(g.wip=new Set())).add(b);g.wipDirty=true;
+  if(b.type==='hull')g.hullDirty=true;
+  recalc(g);
+}
+function wipDone(g,b){
+  b.wt=0;b.wp=0;b.wi=null;b.rf=null;if(g.wip)g.wip.delete(b);g.wipDirty=true;
+  if(b.node)b.node.visible=true;
+  if(b.type==='hull')g.hullDirty=true;
+  recalc(g);applyTier(b);
+}
+// weld one unit of material in; true when it went in, else the name of the material that is missing
+function wipUnit(g,b){
+  const c=BDEF[b.type].cost;let k=null;for(const x in c)if((b.wi[x]||0)<c[x]){k=x;break;}
+  if(!k){wipDone(g,b);return true;}
+  if(!DEV){if(haveK(k)<1)return k;spend({[k]:1});}
+  b.wi[k]=(b.wi[k]||0)+1;b.wp++;
+  if(b.wp>=b.wt)wipDone(g,b);else if(wipShow(b)){g.wipDirty=true;recalc(g);}
+  return true;
+}
+// one grinder hit: the block comes down a stage (100, 75, 50, frame), giving back 70% of what comes out; true when it is gone
+function grindStep(g,b){
+  const c=BDEF[b.type].cost;
+  if(DEV){for(const k in c)gain(k,Math.floor(c[k]*.7));removeBlock(g,b);return true;}
+  if(!wipOn(b)){   // a finished block starts coming apart: whatever it held spills out first
+    const spill=b.store&&Object.keys(b.store).length?b.store:null;b.store=BDEF[b.type].machine||b.type==='cargo'?{}:b.store;
+    refundJob(b,g);if(b.queue)b.queue.length=0;
+    wipBegin(g,b);b.wi=Object.assign({},c);b.wp=b.wt;b.rf={};
+    if(spill)relocStore(g,spill);
+  }
+  if(b.wp<=0){removeBlock(g,b);return true;}
+  const lv=[...new Set([0,Math.ceil(b.wt*.5),Math.ceil(b.wt*.75)])].filter(x=>x<b.wt).sort((p,q)=>p-q);
+  let to=0;for(const x of lv)if(x<b.wp)to=x;
+  let n=b.wp-to;b.rf=b.rf||{};
+  const ks=Object.keys(c).reverse();   // the last thing welded in comes out first
+  for(const k of ks){const t=Math.min(n,b.wi[k]||0);if(t<=0)continue;b.wi[k]-=t;n-=t;b.rf[k]=(b.rf[k]||0)+t*.7;const r=Math.floor(b.rf[k]+1e-6);if(r>0){b.rf[k]-=r;gain(k,r);}}
+  b.wp=to;
+  if(wipShow(b))g.wipDirty=true;recalc(g);
+  return false;
+}
+function wipSetStage(g,b,s){   // a block that was left half built: stage 0 frame, 1 half, 2 three quarters
+  wipBegin(g,b);b.wp=s===0?Math.floor(b.wt*.25):s===1?Math.ceil(b.wt*.5):Math.ceil(b.wt*.75);if(b.wp>=b.wt)b.wp=b.wt-1;
+  let n=b.wp;for(const k in BDEF[b.type].cost){const t=Math.min(n,BDEF[b.type].cost[k]);b.wi[k]=t;n-=t;}
+  b.fs=-1;wipShow(b);g.wipDirty=true;
+}
+function wipRestore(g,b,wi){wipBegin(g,b);let n=0;for(const k in wi){b.wi[k]=wi[k];n+=wi[k];}b.wp=Math.min(n,b.wt-1);b.fs=-1;wipShow(b);g.wipDirty=true;recalc(g);}
 function buildBlock(type,f,ghostMat,rot,tier){
   const root=new THREE.Group(),inner=new THREE.Group();root.add(inner);
   if(f)inner.quaternion.setFromUnitVectors(UPV,new V3(f[0],f[1],f[2]));
@@ -1323,6 +1402,8 @@ function buildBlock(type,f,ghostMat,rot,tier){
       add(G.box,MAT.win,0,0,0);break;   // framed glass pane on every face
     case 'thruster':
       add(G.thBase,THR_SIDES,0,-.5,0);add(G.thNoz,MAT.noz,0,.5,0);mkFlame(G.fl,G.flc,1.05);break;
+    case 'mthruster':
+      add(G.box,MAT.hull,0,0,0);add(G.mtVent,MAT.noz,0,1.0,0);add(G.mtBars,MAT.metal,0,1.04,0);mkFlame(G.mtFl,G.mtFlc,1.05);break;
     case 'bigthruster':
       add(G.bgBase,THR_SIDES,0,-.43,0);add(G.bgNoz,MAT.noz,0,.62,0);mkFlame(G.bgFl,G.bgFlc,1.25);break;
     case 'gyro':
@@ -1420,11 +1501,13 @@ function blockQuat(b){   // the rotation of a block's model: its facing, then qu
 }
 const rnd=v=>{v.x=Math.round(v.x);v.y=Math.round(v.y);v.z=Math.round(v.z);return v;};
 function recalc(g){
+  if(g.bulk)return;   // a big structure is being built in one go; it is worked out once at the end
   let M=0,gy=0,fc=400,bs=2;const c=new V3();
   g.ver++;
   g.T=[[0,0],[0,0],[0,0]];g.seat=null;g.drills=[];g.thr=[];g.gravs=[];g.machines=[];g.cargos=[];g.beacons=[];g.legs=[];g.pads=[];g.lights=[];g.gens=[];g.doors=[];g.steps=[];
   for(const b of g.blocks.values()){
     const d=BDEF[b.type],n=b.n||1,m=d.machine?d.mass*n/2:d.mass,x=b.i*2,y=(b.j+(n-1)/2)*2,z=b.k*2;
+    if(b.wt>0&&b.wp<b.wt){const mm=Math.max(40,m*b.wp/b.wt);M+=mm;c.x+=x*mm;c.y+=y*mm;c.z+=z*mm;bs=Math.max(bs,Math.hypot(x,y,z)+2.6+(n-1)*2);continue;}   // still a frame: it holds the ship together and weighs what has been welded in, but does nothing
     M+=m;c.x+=x*m;c.y+=y*m;c.z+=z*m;
     if(d.thrust&&b.f){const a=b.f[0]?0:b.f[1]?1:2,s=-b.f[a];g.T[a][s>0?1:0]+=d.thrust*POW[tierOf(b)-1];g.thr.push(b);}
     if(b.type==='gyro')gy+=SPIN[tierOf(b)-1];else if(b.type==='lgyro')gy+=5*SPIN[tierOf(b)-1];
@@ -1460,10 +1543,10 @@ function rebuildHull(g){
   g.hullDirty=false;
   const S=[0,1,2,3].map(()=>({P:[],N:[],U:[]}));   // plain plating, then the three painted looks
   for(const b of g.blocks.values()){
-    if(b.type!=='hull')continue;
+    if(b.type!=='hull'||(b.wt>0&&b.wp<b.wt))continue;
     for(let fi=0;fi<6;fi++){
       const f=HF[fi],d=f[0],nb=g.blocks.get(kf(b.i+d[0],b.j+d[1],b.k+d[2]));
-      if(nb&&nb.type==='hull')continue;
+      if(nb&&nb.type==='hull'&&!(nb.wt>0&&nb.wp<nb.wt))continue;
       const cx=b.i*2+d[0],cy=b.j*2+d[1],cz=b.k*2+d[2],u=f[1],v=f[2];
       const pt=(su,sv)=>[cx+u[0]*su+v[0]*sv,cy+u[1]*su+v[1]*sv,cz+u[2]*su+v[2]*sv];
       const cls=b.pf?b.pf[fi]|0:0,tg=S[cls];
@@ -1529,6 +1612,7 @@ function removeBlock(g,b){
   const spill=b.store&&Object.keys(b.store).length?b.store:null;b.store=null;
   refundJob(b,g);
   g.blocks.delete(kf(b.i,b.j,b.k));for(let m=1;m<(b.n||1);m++)g.occ.delete(kf(b.i,b.j+m,b.k));
+  if(g.wip&&g.wip.delete(b))g.wipDirty=true;
   if(b.node)g.group.remove(b.node);else if(b.type==='hull')g.hullDirty=true;
   if(!g.blocks.size){clearHull(g);if(g.trade&&g.trade.ship){scene.remove(g.trade.ship);g.trade.ship=null;}scene.remove(g.group);const n=grids.indexOf(g);if(n>=0)grids.splice(n,1);return;}
   recalc(g);
@@ -1541,6 +1625,8 @@ function glassdNormal(f,s){   // unit-ish normal (components 0 or +-1) of an ang
 const seals=b=>{const d=BDEF[b.type];return !d.ghost&&b.type!=='seat'&&b.type!=='glass'&&b.type!=='glassd';};
 function interiorOf(g){
   if(g._int&&g._intVer===g.ver)return g._int;
+  if(g._int&&g._int.size>3000&&performance.now()-g._intT<1500)return g._int;   // a huge station: don't redo this every time a block is welded
+  g._intT=performance.now();
   g._intVer=g.ver;
   const out=new Set();g._int=out;
   let i0=1e9,j0=1e9,k0=1e9,i1=-1e9,j1=-1e9,k1=-1e9;
@@ -1819,6 +1905,8 @@ function toast(msg,kind){
 }
 function addRes(k,n){const m=Math.min(n,packSpace());if(m<n)notifyFull('Pack');if(m>0){inv[k]+=m;flash[k]=.7;hudDirty=true;}return m;}
 let DEV=false;   // troubleshooting: free building and upgrades
+const canStart=t=>{if(DEV)return true;const k=Object.keys(BDEF[t].cost)[0];return haveK(k)>=1;};   // a block is placed as a frame for 1 unit; the rest is welded in
+let weldAcc=0;const WELD_RATE=5;
 const canAfford=c=>{if(DEV)return true;for(const k in c)if(haveK(k)<c[k])return false;return true;};
 const hotbar=$('hotbar');
 hotbar.innerHTML='<button id="pick" aria-label="Choose block"></button><div class="binfo" id="binfo"></div>';
@@ -1835,7 +1923,7 @@ function refreshBar(){
   const sig=type+'|'+orient+'|'+spin+'|'+inGrav+'|'+DEV+'|'+Object.keys(d.cost).map(haveK).join(',')+'|'+player.build;
   if(sig===lastSig)return;lastSig=sig;
   document.body.classList.toggle('shaped',!!(d.shape||d.spin));
-  const pk=$('pick');pk.innerHTML=icon(type);pk.classList.toggle('na',!canAfford(d.cost)||(isStn(type)&&!inGrav));
+  const pk=$('pick');pk.innerHTML=icon(type);pk.classList.toggle('na',!canStart(type)||(isStn(type)&&!inGrav));
   let h='<span class="nm">'+d.name+'</span>';
   for(const k in d.cost)h+='<span class="cost'+(DEV||haveK(k)>=d.cost[k]?'':' no')+'" style="--c:'+RCOL[k]+'"><i></i>'+d.cost[k]+' <u>'+SHORT[k]+'</u></span>';
   if(isStn(type)&&!inGrav)h+='<span class="cost no">needs gravity field</span>';
@@ -1995,12 +2083,11 @@ function buildUpdate(dt){
     cutBox.quaternion.copy(cg.group.quaternion);cutBox.visible=true;
   }else cutBox.visible=false;
   if(wantGrind&&placeCD<=0&&cutTarget){
-    placeCD=.22;
-    const b=cutTarget.h.b,g=cutTarget.g,c=BDEF[b.type].cost;
-    for(const k in c)gain(k,Math.floor(c[k]*.7));
+    placeCD=.16;
+    const b=cutTarget.h.b,g=cutTarget.g;
     const w=g.group.localToWorld(new V3(b.i*2,b.j*2,b.k*2));
     for(let i=0;i<10;i++)spawnP(w.x,w.y,w.z,(Math.random()-.5)*7,(Math.random()-.5)*7,(Math.random()-.5)*7,0xffb23a,.6);
-    removeBlock(g,b);hudDirty=true;cutBox.visible=false;
+    const gone=grindStep(g,b);hudDirty=true;if(gone)cutBox.visible=false;
     if(player.ship===g&&!g.seat)exitShip();
   }
   if(player.tool===4){   // paint: aim at a hull face and fire
@@ -2022,6 +2109,19 @@ function buildUpdate(dt){
     return;
   }
   if(!torch)return;
+  // an unfinished block under the crosshair: hold the torch on it to weld it up
+  const wk=(pk&&pk.kind==='blk'&&pk.t<9&&wipOn(pk.h.b))?pk:null;
+  if(wk){
+    hideGhost();
+    if(fire){
+      weldAcc+=dt*WELD_RATE;let lack=null,did=0;const wb=wk.h.b;
+      while(weldAcc>=1&&wipOn(wb)){weldAcc-=1;const r=wipUnit(wk.g,wb);if(r!==true){lack=r;weldAcc=0;break;}did++;}
+      if(did){const w=wk.g.group.localToWorld(new V3(wb.i*2,wb.j*2,wb.k*2));for(let i=0;i<2;i++)spawnP(w.x,w.y,w.z,(Math.random()-.5)*5,(Math.random()-.5)*5,(Math.random()-.5)*5,0x9fe8ff,.35);hudDirty=true;}
+      if(lack&&placeCD<=0){placeCD=.8;toast('Need '+SHORT[lack]+' to keep welding','bad');}
+    }else weldAcc=0;
+    return;
+  }
+  weldAcc=0;
   // torch: ghost preview and placement
   const type=BORDER[player.sel],def=BDEF[type];
   let parent=null,cell=null,face=null,world=null,newGrid=false,valid=false;
@@ -2057,25 +2157,26 @@ function buildUpdate(dt){
   if(isStn(type)&&!inGrav)valid=false;
   if(type==='lightbar'&&!(parent&&parent.station))valid=false;   // Light Bar: stations only
   if(type==='light'&&parent&&parent.station)valid=false;   // Light: ships only
-  const afford=canAfford(def.cost);
+  const afford=canStart(type);
   ghost.visible=true;
   if(parent){ghost.position.copy(world);ghost.quaternion.copy(parent.group.quaternion);}
   else{ghost.position.copy(world);ghost.quaternion.identity();}
   setGhostOK(valid&&afford);
   if(fire&&placeCD<=0){
     placeCD=.28;
-    if(!afford)toast('Not enough material for '+def.name,'bad');
+    if(!afford)toast('Need '+SHORT[Object.keys(def.cost)[0]]+' to start a '+def.name,'bad');
     else if(!valid)toast(isStn(type)&&!inGrav?'Station blocks need a gravity field':type==='lightbar'?'Light Bars go on stations. Use a Light on ships':type==='light'&&parent&&parent.station?'Lights are for ships. Use a Light Bar on stations':'Blocked','bad');
     else{
-      spend(def.cost);
+      let nb=null,ng=parent;
       if(newGrid){
-        const g=makeGrid('GRID-'+String(++gridSeq).padStart(2,'0'),world,null);
-        addBlock(g,0,0,0,type,f,sp);markGrid(g);
+        const g=makeGrid('GRID-'+String(++gridSeq).padStart(2,'0'),world,null);ng=g;
+        nb=addBlock(g,0,0,0,type,f,sp);markGrid(g);
       }else if(legStart){
         const q=parent.group.quaternion.clone(),g=makeGrid('SHIP-'+String(++gridSeq).padStart(2,'0'),world,q);
-        addBlock(g,0,0,0,'leg',f,0);g.lock={pos:world.clone(),q,h:parent};markGrid(g);
+        nb=addBlock(g,0,0,0,'leg',f,0);ng=g;g.lock={pos:world.clone(),q,h:parent};markGrid(g);
         toast('New ship '+g.name+' started, docked to '+parent.name+'. Build it up from the leg.','good');
-      }else{if(!addBlock(parent,cell[0],cell[1],cell[2],type,f,sp)){toast('Blocked','bad');return;}}
+      }else{nb=addBlock(parent,cell[0],cell[1],cell[2],type,f,sp);if(!nb){toast('Blocked','bad');return;}}
+      if(DEV)spend(def.cost);else if(nb){wipBegin(ng,nb);wipUnit(ng,nb);}
       hudDirty=true;player.lastBuilt=type;
       for(let i=0;i<10;i++)spawnP(world.x,world.y,world.z,(Math.random()-.5)*6,(Math.random()-.5)*6,(Math.random()-.5)*6,0x9fe8ff,.5);
     }
@@ -2363,6 +2464,93 @@ function spawnStation(){
   addBlock(g,-4,1,1,'gravgen',[0,1,0]);
   g.fuel=0;
 }
+
+/* ---------- MERIDIAN HUB: a derelict four-deck station, round and stepped like a pyramid, the algae farm blown open on one side ---------- */
+function spawnDerelict(){
+  const g=makeGrid('MERIDIAN HUB',new V3(420,10,300),null);g.station=true;g.kind='derelict';g.bulk=true;
+  let sd=7;const rnd=()=>{sd|=0;sd=sd+0x6D2B79F5|0;let t=Math.imul(sd^sd>>>15,1|sd);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};
+  const M=new Map(),key=(i,j,k)=>kf(i,j,k);
+  const put=(i,j,k,t,f,s,feat)=>{M.set(key(i,j,k),{i,j,k,t,f:f||null,s:s||0,feat:!!feat,w:-1});};
+  const del=(i,j,k)=>M.delete(key(i,j,k));
+  const D=(i,k)=>Math.hypot(i,k),SH=(i,k)=>Math.max(Math.abs(i),Math.abs(k));
+  const LV=[{r:30,f:0,c:9},{r:20,f:9,c:15},{r:10,f:15,c:21},{r:6,f:21,c:27}];   // floor slab row, ceiling slab row (the ceiling of one deck is the floor of the next)
+  const slabs=[0,9,15,21,27];
+  for(const L of LV){
+    const R=L.r+.5;
+    for(let i=-L.r-1;i<=L.r+1;i++)for(let k=-L.r-1;k<=L.r+1;k++){
+      if(D(i,k)>R)continue;
+      const edge=D(i+1,k)>R||D(i-1,k)>R||D(i,k+1)>R||D(i,k-1)>R;
+      for(const s of[L.f,L.c]){if(L.f===0||s!==L.f)put(i,s,k,'hull');}   // each deck adds its own ceiling; only the bottom deck adds a floor
+      if(edge)for(let j=L.f+1;j<L.c;j++){
+        const mid=j===Math.round((L.f+L.c)/2)&&(L.r<=10),ang=Math.atan2(k,i);
+        put(i,j,k,mid&&Math.round(ang*8/Math.PI)%2===0?'window':'hull');
+      }
+    }
+  }
+  // the central shaft: a 3x3 pillar, a spiral of steps around it, and a wall ring with a doorway at each deck
+  for(const s of slabs)for(let i=-2;i<=2;i++)for(let k=-2;k<=2;k++)if(s!==27&&s!==0)del(i,s,k);   // the slabs are open where the stair passes
+  for(let j=1;j<=26;j++){
+    for(let i=-1;i<=1;i++)for(let k=-1;k<=1;k++)put(i,j,k,'hull');
+    for(let i=-3;i<=3;i++)for(let k=-3;k<=3;k++)if(SH(i,k)===3)put(i,j,k,'hull');
+  }
+  for(const s of slabs)for(let i=-1;i<=1;i++)for(let k=-1;k<=1;k++)put(i,s,k,'hull');
+  const RING=[[-2,-2],[-1,-2],[0,-2],[1,-2],[2,-2],[2,-1],[2,0],[2,1],[2,2],[1,2],[0,2],[-1,2],[-2,2],[-2,1],[-2,0],[-2,-1]];
+  // three steps up each side and a flat landing at every corner; the landings that line up with a deck floor get a doorway
+  const DOORS=[[-2,0,-2]];
+  {let idx=1,h=0;
+    for(;;){
+      const a=RING[idx%16];
+      if(idx%4===0){if(h>0){put(a[0],h,a[1],'hull');}DOORS.push([a[0],h,a[1]]);if(h>=21)break;}
+      else{h++;const b=RING[(idx+1)%16],dx=b[0]-a[0],dz=b[1]-a[1],sp=dx>0?0:dz<0?1:dx<0?2:3;put(a[0],h,a[1],'steps',[0,1,0],sp,true);}   // steps rise toward +x; each quarter turn swings the rise round
+      idx++;
+    }
+  }
+  for(const d of DOORS){
+    if(![0,9,15,21].includes(d[1]))continue;
+    const ox=Math.abs(d[0])===2?Math.sign(d[0]):0,oz=ox?0:Math.sign(d[2]);
+    for(let m=1;m<=3;m++)del(d[0]+ox,d[1]+m,d[2]+oz);
+  }
+  // the hangar: a wide opening in the shipyard wall on the undamaged side
+  for(let j=1;j<=8;j++)for(let i=-31;i<=31;i++)for(let k=-31;k<=31;k++){
+    if(D(i,k)<27)continue;const ang=Math.atan2(k,i),dA=Math.abs(Math.abs(ang)-Math.PI);if(dA<.31&&j<=7)del(i,j,k);
+  }
+  // fittings: [type, radius, degrees, deck floor row, wip stage (-1 finished)]
+  const pol=(r,dg)=>[Math.round(r*Math.cos(dg*Math.PI/180)),Math.round(r*Math.sin(dg*Math.PI/180))];
+  const fit=(t,r,dg,j,w,f)=>{const[i,k]=pol(r,dg);const h=(t==='assembler'||t==='refinery')?2:1;for(let m=0;m<h;m++){const o=M.get(key(i,j+m,k));if(o&&!(o.t==='hull'&&false))M.delete(key(i,j+m,k));}M.set(key(i,j,k),{i,j,k,t,f:f||(t==='gravgen'?[0,1,0]:null),s:0,feat:true,w});};
+  const W=()=>Math.floor(rnd()*3);
+  for(const[r,dg,w] of[[14,135,-1],[14,225,-1],[14,45,1],[14,315,2],[26,90,0],[26,270,2],[26,160,-1],[26,200,-1],[20,0,0],[8,180,1]])fit('gravgen',r,dg,1,w);
+  for(const[r,dg,w] of[[12,90,-1],[12,270,-1],[16,0,1],[16,180,-1]])fit('gravgen',r,dg,10,w);
+  for(const[r,dg,w] of[[7,90,2],[7,270,-1]])fit('gravgen',r,dg,16,w);
+  fit('gravgen',5,20,22,-1);
+  for(const[r,dg] of[[22,150],[22,165],[22,195],[22,210],[18,120],[18,240]])fit('cargo',r,dg,1,-1);
+  for(const[r,dg] of[[22,60],[22,300]])fit('cargo',r,dg,1,W());
+  for(const[r,dg] of[[15,140],[15,220]])fit('cargo',r,dg,10,-1);
+  for(const[r,dg] of[[15,80],[15,280],[10,0]])fit('cargo',r,dg,10,W());
+  fit('assembler',16,100,10,W());fit('assembler',16,260,10,-1);fit('refinery',16,120,10,W());fit('refinery',16,240,10,W());
+  fit('beacon',24,180,1,1);fit('pad',27,150,1,-1);fit('pad',27,210,1,W());
+  for(const[r,dg] of[[5,0],[5,60],[5,120],[5,180],[5,240],[5,300],[8,30],[8,90],[8,150],[8,210],[8,270],[8,330]])fit('tank',r,dg,16,W()>0?W():-1);   // the farm's vats
+  fit('seat',4.4,200,22,-1,[0,1,0]);
+  for(const j of[3,8,13,18,23])M.set(key(0,j,0),{i:0,j,k:0,t:'gravgen',f:[0,1,0],s:0,feat:true,keep:true,w:-1});   // gravity generators buried in the pillar keep the stairwell walkable
+  for(const[r,dg] of[[30,0],[26,90],[26,180],[26,270]]){}
+  // the blast: the algae deck blew out toward +x; everything near it is gone, and the rim is half rebuilt
+  const hits=[[11,18,0,9.5,15],[26,5,18,4.5,8],[19,12,-16,3.5,6.5]];
+  for(const o of M.values()){
+    if(o.keep||(Math.abs(o.i)<=3&&Math.abs(o.k)<=3))continue;   // the armoured core survives the blast
+    for(const h of hits){
+      const d=Math.hypot(o.i-h[0],o.j-h[1],o.k-h[2]);
+      if(d<h[3]){M.delete(key(o.i,o.j,o.k));break;}
+      if(d<h[4]&&o.w<0){const p=.92-.55*(d-h[3])/(h[4]-h[3]);if(rnd()<p)o.w=W();}
+    }
+  }
+  for(const o of M.values()){if(o.w<0&&!o.keep&&o.i>3&&rnd()<.012&&o.t==='hull')o.w=W();}   // years of neglect on the damaged half
+  for(const o of M.values()){
+    const b=addBlock(g,o.i,o.j,o.k,o.t,o.f,o.s,1);if(!b)continue;
+    if(o.w>=0)wipSetStage(g,b,o.w);
+    else if(o.t==='cargo'&&rnd()<.7){const loot=[['fe',60+Math.floor(rnd()*140)],['si',20+Math.floor(rnd()*60)],['ice',30+Math.floor(rnd()*80)]];for(const[k,n]of loot)b.store[k]=n;}
+  }
+  g.bulk=false;recalc(g);g.hullDirty=true;g.wipDirty=true;g.fuel=0;
+  return g;
+}
 /* The PIONEER: a ship you walk aboard. Forward is -z, starboard +x, up +y. Floor at j=0, walkable decks j=1..2, ceiling j=3.
    Interior, front to back (port | centre | starboard): 3 wide with the pilot seat, a corridor, the door (port side), a corridor,
    the Assembler | aisle | Refinery, a corridor, and the cargo container at the stern. 11 floor tiles. */
@@ -2432,7 +2620,8 @@ function updateHUD(dt){
       // names only for what you can use right now; the ship's own name once you have looked at it for two seconds
       const bd=BDEF[pk.h.b.type],pb=pk.h.b;
       if(aimG!==pk.g){aimG=pk.g;aimT=0;}else aimT+=dt;
-      if((bd.machine||bd.panel||pb.type==='seat')&&pk.t<=USE_R+1.2&&!player.build){
+      if(wipOn(pb)&&pk.t<=9){t1=bd.name+' \u00b7 '+Math.round(100*pb.wp/pb.wt)+'% built';t2=player.tool===1?'Hold the Torch to weld it':'Needs welding with the Torch';}
+      else if((bd.machine||bd.panel||pb.type==='seat')&&pk.t<=USE_R+1.2&&!player.build){
         t1=bd.name;
         if(bd.machine)t2=['Idle','Working','Waiting for material'][pb.state||0];else if(bd.panel)t2=panelSummary(pk.g,pb);
       }else if(aimT>=2)t1=pk.g.name;
@@ -2460,7 +2649,7 @@ function driftGrids(dt){
 let last=0;
 function update(dt){
   hitCool-=dt;
-  for(const g of grids){if(g.hullDirty)rebuildHull(g);g.group.updateMatrixWorld(true);}
+  for(const g of grids){if(g.hullDirty)rebuildHull(g);if(g.wipDirty)rebuildWip(g);g.group.updateMatrixWorld(true);}
   beamN=0;for(const m of beams)m.visible=false;
   const pg=player.ship;
   if(pg){if(!pg.seat||!grids.includes(pg))exitShip();}
@@ -2628,7 +2817,7 @@ Object.assign(RCOL,{feI:'#e0905a',siI:'#d3dcec',ptI:'#ffe9a0',plate:'#9fb2c8',co
 const SHORT={fe:'Iron',si:'Silicon',ice:'Ice',pt:'Platinum',feI:'Iron ingot',siI:'Silicon ingot',ptI:'Platinum ingot',plate:'Plate',constr:'Construction',motor:'Motor',comp:'Computer'};
 const ALLK=Object.keys(inv);
 // ship and structure parts can be built anywhere; station machines need a gravity field
-const PAGE_BASIC=['hull','slope','corner','icorner','window','glass','glassd','door','steps','seat','light','powergen','thruster','bigthruster','gyro','lgyro','tank','bigtank','drill','bigdrill','cargo','refinery','assembler','leg','gravgen'];
+const PAGE_BASIC=['hull','slope','corner','icorner','window','glass','glassd','door','steps','seat','light','powergen','thruster','mthruster','bigthruster','gyro','lgyro','tank','bigtank','drill','bigdrill','cargo','refinery','assembler','leg','gravgen'];
 const PAGE_STN=['beacon','pad','lightbar'];
 let page=0,inGrav=false,booted=false;
 BORDER.length=0;BORDER.push(...PAGE_BASIC,...PAGE_STN);   // one list; the picker groups it
@@ -3190,7 +3379,7 @@ function recipeRow(id){
 }
 function aimedMachine(maxD){
   aim();const pk=pickAll(maxD);
-  if(pk&&pk.kind==='blk'&&(BDEF[pk.h.b.type].machine||BDEF[pk.h.b.type].panel))return{g:pk.g,b:pk.h.b};
+  if(pk&&pk.kind==='blk'&&(BDEF[pk.h.b.type].machine||BDEF[pk.h.b.type].panel)&&!wipOn(pk.h.b))return{g:pk.g,b:pk.h.b};
   return null;
 }
 const REACH=15,_rw=new V3(),_rw2=new V3();
@@ -3388,7 +3577,7 @@ function powerSummary(g){
   if(!p.cap)return (nl?nl+' lights · ':'')+'no Power Generator';
   return (p.on?(p.grav?'gravity on · ':'')+(nl?Math.min(nl,Math.max(0,p.run-gl))+'/'+nl+' lights powered':'powered'):'unpowered — needs hydrogen or ice')+' · capacity '+p.cap;
 }
-function startXfer(from,to){xfer={from,to,acc:0,moved:0};}
+function startXfer(from,to,only){xfer={from,to,acc:0,moved:0,only:only||null};}
 function dockTick(dt){
   tutNoteTick();tutTick(dt);upbTick(dt);dockBtnTick(dt);powerTick(dt);
   dockAcc+=dt;if(dockAcc<.25)return;
@@ -3411,11 +3600,12 @@ function dockTick(dt){
       let did=0;
       for(const k of ITEMS){
         if(n<=0)break;
+        if(xfer.only&&k!==xfer.only)continue;
         const m=Math.min(n,gridHas(f,k),gridSpace(t));
         if(m>0){takeFromGrid(f,k,m);addToGrid(t,k,m);n-=m;did+=m;}
       }
       xfer.moved+=did;
-      if(n>0&&did===0){toast(xfer.moved?'Transfer complete: '+xfer.moved+' units to '+t.name:(gridUsed(f)?t.name+' storage is full':'Nothing to move'),xfer.moved?'good':'bad');xfer=null;}
+      if(n>0&&did===0){toast(xfer.moved?'Transfer complete: '+xfer.moved+' units to '+t.name:((xfer.only?gridHas(f,xfer.only):gridUsed(f))?t.name+' storage is full':'Nothing to move'),xfer.moved?'good':'bad');xfer=null;}
     }
   }
 }
@@ -3460,7 +3650,7 @@ function connGrid(){   // the ship you fly, the station whose field you stand in
   for(const g of grids){const d=g.group.position.distanceTo(player.pos)-g.bs;if(d<5&&d<bd){bd=d;best=g;}}
   return best;
 }
-const upgBlocks=g=>[...g.blocks.values()].filter(b=>TIER_DEF[b.type]).sort((p,q)=>p.type<q.type?-1:p.type>q.type?1:p.uid-q.uid);
+const upgBlocks=g=>[...g.blocks.values()].filter(b=>TIER_DEF[b.type]&&!wipOn(b)).sort((p,q)=>p.type<q.type?-1:p.type>q.type?1:p.uid-q.uid);
 function renameGrid(g,nm){
   if(!g)return;
   nm=String(nm||'').replace(/[<>]/g,'').trim().slice(0,18);
@@ -3478,12 +3668,12 @@ function openUpg(g0){
   upgG=g;const n={};
   const ub=upgBlocks(g);
   const h=tabsHTML('upg',g)+'<div class="mcard"><div class="mh"><b>Name</b></div><div class="bt" style="justify-content:flex-start"><input id="gname" maxlength="18" autocomplete="off" spellcheck="false" value="'+g.name.replace(/"/g,'&quot;')+'"><button class="rb up" data-act="rename">Rename</button></div></div>'+
+    '<div class="mcard"><div class="mh"><b>Power</b><span id="pwst"></span></div><div class="qrow">Shut the generators down so an idle ship stops burning hydrogen and ice. Lights and gravity go off too.</div><div class="bt" style="justify-content:flex-start"><button class="rb up" data-act="power" id="pwbtn"></button></div></div>'+
     (ub.length?'<div class="qrow">Upgrades: press and hold an item to see what its upgrade does.</div>':'<div class="qrow">Nothing on '+g.name+' can be upgraded.</div>')+'<div class="plist">'+upgBlocks(g).map(b=>{
     n[b.type]=(n[b.type]||0)+1;
     return '<div class="urow" data-u="'+b.uid+'"><span class="pi">'+icon(b.type)+'</span><span><b>'+BDEF[b.type].name+' '+n[b.type]+'</b><small class="ut"></small></span>'+
       '<span class="pc uc"></span><button class="rb up" data-act="upg2" data-u="'+b.uid+'">Upgrade</button><div class="ud" hidden></div></div>';
   }).join('')+'</div>'+
-    '<div class="mcard"><div class="mh"><b>Power</b><span id="pwst"></span></div><div class="qrow">Shut the generators down so an idle ship stops burning hydrogen and ice. Lights and gravity go off too.</div><div class="bt" style="justify-content:flex-start"><button class="rb up" data-act="power" id="pwbtn"></button></div></div>'+
     '<div class="mcard"><div class="mh"><b>Export plans</b></div><div class="qrow">Copies this build as text. Paste it to Claude to make it a starting ship.</div><div class="bt" style="justify-content:flex-start"><button class="rb up" data-act="export">Export ship</button></div><textarea id="expout" readonly rows="5" hidden style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.06);border:0;box-shadow:inset 0 0 0 1px var(--edge);color:var(--ink);font:11px var(--mono);user-select:text;-webkit-user-select:text;touch-action:pan-y"></textarea></div>';
   openSheet('upg','Control panel',h);
   setT($('pwbtn'),g.powerOff?'Power ON':'Power OFF');setT($('pwst'),g.powerOff?'powered down':'running');
@@ -3576,7 +3766,7 @@ function buildTrade(sg){
     (sg.length>1?'<div class="mfoot"><button class="rb" data-act="moveall" id="t-move"></button></div>':'')+
     '<div class="grow2 h"><span>Goods</span><span>Price</span><span>Your pack</span><span id="t-here">Here</span><span></span></div>'+
     ITEMS.map(k=>'<div class="grow2" data-k="'+k+'"><span class="nm"><i style="'+ITEM_ICON(k)+'"></i>'+SHORT[k]+'</span><span class="pr"></span><span class="cg"></span><span class="wh"></span>'+
-      '<span class="bt"><button class="rb" data-act="load" data-k="'+k+'" data-n="50">+50</button><button class="rb" data-act="load" data-k="'+k+'" data-n="99999">All in</button><button class="rb" data-act="take" data-k="'+k+'" data-n="99999">Take</button></span></div>').join('')+'</div>';
+      '<span class="bt"><button class="rb" data-act="load" data-k="'+k+'" data-n="50">+50</button><button class="rb" data-act="load" data-k="'+k+'" data-n="99999">All in</button><button class="rb" data-act="take" data-k="'+k+'" data-n="99999">Take</button><button class="rb mvi" data-act="moveitem" data-k="'+k+'">Move</button></span></div>').join('')+'</div>';
   h+='<div class="mcard"><div class="mh"><b>Freight</b><span id="t-fname"></span><em class="st" id="t-state">—</em></div><div class="qrow" id="t-info"></div>'+
     '<div class="mfoot"><button class="rb up" data-act="call" id="t-call">Call trader now · '+fmtCr(RUSH_FEE)+' cr</button></div></div>';
   h+='<div class="mcard" id="t-fac"></div>';
@@ -3670,6 +3860,7 @@ function tradeRefresh(){
     const k=row.dataset.k,pr=row.querySelector('.pr');
     setT(pr,fmtCr(price[k])+(pdir[k]>0?' ▲':pdir[k]<0?' ▼':''));pr.className='pr '+(pdir[k]>0?'up2':pdir[k]<0?'dn2':'');
     setT(row.querySelector('.cg'),String(inv[k]|0));setT(row.querySelector('.wh'),String(wt.t[k]||0));
+    const mvb=row.querySelector('.mvi');if(mvb){const ot=moveTarget(sel);mvb.style.display=ot?'':'none';mvb.disabled=!(wt.t[k]>0);}
   }
   const fac=$('t-fac');
   const list=sel?sel.cargos.filter(b=>b.type==='cargo').concat(sel.beacons):[];
@@ -3721,6 +3912,13 @@ $('tbody').addEventListener('click',e=>{
     else if(a==='moveall'&&sel&&undocked(sel)){toast(sel.name+' is not docked. Set it down on a station with its Landing Legs to move cargo between them.','bad');}
     else if(a==='load'){if(!sel)return;const n=loadItem(sel,btn.dataset.k,+btn.dataset.n);if(!n)toast(inv[btn.dataset.k]>0?sel.name+' storage is full':'Nothing to load','bad');}
     else if(a==='take'){if(!sel)return;const n=takeItem(sel,btn.dataset.k,+btn.dataset.n);if(!n)toast(gridHas(sel,btn.dataset.k)>0?'Your pack is full':'Nothing stored','bad');}
+    else if(a==='moveitem'){
+      const to=moveTarget(sel),k=btn.dataset.k;
+      if(!sel||!to)toast('No other station or docked craft to move it to','bad');
+      else if(!gridHas(sel,k))toast('No '+SHORT[k]+' in '+sel.name,'bad');
+      else if(isCraft(sel)||isCraft(to)){if(xfer)toast('A transfer is already running','bad');else{startXfer(sel,to,k);toast('Moving '+SHORT[k]+' to '+to.name+'\u2026');}}
+      else{const m=Math.min(gridHas(sel,k),gridSpace(to));if(m>0){takeFromGrid(sel,k,m);addToGrid(to,k,m);}toast(m>0?'Moved '+m+' '+SHORT[k]+' to '+to.name:to.name+' storage is full',m>0?'good':'bad');}
+    }
     else if(a==='moveall'){
       const to=moveTarget(sel);
       if(sel&&to&&(isCraft(sel)||isCraft(to))){
@@ -3898,13 +4096,13 @@ const r3=v=>[+v.x.toFixed(3),+v.y.toFixed(3),+v.z.toFixed(3)];
 function serialize(){
   const q=camera.quaternion;
   return{
-    v:3,inv:Object.assign({},inv),eco:{cr:Math.round(eco.cr),debt:Math.round(eco.debt),won:eco.won,price:Object.assign({},price),mk:{tm:mk.tm.slice(),q:mk.q.concat(...grids.filter(x=>x.md&&x.md.state===1).map(x=>x.md.orders))}},gs:gridSeq,ast:asteroids.map(a=>rle(a.data)),dep:asteroids.map(a=>a.deps.map(d=>d.dead?0:Math.round(d.stock))),
+    v:3,der:1,inv:Object.assign({},inv),eco:{cr:Math.round(eco.cr),debt:Math.round(eco.debt),won:eco.won,price:Object.assign({},price),mk:{tm:mk.tm.slice(),q:mk.q.concat(...grids.filter(x=>x.md&&x.md.state===1).map(x=>x.md.orders))}},gs:gridSeq,ast:asteroids.map(a=>rle(a.data)),dep:asteroids.map(a=>a.deps.map(d=>d.dead?0:Math.round(d.stock))),
     sv:asteroids.map(a=>a.surveyed?a.name:0),tut:tut,
     pl:{p:r3(player.pos),v:r3(player.vel),q:[q.x,q.y,q.z,q.w],tool:player.tool,damp:player.damp,pilot:player.ship?player.ship.name:null},
     grids:grids.map(g=>{
       const gq=g.group.quaternion;
       return{n:g.name,k:g.kind||0,s:g.station?1:0,p:r3(g.group.position),q:[gq.x,gq.y,gq.z,gq.w],v:r3(g.vel),f:Math.round(g.fuel),po:g.powerOff?1:0,
-        b:Array.from(g.blocks.values()).map(b=>[b.type,b.i,b.j,b.k,b.f||0,b.queue&&b.queue.length?b.queue.slice():0,b.job?[b.job.id,+b.job.t.toFixed(2)]:0,tierOf(b),b.store&&Object.keys(b.store).length?Object.assign({},b.store):0,b.s|0,b.pf?b.pf.join(''):0]),
+        b:Array.from(g.blocks.values()).map(b=>[b.type,b.i,b.j,b.k,b.f||0,b.queue&&b.queue.length?b.queue.slice():0,b.job?[b.job.id,+b.job.t.toFixed(2)]:0,tierOf(b),b.store&&Object.keys(b.store).length?Object.assign({},b.store):0,b.s|0,b.pf?b.pf.join(''):0,wipOn(b)?Object.assign({},b.wi):0]),
         tr:g.trade?[Math.round(g.trade.timer),g.trade.state===3?g.trade.pay:0]:0};
     })
   };
@@ -4065,15 +4263,17 @@ function restoreSave(S){
   if(S.eco){eco.cr=S.eco.cr;eco.debt=S.eco.debt;eco.won=!!S.eco.won;if(S.eco.price)for(const k of ITEMS)if(S.eco.price[k])price[k]=S.eco.price[k];if(S.eco.mk){if(S.eco.mk.tm)S.eco.mk.tm.forEach((v,i)=>{if(i<mk.tm.length)mk.tm[i]=v;});mk.q=(S.eco.mk.q||[]).slice();}}
   for(const sg of S.grids){
     const g=makeGrid(sg.n,new V3(sg.p[0],sg.p[1],sg.p[2]),new Q(sg.q[0],sg.q[1],sg.q[2],sg.q[3]));
-    g.station=!!sg.s;g.vel.set(sg.v[0],sg.v[1],sg.v[2]);g.kind=sg.k||(sg.n==='PIONEER'?'pioneer':undefined);
+    g.station=!!sg.s;g.vel.set(sg.v[0],sg.v[1],sg.v[2]);g.kind=sg.k||(sg.n==='PIONEER'?'pioneer':undefined);g.bulk=true;
     for(const e of sg.b){
       if(!BDEF[e[0]])continue;
       const b=addBlock(g,e[1],e[2],e[3],e[0],e[4]||null,e[9]|0,Math.min(TIER_MAX,Math.max(1,e[7]|0)));
       if(b&&e[10]&&b.type==='hull'){b.pf=String(e[10]).split('').map(Number);g.hullDirty=true;}
+      if(b&&e[11])wipRestore(g,b,e[11]);
       if(b&&b.queue){if(e[5])b.queue=e[5].slice();if(e[6])b.job={id:e[6][0],t:e[6][1]};}
       if(b&&b.tier>1)applyTier(b);
       if(b&&b.store&&e[8])for(const k in e[8])if(inv[k]!==undefined)b.store[k]=e[8][k];
     }
+    g.bulk=false;recalc(g);g.hullDirty=true;g.wipDirty=true;
     if(!g.blocks.size){const n=grids.indexOf(g);if(n>=0)grids.splice(n,1);scene.remove(g.group);continue;}
     if(sg.tr&&g.beacons.length){g.trade=newTrade(g);g.trade.timer=sg.tr[0];if(sg.tr[1]>0){eco.cr+=sg.tr[1];setTimeout(()=>toast('Trader payment received: '+fmtCr(sg.tr[1])+' cr','good'),600);}}
     g.fuel=Math.min(sg.f||0,g.fuelCap);g.powerOff=!!sg.po;g.group.updateMatrixWorld(true);
@@ -4121,6 +4321,7 @@ function boot(){
       player.pos.set(-9.5,2.85,0);camera.quaternion.setFromAxisAngle(AXY,-Math.PI/2);
     }
   }
+  if(!grids.some(x=>x.kind==='derelict')&&!(restored&&S&&S.der))spawnDerelict();
   savedGame=restored;
   for(const g of grids)markGrid(g);
   for(const g of grids)g.group.updateMatrixWorld(true);
@@ -4128,7 +4329,7 @@ function boot(){
   if(restored)$('newg').hidden=false;
   booted=true;setBuildUI();hudDirty=true;
   try{if(window.claude&&window.claude.hot&&window.claude.hot.snapshot)window.claude.hot.snapshot(()=>({save:wiping?null:serialize()}));}catch(e){}
-  window.__VE={mk,mktClick,mktTick,mktBuild,mktRefresh,MKT,mkFee,mkTier,player,grids,asteroids,update,begin,ACT,keys,tb,camera,inv,mineAt,rayAst,pickAll,aim,serialize,restoreSave,saveGame,
+  window.__VE={grindStep,wipOn,wipUnit,wipBegin,wipDone,mk,mktClick,mktTick,mktBuild,mktRefresh,MKT,mkFee,mkTier,player,grids,asteroids,update,begin,ACT,keys,tb,camera,inv,mineAt,rayAst,pickAll,aim,serialize,restoreSave,saveGame,
     addToGrid,gridHas,gridSpace,takeFromGrid,packUsed,packSpace,PACK_CAP,PACKIO,shipIO,spawnShip,interiorOf,bodyHit,bodyMove,cellAt,setTier,growCheck,doorTick,rideSync,seatWorld,nearestSeat,spawnStation,haveK,spend,upgradeBlock,gravR,qMax,tierOf,upCost,recalc,eco,price,PRICE0,ITEMS,loadItem,takeItem,whTotals,payDebt,tradeTick,BEACON,CARGO_CAP,panelSummary,openTerminal,closeTerminal,scanOre,setTool,setPage,addBlock,makeGrid,removeBlock,RECIPES,BDEF,BORDER,
     setDev:v=>{DEV=!!v;},openPicker,openUpg,connGrid,surveyAst,revealBuried,tutState:()=>tut,startTut,renameGrid,dockPlan,toggleDock,pointSolid,shipHitsAst,enterShip,exitShip,inReach,gridsTouch,isCraft,dockCheck,dockTick,startXfer,moveTarget,PAD_RATE,BASE_RATE,xferState:()=>xfer,
     state:()=>({inGrav,page,termOpen,detRange,detSummary,paused,running}),
