@@ -37,7 +37,8 @@ button{font:inherit;color:inherit}
   clip-path:polygon(0 0,calc(100% - 9px) 0,100% 9px,100% 100%,9px 100%,0 calc(100% - 9px));padding:8px 11px;min-width:0}
 #left{grid-column:1;grid-row:1/4;justify-self:start;align-self:start;display:grid;gap:8px;min-width:0}
 #res{display:grid;gap:3px;min-width:116px;justify-self:start}
-#status{grid-column:2;grid-row:1;justify-self:end;display:grid;gap:3px;min-width:150px}
+#rcol{grid-column:2;grid-row:1;justify-self:end;display:grid;gap:6px;justify-items:end}
+#status{display:grid;gap:3px;min-width:150px}
 #topslot{grid-column:1/3;grid-row:2;justify-self:center;min-width:0;max-width:100%}
 #bottom{grid-column:1/3;grid-row:4;display:grid;gap:8px;justify-items:center;min-width:0}
 .ph{font:600 11px var(--display);letter-spacing:.2em;color:var(--dim);text-transform:uppercase}
@@ -125,7 +126,7 @@ body[data-tool="1"] #blk{display:flex}
 #main{display:grid;gap:8px;pointer-events:auto}
 .tb{width:44px;height:40px;border:0;background:var(--panel);box-shadow:inset 0 0 0 1px var(--edge);font:600 10px var(--mono);letter-spacing:.04em;touch-action:none;padding:0}
 .tb.big{width:88px;height:62px;font:700 17px var(--display);letter-spacing:.16em}
-#main #dampbtn{height:40px;font-size:14px}
+#rcol #dampbtn{width:88px;height:36px;font-size:14px;pointer-events:auto}
 #fuelbtn.fw{background:#c9a21a;color:#171000;box-shadow:none}
 #fuelbtn.fc{background:#c0392b;color:#fff;box-shadow:none}
 #fuelbtn.fe{background:#c0392b;color:#fff;box-shadow:none;animation:fuelflash .6s steps(2,start) infinite}
@@ -322,7 +323,7 @@ body.termopen #tut{display:none}
 #mpbadge[hidden]{display:none}
 .pname{position:absolute;left:0;top:0;font:700 11px var(--mono);color:#fff;text-shadow:0 0 3px #000,0 0 6px #000;pointer-events:none;white-space:nowrap}
 .pname[hidden]{display:none}
-#chatlog{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(12px + env(safe-area-inset-bottom,0px));width:min(44vw,380px);display:grid;gap:2px;pointer-events:none;z-index:25}
+#chatlog{position:fixed;left:50%;transform:translateX(-50%);top:calc(50% + 28px);width:min(44vw,380px);display:grid;justify-items:start;text-align:left;gap:2px;pointer-events:none;z-index:25}
 #chatlog div{font:500 12px/1.3 var(--mono);color:var(--ink);background:rgba(8,13,22,.66);padding:2px 8px;text-shadow:0 1px 2px #000;overflow-wrap:anywhere}
 #chatlog div b{color:var(--hazard);font-weight:700}
 #chatlog div.old{display:none}
@@ -387,7 +388,7 @@ body:not(.devon) #aux [data-tap=shot],body:not(.devon) #aux [data-tap=noclip],bo
   <div id="fin" class="panel"><div class="rr"><span>Credits</span><b id="f-cr">0</b></div><div class="rr debt"><span>Debt</span><b id="f-debt">0</b></div></div>
   <div id="stn" class="panel"></div>
   </div>
-  <div id="status" class="panel">
+  <div id="rcol"><div id="status" class="panel">
     <div class="mode" id="st-mode">On foot</div>
     <div class="spd"><span id="st-spd">0.0</span><small>m/s</small></div>
     <div class="row"><span>DAMPERS</span><b id="st-damp" class="on">ON</b></div>
@@ -396,6 +397,7 @@ body:not(.devon) #aux [data-tap=shot],body:not(.devon) #aux [data-tap=noclip],bo
     <div class="row ship-only"><span>MASS</span><b id="st-mass">0 t</b></div>
     <div class="row ship-only"><span>ACCEL</span><b id="st-acc">0.0 m/s&#178;</b></div>
   </div>
+  <button class="tb big" id="dampbtn" data-tap="damp">DAMP</button></div>
   <div id="topslot"></div>
   <div></div>
   <div id="bottom">
@@ -425,7 +427,6 @@ body:not(.devon) #aux [data-tap=shot],body:not(.devon) #aux [data-tap=noclip],bo
           <button class="tb" data-hold="rr">&#8631;</button>
         </div>
         <div id="main">
-          <button class="tb big" id="dampbtn" data-tap="damp">DAMP</button>
           <button class="tb big" id="toolbtn" data-tap="tool">TOOL</button>
           <button class="tb big" id="act" data-hold="fire">DRILL</button>
         </div>
@@ -482,7 +483,7 @@ body:not(.devon) #aux [data-tap=shot],body:not(.devon) #aux [data-tap=noclip],bo
 'use strict';
 /* =====================  Void Engineers  =====================
    Part A: renderer, sky, procedural voxel asteroids, particles */
-const GAME_VER='131';
+const GAME_VER='134';
 /* no page zoom while playing: pinch, double-tap and ctrl+wheel are swallowed */
 (()=>{const no=e=>{e.preventDefault();};
   for(const n of['gesturestart','gesturechange','gestureend','dblclick'])document.addEventListener(n,no,{passive:false});
@@ -1045,8 +1046,8 @@ const TIER_DEF={
 };
 const tierOf=b=>b.tier||1;
 /* multi-cell blocks: the Refinery and Assembler stand 2 blocks tall (tier 1) or 3 (tier 2 and up); a Door is 2 tall. They always stand along the grid's +Y. */
-const UPRIGHT=['refinery','assembler','door'];
-const heightOf=(type,tier)=>type==='door'?2:(type==='refinery'||type==='assembler')?((tier||1)>1?3:2):1;
+const UPRIGHT=['refinery','assembler','door','dronee'];
+const heightOf=(type,tier)=>type==='door'||type==='dronee'?2:(type==='refinery'||type==='assembler')?((tier||1)>1?3:2):1;
 const canUp=b=>!!TIER_DEF[b.type]&&tierOf(b)<TIER_MAX;
 const upCost=b=>canUp(b)?TIER_DEF[b.type].cost[tierOf(b)-1]:null;
 const gravR=b=>GRAV_RT[tierOf(b)-1];
@@ -1084,6 +1085,7 @@ const BDEF={
   light:{name:'Light',cost:{fe:2,si:1},mass:50,ghost:true,spec:'mounts on a block face \u00b7 needs power \u00b7 no collision'},
   lightbar:{name:'Light Bar',cost:{fe:4,si:2},mass:80,ghost:true,spec:'long light for stations \u00b7 needs power \u00b7 no collision'},
   powergen:{name:'Power Generator',cost:{fe:40,si:20,pt:2},mass:4000,spec:'powers 10 lights \u00b7 burns hydrogen or ice \u00b7 upgradable \u00b7 4.0 t'},
+  dronee:{name:'Drone Electronics',cost:{fe:60,si:40,pt:8},mass:4000,spec:'DEV ONLY \u00b7 1\u00d72 \u00b7 4 gyroscopes + H\u2082 tank (+1500 L) + power generator in one block \u00b7 4.0 t'},
   leg:{name:'Landing Leg',cost:{fe:8,si:2},mass:600,spec:'lets a craft dock \u00b7 0.6 t'},
   pad:{name:'Landing Pad',cost:{fe:30,si:10},mass:2000,spec:'6 m deck \u00b7 DOCK snaps craft from 12 m \u00b7 faster transfers \u00b7 2.0 t'},
   beacon:{name:'Trade Beacon',cost:{plate:3,constr:3,comp:1},mass:1500,panel:true,spec:'calls freight traders \u00b7 1.5 t'}
@@ -1098,6 +1100,7 @@ const ICONS={
   gun:'<path d="M6 19h12v-3H6z"/><path d="M10.5 4h3v12h-3z"/>',
   mthruster:'<path d="M5 5h14v14H5z"/><path d="M9 9h6M9 12h6M9 15h6" opacity=".7"/>',
   bigthruster:'<path d="M6 3h12v6H6z"/><path d="M7 9l-3 6h16l-3-6"/><path d="M8 17l2 4M12 17v4M16 17l-2 4" opacity=".6"/>',
+  dronee:'<rect x="7" y="3" width="10" height="18"/><circle cx="12" cy="8" r="3"/><path d="M8 15h8M8 18h8" opacity=".6"/>',
   gyro:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 4v5M12 15v5M4 12h5M15 12h5" opacity=".5"/>',
   seat:'<path d="M7 4h6v10H7z"/><path d="M7 14h11v4H7z"/><path d="M9 18v3M16 18v3" opacity=".6"/>',
   door:'<rect x="6" y="3" width="12" height="18"/><path d="M12 3v18" opacity=".5"/><path d="M10 12h.01M14 12h.01"/>',
@@ -1488,6 +1491,10 @@ function buildBlock(type,f,ghostMat,rot,tier){
     case 'lightbar':   // a long station light, same idea
       add(G.lbBase,MAT.dark,0,-.95,0);add(G.lbArt,MAT.lightbarP,0,-.915,0).rotation.x=-Math.PI/2;
       lamp=add(G.lbStrip,ghostMat?MAT.ghostOK:lensOffMat,0,-.905,0);lamp.rotation.x=-Math.PI/2;break;
+    case 'dronee':   // two cells tall: gyroscope rings below, the generator coil and lamp above
+      add(G.box19,MAT.gyro,0,0,0);add(G.ring,MAT.ring,0,0,1.0);add(G.ring,MAT.ring,0,0,-1.0);
+      add(G.box19,MAT.hull,0,2,0);add(G.pgCoil,MAT.amber,0,2.3,0).rotation.z=Math.PI/2;add(G.pgStack,MAT.dark,.6,2.75,-.5);
+      lamp=add(G.lampG,new THREE.MeshBasicMaterial({color:0x2a3a44}),-.5,2.36,.62);break;
     case 'powergen':
       add(G.pgBody,MAT.thrT,0,-.35,0);add(G.pgCoil,MAT.amber,0,.3,0).rotation.z=Math.PI/2;add(G.pgStack,MAT.dark,.6,.75,-.5);
       lamp=add(G.lampG,new THREE.MeshBasicMaterial({color:0x2a3a44}),-.5,.36,.62);break;
@@ -1566,11 +1573,11 @@ function recalc(g){
     M+=m;c.x+=x*m;c.y+=y*m;c.z+=z*m;
     const ef=dmgEff(b);
     if(d.thrust&&b.f&&ef){const a=b.f[0]?0:b.f[1]?1:2,s=-b.f[a];g.T[a][s>0?1:0]+=d.thrust*POW[tierOf(b)-1]*ef;g.thr.push(b);}
-    if(b.type==='gyro')gy+=SPIN[tierOf(b)-1]*ef;else if(b.type==='lgyro')gy+=5*SPIN[tierOf(b)-1]*ef;
-    if(b.type==='tank')fc+=1500*STOR[tierOf(b)-1];else if(b.type==='bigtank')fc+=6000*STOR[tierOf(b)-1];
+    if(b.type==='dronee')gy+=4*SPIN[0]*ef;if(b.type==='gyro')gy+=SPIN[tierOf(b)-1]*ef;else if(b.type==='lgyro')gy+=5*SPIN[tierOf(b)-1]*ef;
+    if(b.type==='dronee')fc+=1500;if(b.type==='tank')fc+=1500*STOR[tierOf(b)-1];else if(b.type==='bigtank')fc+=6000*STOR[tierOf(b)-1];
     if(b.type==='gravgen'&&ef)g.gravs.push(b);
     if(d.machine)g.machines.push(b);
-    if(b.type==='cargo')g.cargos.push(b);if(b.type==='beacon')g.beacons.push(b);if(b.type==='leg')g.legs.push(b);if(b.type==='light'||b.type==='lightbar')g.lights.push(b);if(b.type==='powergen')g.gens.push(b);if(b.type==='pad')g.pads.push(b);
+    if(b.type==='cargo')g.cargos.push(b);if(b.type==='beacon')g.beacons.push(b);if(b.type==='leg')g.legs.push(b);if(b.type==='light'||b.type==='lightbar')g.lights.push(b);if(b.type==='powergen'||b.type==='dronee')g.gens.push(b);if(b.type==='pad')g.pads.push(b);
     if(b.type==='door')g.doors.push(b);
     if(b.type==='steps')g.steps.push(b);
     if(b.type==='seat'&&!g.seat)g.seat=b;
@@ -2428,6 +2435,7 @@ const rollIn=()=>(keys.KeyE||tb.rr?1:0)-(keys.KeyQ||tb.rl?1:0);
 
 function shipUpdate(g,dt){
   const mv=g.lock?{x:0,y:0,z:0}:inputMove(),look=lookDelta(dt),q=g.group.quaternion;
+  if(camMode!==7&&(HOLD.x||HOLD.y)){look[0]+=HOLD.x*dt*520;look[1]+=HOLD.y*dt*520;}
   if(camMode===7){orbYaw+=look[0]*.006;orbPit=clamp(orbPit-look[1]*.006,-1.4,1.4);look[0]=0;look[1]=0;}
   const prevPos=g.group.position.clone(),prevQ=q.clone();
   // translation: thrusters only push along the directions they face away from
@@ -2449,7 +2457,7 @@ function shipUpdate(g,dt){
   if(g.vel.length()>90)g.vel.setLength(90);
   g.fuel=Math.max(0,g.fuel-burn*dt*5e-5);
   // rotation
-  const alpha=clamp((.2+.6*g.gyros)*20000/g.mass,.05,5),maxR=clamp(.3+.3*g.gyros,.3,1.6);   // a lone gyroscope turns a ship slowly; more (and bigger) ones swing it round
+  const alpha=clamp(((g.gyros>0?.2:.02)+.6*g.gyros)*20000/g.mass,.05,5),maxR=clamp(.3+.3*g.gyros,.3,1.6);   // a lone gyroscope turns a ship slowly; more (and bigger) ones swing it round
   const ks=coarse?.0034:.0024;
   const tgt=[clamp(-look[1]*ks/dt,-maxR,maxR),clamp(-look[0]*ks/dt,-maxR,maxR),rollIn()*1.2];
   for(let i=0;i<3;i++){
@@ -2751,7 +2759,7 @@ function spawnDerelict(){
 /* The PIONEER: a ship you walk aboard. Forward is -z, starboard +x, up +y. Floor at j=0, walkable decks j=1..2, ceiling j=3.
    Interior, front to back (port | centre | starboard): 3 wide with the pilot seat, a corridor, the door (port side), a corridor,
    the Assembler | aisle | Refinery, a corridor, and the cargo container at the stern. 11 floor tiles. */
-const SHIP_PIONEER=[["plate",1,0,0,[0,1,0],0,1,"11"],["plate",1,0,1,[0,1,0],0,1,"11"],["platt",0,0,2,[0,1,0],3,1],["plate",1,0,2,[0,1,0],0,1,"11"],["platt",0,0,0,[0,1,0],2,1],["plate",3,0,2,[0,1,0],0,1,"11"],["plate",4,0,2,[0,1,0],0,1,"11"],["plate",3,0,0,[0,1,0],0,1,"11"],["plate",4,0,0,[0,1,0],0,1,"11"],["plate",5,0,0,[0,1,0],0,1,"11"],["plate",5,0,2,[0,1,0],0,1,"11"],["plate",3,1,3,[0,0,-1],0,1,"21"],["plate",4,1,3,[0,0,-1],0,1,"21"],["plate",5,1,3,[0,0,-1],0,1,"21"],["plate",3,1,-1,[0,0,1],0,1,"21"],["plate",4,1,-1,[0,0,1],0,1,"21"],["plate",5,1,-1,[0,0,1],0,1,"21"],["plate",2,1,-1,[0,0,1],0,1,"21"],["plate",1,1,-1,[0,0,1],0,1,"21"],["plate",5,2,-1,[0,0,1],0,1,"21"],["plate",2,2,-1,[0,0,1],0,1,"21"],["plate",3,2,-1,[0,0,1],0,1,"21"],["plate",3,2,3,[0,0,-1],0,1,"21"],["plate",5,2,3,[0,0,-1],0,1,"21"],["plate",1,2,-1,[0,0,1],0,1,"21"],["platd",3,3,2,[0,1,0],0,1],["platd",4,3,2,[0,1,0],0,1],["platd",5,3,2,[0,1,0],0,1],["platd",2,3,2,[0,1,0],0,1],["platd",1,3,2,[0,1,0],0,1],["platd",1,3,0,[0,1,0],2,1],["platd",2,3,0,[0,1,0],2,1],["platd",3,3,0,[0,1,0],2,1],["platd",4,3,0,[0,1,0],2,1],["platd",5,3,0,[0,1,0],2,1],["mthruster",5,3,1,[0,1,0],0,1],["plate",4,4,1,[0,-1,0],0,1,"31"],["plate",3,4,1,[0,-1,0],0,1,"31"],["plate",2,4,1,[0,-1,0],0,1,"31"],["plate",1,4,1,[0,-1,0],0,1,"31"],["light",2,3,1,[0,-1,0],0,1],["light",4,3,1,[-1,0,0],0,1],["glass",-1,1,1,[1,0,0],0,1],["glassd",0,1,0,[1,0,0],0,1],["glassd",0,1,2,[1,0,0],2,1],["glassd",0,2,2,[1,0,0],2,1],["glassd",0,2,0,[1,0,0],0,1],["glass",-1,2,1,[1,0,0],0,1],["slope",0,3,1,[0,1,0],1,1],["corner",0,3,2,[0,1,0],1,1],["corner",0,3,0,[0,1,0],0,1],["refinery",3,1,2,[0,1,0],0,1],["assembler",3,1,0,[0,1,0],0,1],["tank",4,1,0,[0,-1,0],0,1],["tank",4,2,0,[0,-1,0],0,1],["gyro",4,1,2,[0,-1,0],0,1],["hull",6,2,1,[0,0,-1],0,1,"020000"],["slope",6,2,2,[1,0,0],2,1],["slope",6,2,0,[1,0,0],0,1],["slope",6,3,1,[1,0,0],1,1],["corner",6,3,0,[1,0,0],0,1],["corner",6,3,2,[1,0,0],1,1],["mthruster",4,2,3,[0,0,1],0,1],["mthruster",4,2,-1,[0,0,-1],0,1],["mthruster",5,0,1,[0,-1,0],0,1],["hull",4,0,1,[-1,0,0],0,1,"001100"],["hull",3,0,1,[-1,0,0],0,1,"001100"],["slope",6,0,1,[1,0,0],1,1],["hull",5,1,2,[1,0,0],0,1],["hull",5,1,0,[1,0,0],0,1],["hull",6,1,1,[1,0,0],0,1],["thruster",6,1,0,[1,0,0],0,1],["thruster",6,1,2,[1,0,0],0,1],["hull",2,0,0,[0,-1,0],0,1,"000001"],["hull",2,0,2,[0,-1,0],0,1,"000010"],["hull",0,0,1,[0,-1,0],0,1,"001000"],["drill",-1,0,1,[-1,0,0],0,1],["seat",1,1,1,[0,1,0],1,1],["plate",1,1,3,[0,0,-1],0,1,"01"],["plate",1,2,3,[0,0,-1],0,1,"01"],["cargo",5,1,1,[0,1,0],0,1],["powergen",5,2,2,[0,1,0],0,1],["door",2,1,2,[0,1,0],4,1],["steps",2,0,3,[0,1,0],1,1],["hull",2,-1,3,[0,1,0],0,1],["steps",2,-1,4,[0,1,0],1,1],["leg",2,-1,2,[0,-1,0],0,1],["leg",2,-1,0,[0,-1,0],0,1],["leg",6,-1,1,[0,-1,0],0,1],["mthruster",2,0,1,[-1,0,0],0,1]];   // the starter ship, PIONEER v2, as laid out by J. D. Steel (entries: type, i, j, k, facing, spin, tier, paint). Forward is -x, the boarding steps are on the +z (port) side
+const SHIP_PIONEER=[["plate",3,0,0,[0,1,0],0,1,"11"],["plate",4,0,0,[0,1,0],0,1,"11"],["plate",5,0,0,[0,1,0],0,1,"11"],["plate",3,1,3,[0,0,-1],0,1,"21"],["plate",4,1,3,[0,0,-1],0,1,"21"],["plate",3,1,-1,[0,0,1],0,1,"21"],["plate",4,1,-1,[0,0,1],0,1,"21"],["plate",2,1,-1,[0,0,1],0,1,"21"],["plate",1,1,-1,[0,0,1],0,1,"21"],["plate",5,2,-1,[0,0,1],0,1,"21"],["plate",2,2,-1,[0,0,1],0,1,"21"],["plate",3,2,-1,[0,0,1],0,1,"21"],["plate",3,2,3,[0,0,-1],0,1,"21"],["plate",5,2,3,[0,0,-1],0,1,"21"],["plate",1,2,-1,[0,0,1],0,1,"21"],["glass",-1,1,1,[1,0,0],0,1],["glassd",0,1,0,[1,0,0],0,1],["glassd",0,1,2,[1,0,0],2,1],["glassd",0,2,2,[1,0,0],2,1],["glassd",0,2,0,[1,0,0],0,1],["glass",-1,2,1,[1,0,0],0,1],["assembler",3,1,0,[0,1,0],0,1],["tank",4,1,0,[0,-1,0],0,1],["tank",4,2,0,[0,-1,0],0,1],["gyro",4,1,2,[0,-1,0],0,1],["hull",6,2,1,[0,0,-1],0,1,"020000"],["slope",6,2,2,[1,0,0],2,1],["slope",6,2,0,[1,0,0],0,1],["mthruster",5,0,1,[0,-1,0],0,1],["hull",4,0,1,[-1,0,0],0,1,"001100"],["hull",3,0,1,[-1,0,0],0,1,"001100"],["slope",6,0,1,[1,0,0],1,1],["hull",6,1,1,[1,0,0],0,1],["thruster",6,1,0,[1,0,0],0,1],["thruster",6,1,2,[1,0,0],0,1],["hull",2,0,0,[0,-1,0],0,1,"000001"],["hull",2,0,2,[0,-1,0],0,1,"000010"],["hull",0,0,1,[0,-1,0],0,1,"001000"],["drill",-1,0,1,[-1,0,0],0,1],["seat",1,1,1,[0,1,0],1,1],["plate",1,1,3,[0,0,-1],0,1,"01"],["plate",1,2,3,[0,0,-1],0,1,"01"],["cargo",5,1,1,[0,1,0],0,1],["powergen",5,2,2,[0,1,0],0,1],["door",2,1,2,[0,1,0],4,1],["steps",2,0,3,[0,1,0],1,1],["hull",2,-1,3,[0,1,0],0,1],["steps",2,-1,4,[0,1,0],1,1],["leg",2,-1,2,[0,-1,0],0,1],["leg",2,-1,0,[0,-1,0],0,1],["leg",6,-1,1,[0,-1,0],0,1],["mthruster",5,1,0,[0,0,-1],0,1],["plate",4,2,3,[0,0,-1],0,1,"01"],["plate",4,2,-1,[0,0,1],0,1,"01"],["slope",4,0,2,[0,-1,0],2,1],["slope",5,0,2,[0,-1,0],2,1],["slope",3,0,2,[0,-1,0],2,1],["refinery",3,1,2,[0,1,0],0,1],["plate",4,3,0,[0,-1,0],0,1],["plate",3,3,0,[0,-1,0],0,1],["plate",4,3,1,[0,-1,0],0,1],["plate",5,3,0,[0,-1,0],0,1],["plate",4,3,2,[0,-1,0],0,1],["plate",5,3,2,[0,-1,0],0,1],["plate",3,3,1,[0,-1,0],0,1],["plate",2,3,0,[0,-1,0],0,1],["plate",1,3,0,[0,-1,0],0,1],["plate",2,3,1,[0,-1,0],0,1],["plate",3,3,2,[0,-1,0],0,1],["plate",2,3,2,[0,-1,0],0,1],["plate",1,3,2,[0,-1,0],0,1],["plate",1,3,1,[0,-1,0],0,1],["plate",0,3,1,[0,-1,0],0,1],["platt",0,3,2,[0,-1,0],0,1],["platt",0,3,0,[0,-1,0],1,1],["hull",2,0,1,[0,-1,0],0,1],["hull",1,0,1,[0,-1,0],0,1],["mthruster",1,0,2,[-1,0,0],0,1],["mthruster",1,0,0,[-1,0,0],0,1],["platt",0,0,0,[0,1,0],2,1],["platt",0,0,2,[0,1,0],3,1],["mthruster",5,2,1,[0,1,0],0,1],["mthruster",5,1,2,[0,0,1],0,1]];   // the starter ship, PIONEER v2, as laid out by J. D. Steel (entries: type, i, j, k, facing, spin, tier, paint). Forward is -x, the boarding steps are on the +z (port) side
 // the pilot's own interceptor: the same airframe with a seat, and a gun under each wing where the slopes were
 const WING_SLOPES=new Set(['1,0,1','-2,0,1']);
 function spawnPlayerDrone(pos){
@@ -2961,7 +2969,7 @@ function droneTick(dt){
     const dL=aim.applyQuaternion(qi);
     const ax=new V3().crossVectors(a,dL),sn=ax.length(),dot=a.dot(dL),ang=Math.atan2(sn,dot);
     if(sn<1e-5){if(dot<0)ax.set(0,1,0);}else ax.multiplyScalar(1/sn);
-    const alpha=clamp((.2+.6*g.gyros)*20000/g.mass,.05,5),maxR=clamp(.3+.3*g.gyros,.3,1.6);
+    const alpha=clamp(((g.gyros>0?.2:.02)+.6*g.gyros)*20000/g.mass,.05,5),maxR=clamp(.3+.3*g.gyros,.3,1.6);
     const sp=ang<1e-3?0:Math.min(maxR,Math.sqrt(2*alpha*.5*ang)+.02);
     const tgt=[ax.x*sp,ax.y*sp,-ax.z*sp];   // the third rate turns about the forward axis, which points down -z
     for(let i=0;i<3;i++)g.rate[i]+=clamp(tgt[i]-g.rate[i],-alpha*dt,alpha*dt);
@@ -3101,13 +3109,29 @@ canvas.addEventListener('contextmenu',e=>e.preventDefault());
 document.addEventListener('mousemove',e=>{if(locked){mdx+=e.movementX||0;mdy+=e.movementY||0;}});
 canvas.addEventListener('wheel',e=>{if(!running||paused)return;const s=e.deltaY>0?1:-1;if(player.tool===1)selectBlock(player.sel+s);else if(player.mode==='foot')setTool(nextTool(s));},{passive:true});
 // touch look
-let lookId=null,lx=0,ly=0;
+let lookId=null,lx=0,ly=0,sax=0,say=0;
+// piloting steer: tap and drag sets a turn rate from the drag offset and holds it until you lift or move; elsewhere drag is the classic swipe look
+const HOLD={x:0,y:0};
+const steerUi=(()=>{const w=document.createElement('div');w.style.cssText='position:fixed;left:0;top:0;width:0;height:0;pointer-events:none;z-index:7;display:none';
+  w.innerHTML='<i style="position:absolute;left:-22px;top:-22px;width:44px;height:44px;border-radius:50%;box-shadow:inset 0 0 0 2px rgba(245,165,36,.55)"></i><i id="steerk" style="position:absolute;left:-9px;top:-9px;width:18px;height:18px;border-radius:50%;background:rgba(245,165,36,.7)"></i>';
+  document.body.appendChild(w);return w;})();
+const steerK=steerUi.querySelector('#steerk');
+const steerOn=()=>player.mode==='pilot'&&camMode!==7;
 canvas.addEventListener('pointerdown',e=>{
   if(e.pointerType!=='touch'||!running||paused)return;
-  if(lookId===null){lookId=e.pointerId;lx=e.clientX;ly=e.clientY;try{canvas.setPointerCapture(e.pointerId);}catch(_){}}
+  if(lookId===null){lookId=e.pointerId;lx=sax=e.clientX;ly=say=e.clientY;try{canvas.setPointerCapture(e.pointerId);}catch(_){}
+    if(steerOn()&&!FLIP){steerUi.style.left=sax+'px';steerUi.style.top=say+'px';steerK.style.transform='translate(0,0)';steerUi.style.display='block';}}
 });
-canvas.addEventListener('pointermove',e=>{if(e.pointerId===lookId){const d=gd(e.clientX-lx,e.clientY-ly);mdx+=d[0]*1.5;mdy+=d[1]*1.5;lx=e.clientX;ly=e.clientY;}});
-const lookEnd=e=>{if(e.pointerId===lookId)lookId=null;};
+canvas.addEventListener('pointermove',e=>{if(e.pointerId!==lookId)return;
+  if(steerOn()){
+    const R=110,dz=7;let ox=e.clientX-sax,oy=e.clientY-say;
+    const m=Math.hypot(ox,oy);if(m>R){ox*=R/m;oy*=R/m;}
+    if(!FLIP)steerK.style.transform='translate('+ox+'px,'+oy+'px)';
+    const f=v=>Math.abs(v)<dz?0:(v-Math.sign(v)*dz)/(R-dz);
+    const d=gd(ox,oy);HOLD.x=clamp(f(d[0]),-1,1);HOLD.y=clamp(f(d[1]),-1,1);
+    lx=e.clientX;ly=e.clientY;return;}
+  const d=gd(e.clientX-lx,e.clientY-ly);mdx+=d[0]*1.5;mdy+=d[1]*1.5;lx=e.clientX;ly=e.clientY;});
+const lookEnd=e=>{if(e.pointerId===lookId){lookId=null;HOLD.x=HOLD.y=0;steerUi.style.display='none';}};
 canvas.addEventListener('pointerup',lookEnd);canvas.addEventListener('pointercancel',lookEnd);
 // joystick
 const stickEl=$('stick'),knob=$('knob');let stickId=null;
@@ -3154,7 +3178,8 @@ Object.assign(RCOL,{feI:'#e0905a',siI:'#d3dcec',ptI:'#ffe9a0',plate:'#9fb2c8',co
 const SHORT={fe:'Iron',si:'Silicon',ice:'Ice',pt:'Platinum',feI:'Iron ingot',siI:'Silicon ingot',ptI:'Platinum ingot',plate:'Plate',constr:'Construction',motor:'Motor',comp:'Computer'};
 const ALLK=Object.keys(inv);
 // ship and structure parts can be built anywhere; station machines need a gravity field
-const PAGE_BASIC=['hull','slope','corner','icorner','glass','glassc','glassd','plate','platd','platt','door','steps','seat','light','powergen','thruster','mthruster','gun','bigthruster','gyro','lgyro','tank','bigtank','drill','bigdrill','cargo','refinery','assembler','leg','gravgen'];
+const PAGE_BASIC=['hull','slope','corner','icorner','glass','glassc','glassd','plate','platd','platt','door','steps','seat','light','powergen','thruster','mthruster','gun','bigthruster','gyro','lgyro','tank','bigtank','drill','bigdrill','cargo','refinery','assembler','leg','gravgen','dronee'];
+const DEVONLY=['dronee'];
 const PAGE_STN=['beacon','pad','lightbar'];
 let page=0,inGrav=false,booted=false;
 BORDER.length=0;BORDER.push(...PAGE_BASIC,...PAGE_STN);   // one list; the picker groups it
@@ -4015,7 +4040,7 @@ function pickRow(t){
 }
 function openPicker(){
   if(player.mode!=='foot'||termOpen)return;
-  const h='<div class="mcard"><div class="mh"><b>Ship &amp; structure</b></div><div class="plist">'+PAGE_BASIC.map(pickRow).join('')+'</div></div>'+
+  const h='<div class="mcard"><div class="mh"><b>Ship &amp; structure</b></div><div class="plist">'+PAGE_BASIC.filter(t=>DEV||!DEVONLY.includes(t)).map(pickRow).join('')+'</div></div>'+
     '<div class="mcard"><div class="mh"><b>Station</b><span>'+(inGrav?'inside a gravity field':'needs a gravity field')+'</span></div><div class="plist">'+PAGE_STN.map(pickRow).join('')+'</div></div>';
   openSheet('pick','Choose block',h);
   const on=$('tbody').querySelector('.prow.on');if(on&&on.scrollIntoView)on.scrollIntoView({block:'center'});
