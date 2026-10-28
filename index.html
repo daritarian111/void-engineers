@@ -60,7 +60,7 @@ button{font:inherit;color:inherit}
 .bar i{display:block;height:100%;width:50%;background:var(--ice)}
 .bar.low i{background:var(--bad)}
 .ship-only{display:none}
-.piloting .ship-only{display:flex}
+.piloting .ship-only,body.mockship .ship-only{display:flex}
 .on{color:var(--good)} .off{color:var(--bad)}
 
 #hotbar{display:grid;gap:6px;justify-items:center;pointer-events:none;max-width:100%;opacity:0;transition:opacity .45s ease}
@@ -290,6 +290,38 @@ body[data-tool="3"] #cross::before,body[data-tool="3"] #cross::after{background:
 .tutrow{align-items:center;flex-wrap:wrap}.tutrow .tl{font:600 12px var(--display);letter-spacing:.22em;color:var(--hazard);text-transform:uppercase;margin-right:4px}
 .tutrow button{border:0;background:transparent;box-shadow:inset 0 0 0 1px var(--edge);color:var(--ink);font:600 13px var(--display);letter-spacing:.12em;text-transform:uppercase;padding:9px 14px;cursor:pointer}
 #tutbtn{border:0;background:transparent;box-shadow:inset 0 0 0 1px var(--edge);color:var(--dim);font:600 15px var(--display);letter-spacing:.16em;text-transform:uppercase;padding:10px 20px;cursor:pointer}#tutbtn[hidden]{display:none}
+#tcover{position:fixed;inset:0;z-index:999;background:#000;display:flex;align-items:center;justify-content:center;color:var(--dim);font:600 14px var(--display);letter-spacing:.24em;text-transform:uppercase}#tcover[hidden]{display:none}
+#rrow{display:flex;gap:6px;align-items:flex-start;justify-content:flex-end}
+#radbtn{pointer-events:auto;width:52px;height:36px;font-size:10px;letter-spacing:.06em;color:var(--ice);box-shadow:inset 0 0 0 1px var(--ice)}
+.rad{position:absolute;left:0;top:0;width:18px;height:18px;pointer-events:none;will-change:transform;z-index:3}
+.rad i{display:block;width:18px;height:18px;background:var(--c,#fff);box-shadow:0 0 8px var(--c,#fff)}
+.rad span{position:absolute;left:50%;top:21px;transform:translateX(-50%);white-space:nowrap;font:500 10px var(--mono);color:var(--ink);text-shadow:0 1px 3px #000,0 0 4px #000}
+.rad.ships{--c:#8fe3f5}.rad.ships i{clip-path:polygon(50% 0,100% 100%,0 100%)}
+.rad.ore{--c:#f5a524}.rad.ore i{clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)}
+.rad.outposts{--c:#72e3a8}.rad.outposts i{clip-path:polygon(0 0,100% 0,100% 100%,0 100%,0 0,18% 18%,18% 82%,82% 82%,82% 18%,18% 18%)}
+.rad.wp{--c:#fff}.rad.wp i{border-radius:50%;background:transparent;box-shadow:inset 0 0 0 3px #fff,0 0 8px #fff}
+.rad.unk{--c:#c58cff}.rad.unk i{clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%,50% 22%,78% 50%,50% 78%,22% 50%,50% 22%)}
+.rad.edge span{top:21px}
+.radrow{display:flex;align-items:center;gap:10px;border:0;background:transparent;color:var(--ink);font:500 12px var(--mono);text-align:left;padding:8px 4px;cursor:pointer;touch-action:manipulation;width:100%}
+.radrow.sub{padding-left:22px}.radrow span:nth-child(2){flex:1}.radrow em{font-style:normal;color:var(--dim)}
+.radbox{width:18px;height:18px;flex:none;box-shadow:inset 0 0 0 2px var(--c,#fff);background:transparent}
+.radbox.on{background:var(--c,#fff);box-shadow:inset 0 0 0 2px var(--c,#fff),inset 0 0 0 5px #0b121d}
+#tdemo{position:fixed;left:56%;top:42%;width:0;height:0;pointer-events:none;z-index:7;display:none}
+body.tdemo #tdemo{display:block}
+#tdemo i{position:absolute;left:-22px;top:-22px;width:44px;height:44px;border-radius:50%;box-shadow:inset 0 0 0 2px rgba(245,165,36,.55)}
+#tdemo b{position:absolute;left:-9px;top:-9px;width:18px;height:18px;border-radius:50%;background:rgba(245,165,36,.8);animation:tdrag 2.4s ease-in-out infinite}
+@keyframes tdrag{0%{transform:translate(0,0)}30%{transform:translate(38px,-14px)}65%{transform:translate(-38px,12px)}100%{transform:translate(0,0)}}
+#uidim{position:fixed;inset:0;background:rgba(0,0,0,.64);display:none;pointer-events:none}
+#uiblock{position:fixed;inset:0;z-index:5;display:none;touch-action:none}
+body.uitut #uidim,body.uitut #uiblock{display:block}
+body.uitut #aux .tb{visibility:visible!important;display:block!important}
+body.uitut #aux #dockbtn[hidden],body.uitut #aux #spinbtn{display:block!important}
+body.uitut #aux #chatbtn{visibility:hidden!important}
+body.uitut #aux [data-tap=shot],body.uitut #aux [data-tap=noclip],body.uitut #aux [data-tap=drone]{display:none!important}
+.uihl{animation:uihl .7s steps(2,start) infinite;outline-offset:3px}
+@keyframes uihl{0%{outline:3px solid transparent}50%{outline:3px solid var(--good);box-shadow:0 0 18px 4px var(--good)}}
+#res.uihl,#status.uihl{z-index:1}
+#status.tutglow{animation:tutglow .8s steps(2,start) infinite}@keyframes tutglow{50%{box-shadow:inset 0 0 0 3px var(--good),0 0 14px 2px var(--good)}}
 #tut{position:fixed;left:12px;top:150px;z-index:6;width:min(250px,42vw);background:rgba(8,13,22,.82);box-shadow:inset 0 0 0 1px var(--hazard);padding:8px 10px;font:500 12px var(--mono);color:var(--ink);pointer-events:auto}
 #tut[hidden]{display:none}#tut .th{display:flex;justify-content:space-between;align-items:center;font:700 11px var(--display);letter-spacing:.14em;text-transform:uppercase;color:var(--hazard)}
 #tut .tx{border:0;background:transparent;color:var(--dim);font-size:18px;line-height:1;padding:0 4px;cursor:pointer}#tut .tt{font:700 13px var(--display);letter-spacing:.08em;text-transform:uppercase;margin:4px 0 2px}#tut .td{color:var(--dim);line-height:1.4}
@@ -388,7 +420,7 @@ body:not(.devon) #aux [data-tap=shot],body:not(.devon) #aux [data-tap=noclip],bo
   <div id="fin" class="panel"><div class="rr"><span>Credits</span><b id="f-cr">0</b></div><div class="rr debt"><span>Debt</span><b id="f-debt">0</b></div></div>
   <div id="stn" class="panel"></div>
   </div>
-  <div id="rcol"><div id="status" class="panel">
+  <div id="rcol"><div id="rrow"><button class="tb" id="radbtn" data-tap="radar">RADAR</button><div id="status" class="panel">
     <div class="mode" id="st-mode">On foot</div>
     <div class="spd"><span id="st-spd">0.0</span><small>m/s</small></div>
     <div class="row"><span>DAMPERS</span><b id="st-damp" class="on">ON</b></div>
@@ -396,7 +428,7 @@ body:not(.devon) #aux [data-tap=shot],body:not(.devon) #aux [data-tap=noclip],bo
     <div class="row ship-only"><span>H&#8322;</span><div class="bar" id="st-bar"><i id="st-fuelbar"></i></div><b id="st-fuel">0 L</b></div>
     <div class="row ship-only"><span>MASS</span><b id="st-mass">0 t</b></div>
     <div class="row ship-only"><span>ACCEL</span><b id="st-acc">0.0 m/s&#178;</b></div>
-  </div>
+  </div></div>
   <button class="tb big" id="dampbtn" data-tap="damp">DAMP</button></div>
   <div id="topslot"></div>
   <div></div>
@@ -457,6 +489,8 @@ body:not(.devon) #aux [data-tap=shot],body:not(.devon) #aux [data-tap=noclip],bo
     <div class="btns" style="position:static"><button id="scenok">Begin</button></div>
   </div>
 </div>
+<div id="tcover" hidden>Loading practice world</div>
+<script>try{var _v=localStorage.getItem('void-engineers-tutworld')||'',_q=_v.split('|');if(_q[0]&&Date.now()-(+_q[1]||0)<45000){document.getElementById('tcover').hidden=false;window._tcT=setTimeout(function(){document.getElementById('tcover').hidden=true;},15000);}}catch(e){}</script>
 <div id="start">
   <div class="card">
     <div class="stripe"></div>
@@ -473,7 +507,7 @@ body:not(.devon) #aux [data-tap=shot],body:not(.devon) #aux [data-tap=noclip],bo
 </div>
 <div id="tutwin" class="winwrap" hidden><div class="win"><div class="stripe"></div><h2>Tutorials</h2>
   <p>Tutorials run in a separate practice world. Your saved game is not touched.</p>
-  <div class="wb"><button data-tw="move">1 &middot; Movement</button><button disabled>2 &middot; User interface (soon)</button><button disabled>3 &middot; Inventory (soon)</button><button disabled>4 &middot; Docking (soon)</button>
+  <div class="wb"><button data-tw="move">1 &middot; Movement</button><button data-tw="ui">2 &middot; User interface</button><button disabled>3 &middot; Inventory (soon)</button><button disabled>4 &middot; Docking (soon)</button><button disabled>5 &middot; Tools (soon)</button>
   <button data-tut="mine">First shift (in your own game)</button><button id="tutbtn" hidden>Hide tutorial</button><button id="twexit" hidden>Leave the practice world</button><button id="tutclose">Close</button></div></div></div>
 <div id="setwin" class="winwrap" hidden><div class="win"><div class="stripe"></div><h2>Settings</h2>
   <div class="wb"><button id="fs">Full screen</button><button id="orient">Switch to Landscape</button><button id="saver">Battery saver: off</button><button id="dev">Dev: off</button><button id="setclose">Close</button></div></div></div>
@@ -483,7 +517,7 @@ body:not(.devon) #aux [data-tap=shot],body:not(.devon) #aux [data-tap=noclip],bo
 'use strict';
 /* =====================  Void Engineers  =====================
    Part A: renderer, sky, procedural voxel asteroids, particles */
-const GAME_VER='134';
+const GAME_VER='144';
 /* no page zoom while playing: pinch, double-tap and ctrl+wheel are swallowed */
 (()=>{const no=e=>{e.preventDefault();};
   for(const n of['gesturestart','gesturechange','gestureend','dblclick'])document.addEventListener(n,no,{passive:false});
@@ -2079,8 +2113,9 @@ function toolGate(dt){   // runs on foot: keeps the tool valid and tracks ore ra
   if(!toolOK(player.tool))setTool(5);
   tool.visible=player.tool!==5&&!fcamOn;
 }
+let actDemo=false;
 function updateAct(){
-  const a=$('act');if(!a)return;const s=player.ship;
+  const a=$('act');if(!a||actDemo)return;const s=player.ship;
   const t=s?(s.guns&&s.guns.length?'FIRE':s.drills&&s.drills.length?'DRILL':''):['DRILL','WELD','CUT','PING','PAINT',''][player.tool];   // a ship fires its guns, else works its drills
   if(a._t!==t){a._t=t;a.textContent=t;a.style.visibility=t?'':'hidden';}
 }
@@ -2645,7 +2680,7 @@ function spawnStation(){
   for(let x=-5;x<=7;x++)for(let z=-5;z<=7;z++)addBlock(g,x,0,z,'hull',null);
   addBlock(g,-4,1,-3,'cargo',null);
   addBlock(g,-4,1,4,'powergen',[0,1,0]);
-  addBlock(g,-4,1,1,'gravgen',[0,1,0]);
+  addBlock(g,-4,1,1,'gravgen',[0,1,0],0,TUTW?3:1);   // practice world only: tier 3 (24 m field) takes in the PIONEER and its boarding steps
   g.fuel=g.fuelCap;   // a full tank of hydrogen to start; after that it burns ice from the warehouse
 }
 
@@ -2999,7 +3034,7 @@ function update(dt){
   updateP(dt);
   sky.position.copy(camera.position);
   camera.updateMatrixWorld(true);
-  updateMarkers();updateHUD(dt);updateStn(dt);mpFrame(dt);
+  updateMarkers();radarTick();updateHUD(dt);if(uiMock){setT(stEl.mode,'Piloting PIONEER');setT(stEl.fuel,'1500 L');stEl.fb.style.width='100%';stEl.bar.classList.remove('low');setT(stEl.mass,'42.6 t');setT(stEl.acc,'3.1 m/s\u00b2');}updateStn(dt);mpFrame(dt);
 }
 
 /* ---------- input ---------- */
@@ -3033,6 +3068,7 @@ const ACT={
   lamp(){lampOn=!lampOn;lamp.intensity=lampOn?1.7:0;},
   refuel(){refuel();},
   menu(){openMenu();},
+  radar(){radarToggle();},
   chat(){chatOpen();},
   noclip(){NOCLIP=!NOCLIP;player.vel.set(0,0,0);if(NOCLIP)player.ride=null;toast(NOCLIP?'No clip ON: fly through walls':'No clip OFF','good');document.querySelectorAll('[data-tap=noclip]').forEach(b=>b.classList.toggle('lit',NOCLIP));},
   shot(){
@@ -4414,6 +4450,8 @@ const TUT=[
   {t:'Make fuel',d:'While in the pilot seat, tap FUEL to melt ice into hydrogen.',done:()=>!!(tut&&tut.fuel)}
 ];
 let tut=null,tutAcc=0;
+{const t=document.createElement('div');t.id='tdemo';t.innerHTML='<i></i><b></b>';document.body.appendChild(t);}
+{const d=document.createElement('div');d.id='uidim';document.body.insertBefore(d,$('hud'));const b=document.createElement('div');b.id='uiblock';document.body.appendChild(b);}
 const tutEl=document.createElement('div');tutEl.id='tut';tutEl.hidden=true;document.body.appendChild(tutEl);
 tutEl.addEventListener('pointerdown',e=>{if(e.target.closest('.tx')){e.preventDefault();e.stopPropagation();if(tut){tut.hid=true;tutDraw();toast('Tutorial hidden — bring it back from the menu');}}});
 function tutOre(io,k,n){
@@ -4434,9 +4472,9 @@ const tPio=()=>grids.find(g=>g.kind==='pioneer');
 const tFix=n=>n.toFixed(1);
 const MOVE=[
   {t:'Joystick',d:coarse?'Push the joystick (the left pad) to fly. Travel 15 m.':'Use W A S D to fly. Travel 15 m.',done:()=>tut.dist>=15,prog:()=>Math.min(15,Math.round(tut.dist))+' / 15 m'},
-  {t:'Look and aim',d:coarse?'Drag a finger across the right side of the screen to look around and aim.':'Move the mouse to look around and aim.',done:()=>tut.look>=3,prog:()=>Math.min(100,Math.round(tut.look/3*100))+'%'},
+  {t:'Look and aim',demo:true,d:coarse?'Drag a finger across any area free of other buttons to look around and aim.':'Move the mouse to look around and aim.',done:()=>tut.look>=3,prog:()=>Math.min(100,Math.round(tut.look/3*100))+'%'},
   {t:'Roll, rise and fall',d:coarse?'Hold \u21b6 or \u21b7 to roll, and hold UP or DOWN to rise and fall.':'Hold Q or E to roll, and Space or C to rise and fall.',done:()=>tut.roll>=1&&tut.vert>=1,prog:()=>'Roll '+(tut.roll>=1?'\u2713':'\u2026')+' \u00b7 Rise/fall '+(tut.vert>=1?'\u2713':'\u2026')},
-  {t:'Speed up',d:'Hold the joystick forward until you reach 8 m/s. Your speed is shown top right.',done:()=>tSpd()>=8,prog:()=>tFix(tSpd())+' / 8 m/s'},
+  {t:'Speed up',hl:'status',d:'Hold the joystick forward until you reach 8 m/s. Your speed is shown in the blinking green STATUS window at the top right, in m/s (metres per second).',done:()=>tSpd()>=8,prog:()=>tFix(tSpd())+' / 8 m/s'},
   {t:'Slow down',d:'Let go of the joystick. The dampeners are ON, so you brake by yourself. Wait until you stop.',done:()=>tSpd()<.5&&player.damp&&!tInput(),prog:()=>tFix(tSpd())+' m/s'},
   {t:'Coasting',d:(coarse?'Tap DAMP':'Press Z')+' to switch the dampeners OFF. Push to reach 3 m/s, then let go. You keep drifting.',done:()=>!player.damp&&tSpd()>=3&&!tInput(),prog:()=>'Dampeners '+(player.damp?'ON':'OFF')+' \u00b7 '+tFix(tSpd())+' m/s'},
   {t:'Brake',d:(coarse?'Tap DAMP':'Press Z')+' to switch the dampeners back ON. They push against your drift until you stop.',done:()=>player.damp&&tSpd()<.5,prog:()=>tFix(tSpd())+' m/s'},
@@ -4446,7 +4484,35 @@ const MOVE=[
   {t:'Ship speed',d:'Thrust to 10 m/s, then let go. With the dampeners ON the ship brakes itself. Wait until it stops.',done:()=>tut.m.hi&&tSpd()<1&&player.damp,prog:()=>tFix(tSpd())+' m/s'+(tut.m.hi?' \u00b7 now let go':'')},
   {t:'Ship coasting',d:'Switch the dampeners OFF, thrust a little, then let go and coast. Then switch them ON to brake.',done:()=>tut.m.coast&&player.damp&&tSpd()<1,prog:()=>'Drift '+(tut.m.coast?'\u2713':'\u2026')+' \u00b7 Dampeners '+(player.damp?'ON':'OFF')}
 ];
+const K=(t,k)=>coarse?t:k;
+const UIT=[
+  {next:true,t:'Welcome',d:'This tour lights up every button and HUD window, one at a time, and tells you what it does. Nothing you tap now will do anything in the game. Tap Next.'},
+  {next:true,ui:'#stick',t:'Joystick',d:'The left pad. Push it to walk or fly; push it further to go faster. In a ship it thrusts in the direction you push.'},
+  {next:true,ui:'[data-hold=up]',t:'UP',d:'Hold UP to rise. Standing in gravity it makes you jump.'},
+  {next:true,ui:'[data-hold=down]',t:'DOWN',d:'Hold DOWN to sink, or to crouch down when you are standing in gravity.'},
+  {next:true,ui:'[data-hold=rl],[data-hold=rr]',t:'Roll arrows',d:'Hold either arrow to roll your view left or right, like tipping your head. Useful in space where there is no up.'},
+  {next:true,demo:true,t:'Looking around',d:'Drag a finger across any area free of buttons to turn your view and aim. There is no button for it.'},
+  {next:true,ui:'#dampbtn',t:'DAMP',d:'Dampers ON: you slow to a stop when you let go. OFF: you keep drifting. The Status window shows which one is active.'},
+  {next:true,cycle:true,ui:'#toolbtn,#act',t:'TOOL',d:'Each tap switches to the next tool. The big button beside it shows the tool you hold: DRILL, WELD (torch), CUT, PING (detector) and PAINT. Watch it change.'},
+  {next:true,ui:'#act',t:'Tool button',d:'Uses the current tool on whatever the crosshair points at. Hold it down to drill, weld or cut. Its name changes with the tool.'},
+  {next:true,ui:'#usebtn',t:'INTERACT',d:'Lights up when something is within about 3 m: tap it to sit in the pilot seat, leave it, or open a machine or storage.'},
+  {next:true,ui:'[data-tap=cam]',t:'CAM',d:'Changes the camera view, such as flying your ship from behind.'},
+  {next:true,ui:'[data-tap=lamp]',t:'LAMP',d:'Switches your lamp on and off.'},
+  {next:true,ui:'#fuelbtn',t:'FUEL',d:'Melts ice from your ship into hydrogen fuel. It turns yellow as the tanks run low, red when nearly empty, and flashes when empty.'},
+  {next:true,ui:'[data-tap=menu]',t:'MENU',d:'Pauses the game and opens the main menu, where you can resume, change settings or run a tutorial.'},
+  {next:true,ui:'#termbtn',t:'TERM',d:'Opens the control panel: Production, Inventory, Market and Interface. It works inside a gravity field, or while you pilot a ship.'},
+  {next:true,ui:'#dockbtn',t:'DOCK',d:'Appears within 5 m of a Landing Pad. It lights up when you are slower than 3.1 m/s: tap it to set down and lock on. Once docked it turns into a green UNDOCK button.'},
+  {next:true,ui:'#rotbtn',t:'ROT',d:'While building, turns the block you are placing to face a different way.'},
+  {next:true,ui:'#spinbtn',t:'SPIN',d:'For slopes and corners: turns the shape a quarter turn around its facing.'},
+  {next:true,ui:'#radbtn',t:'RADAR',d:'Opens the Radar. Tick a ship, ore site, outpost or waypoint and it gets an icon on your screen; off screen, the icon rides the screen edge toward it. You can also set a waypoint there.'},
+  {next:true,ui:'#res',at:'status',t:'Cargo window',d:'Top left. It shows what you carry (Iron, Silicon, Ice, Platinum) and how full your pack is. Inside a ship it becomes the ship’s Hold.'},
+  {next:true,ui:'#status',t:'Status window',d:'Top right. On foot it shows the tool you hold, your speed in m/s and whether the dampers are ON or OFF.'},
+  {next:true,ui:'#status',mock:true,t:'Status in a ship',d:'Sitting in a ship, the Status window changes. This is an example PIONEER: it also shows hydrogen fuel left, the ship\u2019s mass and its acceleration.'},
+  {next:true,ui:'#cross',t:'Crosshair',d:'The aim point. Tools work on whatever it touches, and its name appears at the top of the screen.'},
+  {next:true,t:'Tools',d:'For a look at each tool, check out the Tools Tutorial.'}
+];
 const TUTS={
+  ui:{name:'User interface',steps:UIT,end:'That is every button and window. Next up: Inventory and Docking. Tap Exit to go back to your game.'},
   mine:{name:'First shift',steps:TUT,end:'Set the PIONEER down on the OUTPOST, then refine the ore in the machines aboard (TERM). Every ingot you sell pays down the loan.'},
   move:{name:'Movement',steps:MOVE,end:'You can fly on foot and in a ship. Next up: User interface, Inventory and Docking. Tap Exit to go back to your game.'}
 };
@@ -4498,8 +4564,23 @@ function tutTick(dt){
   }else if(tut.endT>0){tut.endT-=.5;if(tut.endT<=0){tut.fin=true;}}
   tutDraw();
 }
+let tutHL=[],tutUIs=null,tutCyc=0,uiMock=false;
+function tutUI(st){   // User interface tour: dim the world, force every button visible, blink the current target green
+  if(tutUIs===st)return;tutUIs=st;
+  uiMock=!!(st&&st.mock);document.body.classList.toggle('mockship',uiMock);
+  clearInterval(tutCyc);tutCyc=0;
+  if(actDemo){actDemo=false;const a=$('act');if(a)a._t=null;updateAct();}
+  if(st&&st.cycle){const a=$('act'),L=['DRILL','WELD','CUT','PING','PAINT'];let i=0;actDemo=true;
+    const f=()=>{if(a){a.textContent=L[i%L.length];a.style.visibility='';a._t=L[i%L.length];}i++;};f();tutCyc=setInterval(f,2000);}
+  document.body.classList.toggle('uitut',!!st);
+  for(const e of tutHL)e.classList.remove('uihl');tutHL=[];
+  if(st&&st.ui)for(const e of document.querySelectorAll(st.ui)){e.classList.add('uihl');tutHL.push(e);}
+}
 function tutDraw(){
   const show=!!tut&&!tut.hid&&!tut.fin&&running;
+  try{const cs=show&&tut.s<tutSet().steps.length?tutSet().steps[tut.s]:null;document.body.classList.toggle('tdemo',!!(cs&&cs.demo));}catch(e){}
+  try{tutUI(show&&tut.id==='ui'&&tut.s<tutSet().steps.length?tutSet().steps[tut.s]:null);}catch(e){}
+  try{const sw=$('status');if(sw)sw.classList.toggle('tutglow',!!(tut&&!tut.hid&&!tut.fin&&running&&tut.s<tutSet().steps.length&&tutSet().steps[tut.s].hl==='status'));}catch(e){}
   if(tutEl.hidden===show)tutEl.hidden=!show;
   const mb=$('tutbtn');if(mb){mb.hidden=!(tut&&!tut.fin);setT(mb,tut&&tut.hid?'Show tutorial':'Hide tutorial');}
   if(!show)return;
@@ -4510,8 +4591,122 @@ function tutDraw(){
     h='<div class="th">'+T.name+' \u00b7 '+(tut.s+1)+'/'+S.length+'<button class="tx" aria-label="Hide">\u00d7</button></div><div class="tt">'+st.t+'</div><div class="td">'+st.d+'</div>';
     if(st.need)h+='<div class="tn">'+Object.keys(st.need).map(k=>{const g=Math.min(st.need[k],tut.got[k]||0);return '<span class="'+(g>=st.need[k]?'ok':'')+'">'+RNAME[k]+' '+g+'/'+st.need[k]+'</span>';}).join('')+'</div>';
     else if(st.prog)h+='<div class="tn"><span>'+st.prog()+'</span></div>';
-    if(TUTW||st.next)h+='<div class="tb2">'+(st.next?'<button class="nx" data-a="next">Next</button>':'')+'<button data-a="skip">Skip</button>'+ex+'</div>';}
+    if(TUTW||st.next)h+='<div class="tb2">'+(st.next?'<button class="nx" data-a="next">Next</button>':'<button data-a="skip">Skip</button>')+ex+'</div>';}
   if(tutEl._h!==h){tutEl._h=h;tutEl.innerHTML=h;}
+  tutPlace(tut.s<S.length&&S[tut.s].at==='status');
+}
+/* the card covers the Cargo panel (top left); a step with at:'status' (one that talks about Cargo contents) moves it over the Status panel instead; never the joystick */
+function tutPlace(st){
+  try{
+    if(FLIP){tutEl.style.left=tutEl.style.top='';return;}
+    const r=($(st?'status':'res')).getBoundingClientRect();
+    if(!r.width){tutEl.style.left=tutEl.style.top='';return;}
+    const w=tutEl.offsetWidth||250;
+    const x=st?r.right-w:r.left;
+    tutEl.style.left=Math.max(4,Math.min(x,window.innerWidth-w-4))+'px';
+    tutEl.style.top=Math.max(4,r.top)+'px';
+  }catch(e){}
+}
+
+/* ---------- RADAR: track ships, ore sites, outposts, a waypoint and unknown rocks with HUD icons ---------- */
+const RADAR_CATS=[['ships','Ships','#8fe3f5'],['ore','Known ore sites','#f5a524'],['outposts','Outposts','#72e3a8'],['wp','Waypoints','#ffffff'],['unk','Unknown','#c58cff']];
+const RAD_NEAR=70,RAD_PING=400,RAD_ID=750;
+const radTracked=new Set();   // tracked things: a grid, an asteroid, or the string 'wp'
+let radWP=null;                // the one custom waypoint (a world position)
+const WPKEY='void-engineers-waypoint';
+try{if(!TUTW){const w=JSON.parse(localStorage.getItem(WPKEY)||'null');if(w&&isFinite(w.x)&&isFinite(w.y)&&isFinite(w.z)){radWP=new V3(w.x,w.y,w.z);radTracked.add('wp');}}}catch(e){}
+function radItems(){
+  const out=[];
+  for(const g of grids){
+    if(g===player.ship)continue;
+    if(g.kind==='drone'){   // enemy drones are an unidentified contact until they come within 750 m
+      if(g.group.position.distanceTo(camera.position)>RAD_ID)out.push({cat:'unk',key:g,name:'Unknown contact',pos:g.group.position});
+      else out.push({cat:'ships',key:g,name:g.name,pos:g.group.position});
+      continue;}
+    out.push({cat:g.station?'outposts':'ships',key:g,name:g.name,pos:g.group.position});
+  }
+  for(const a of asteroids){   // an asteroid only shows up once you have been close (70 m) or the Detector has pinged it (400 m)
+    if(a.surveyed)out.push({cat:'ore',key:a,name:a.name,sub:a.comp,pos:a.ctr});
+    else if(a.rad)out.push({cat:'ore',key:a,name:'Unsurveyed asteroid',pos:a.ctr});
+  }
+  if(radWP)out.push({cat:'wp',key:'wp',name:'Waypoint',pos:radWP});
+  return out;
+}
+const radWin=document.createElement('div');radWin.className='winwrap';radWin.id='radwin';radWin.hidden=true;
+radWin.innerHTML='<div class="win"><div class="stripe"></div><h2>Radar</h2><p>Tick a box to track it. Tracked things get an icon on your screen; if it is off screen the icon rides the screen edge toward it.</p><div id="radbody" style="padding:0 16px;display:grid;gap:10px"></div><div class="wb" style="margin-top:10px"><button id="radclose">Close</button></div></div>';
+document.body.appendChild(radWin);
+let radSig='',radItemsNow=[];
+const radDist=p=>Math.round(p.distanceTo(camera.position)/5)*5;
+function radRender(){
+  const items=radItemsNow=radItems();radSig=items.map(i=>i.cat+i.name+(radTracked.has(i.key)?1:0)).join('|');
+  let h='';
+  for(const [c,label,col] of RADAR_CATS){
+    const its=items.map((it,ix)=>[it,ix]).filter(p=>p[0].cat===c);
+    const allOn=its.length&&its.every(p=>radTracked.has(p[0].key));
+    h+='<div class="mcard" style="padding:8px 10px;gap:6px"><button class="radrow" data-rc="'+c+'" style="font-weight:700"><span class="radbox'+(allOn?' on':'')+'" style="--c:'+col+'"></span><span>'+label+' ('+its.length+')</span></button>';
+    for(const [it,ix] of its)h+='<button class="radrow sub" data-ri="'+ix+'"><span class="radbox'+(radTracked.has(it.key)?' on':'')+'" style="--c:'+col+'"></span><span>'+it.name.replace(/&/g,'&amp;').replace(/</g,'&lt;')+(it.sub?' · '+it.sub:'')+'</span><em data-d="'+ix+'">'+radDist(it.pos)+' m</em></button>';
+    if(c==='wp')h+='<button class="rb" data-rw="1" style="justify-self:start">'+(radWP?'Remove Waypoint':'Set Waypoint')+'</button>';
+    else if(!its.length)h+='<div class="qrow">None</div>';
+    h+='</div>';
+  }
+  $('radbody').innerHTML=h;
+}
+function radOpen(){radRender();radWin.hidden=false;}
+function radClose(){radWin.hidden=true;}
+function radarToggle(){if(radWin.hidden)radOpen();else radClose();}
+$('radclose').addEventListener('click',radClose);
+radWin.addEventListener('pointerdown',e=>{if(e.target===radWin)radClose();});
+$('radbody').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.rw){
+    if(radWP){radWP=null;radTracked.delete('wp');try{localStorage.removeItem(WPKEY);}catch(_){}}
+    else{radWP=camera.position.clone();radTracked.add('wp');try{if(!TUTW)localStorage.setItem(WPKEY,JSON.stringify({x:radWP.x,y:radWP.y,z:radWP.z}));}catch(_){}toast('Waypoint set here and tracked','good');}
+  }else if(b.dataset.rc){
+    const its=radItemsNow.filter(i=>i.cat===b.dataset.rc),allOn=its.length&&its.every(i=>radTracked.has(i.key));
+    for(const i of its){if(allOn)radTracked.delete(i.key);else radTracked.add(i.key);}
+  }else if(b.dataset.ri!==undefined){
+    const i=radItemsNow[+b.dataset.ri];if(i){if(radTracked.has(i.key))radTracked.delete(i.key);else radTracked.add(i.key);}
+  }
+  radRender();
+});
+setInterval(()=>{if(radWin.hidden)return;const items=radItems(),sig=items.map(i=>i.cat+i.name+(radTracked.has(i.key)?1:0)).join('|');
+  if(sig!==radSig){radRender();return;}
+  radItemsNow=items;for(const em of radWin.querySelectorAll('[data-d]')){const it=items[+em.dataset.d];if(it)setT(em,radDist(it.pos)+' m');}},1000);
+const radPool=new Map(),_rv=new V3();
+function radDiscover(){
+  const P=camera.position;
+  for(const a of asteroids){
+    if(a.rad)continue;
+    const d=a.ctr.distanceTo(P)-a.R;
+    if(d<=RAD_NEAR||(pingT>0&&d<=RAD_PING))a.rad=true;
+  }
+}
+function radarTick(){
+  radDiscover();
+  if(!radTracked.size&&!radPool.size)return;
+  const W=gW(),H=gH(),seen=new Set(),M=26;
+  for(const it of radItems()){
+    if(!radTracked.has(it.key))continue;
+    seen.add(it.key);
+    let el=radPool.get(it.key);
+    if(!el){el=document.createElement('div');el.className='rad '+it.cat;el.innerHTML='<i></i><span></span>';$('markers').appendChild(el);radPool.set(it.key,el);}
+    const d=it.pos.distanceTo(camera.position);
+    _rv.copy(it.pos).applyMatrix4(camera.matrixWorldInverse);
+    const nd=_rv.clone().applyMatrix4(camera.projectionMatrix);   // ndc after the perspective divide below
+    let px,py,edge=false;
+    const w4=-_rv.z;
+    if(w4>0.1){const nx=nd.x,ny=nd.y;px=(nx*.5+.5)*W;py=(-ny*.5+.5)*H;edge=Math.abs(nx)>1||Math.abs(ny)>1;}else edge=true;
+    if(edge){
+      let dx=_rv.x,dy=_rv.y;if(Math.hypot(dx,dy)<1e-4){dx=0;dy=-1;}
+      if(w4>0.1){px=(nd.x*.5+.5)*W;py=(-nd.y*.5+.5)*H;dx=px-W/2;dy=-(py-H/2);}
+      const ex=W/2-M,ey=H/2-M,s=1/Math.max(Math.abs(dx)/ex,Math.abs(dy)/ey);
+      px=W/2+dx*s;py=H/2-dy*s;
+    }
+    el.classList.toggle('edge',edge);
+    el.style.transform='translate3d('+(px-9).toFixed(1)+'px,'+(py-9).toFixed(1)+'px,0)';
+    setT(el.lastChild,(edge?'':it.name+' · ')+Math.round(d/5)*5+' m');
+  }
+  for(const [k,el] of radPool)if(!seen.has(k)){el.remove();radPool.delete(k);}
 }
 
 /* ---------- saves ---------- */
@@ -4829,7 +5024,11 @@ function boot(){
   if(TUTW){   // practice world: start the tutorial straight away, no second tap
     startTut(TUTW);const tx=$('twexit');if(tx)tx.hidden=false;
     try{localStorage.removeItem(TWKEY);}catch(e){}
-    try{begin();}catch(e){console.error(e);}
+    const tcv=$('tcover');
+    if(coarse&&tcv){   // a tap is needed to enter full screen (browsers only allow it from a tap), so ask for one
+      clearTimeout(window._tcT);tcv.textContent='Tap to begin';tcv.style.cursor='pointer';
+      tcv.addEventListener('click',()=>{tcv.hidden=true;try{begin();}catch(e){console.error(e);}},{once:true});
+    }else{try{begin();}catch(e){console.error(e);}if(tcv)tcv.hidden=true;}
   }
   try{if(window.claude&&window.claude.hot&&window.claude.hot.snapshot)window.claude.hot.snapshot(()=>({save:(wiping||TUTW)?null:serialize()}));}catch(e){}
   window.__VE={grindStep,gridOn,powerTick,spawnDrone,spawnPlayerDrone,droneTick,damageBlock,repairBlock,hpOf,dmgEff,fireBolt,boltsTick,bolts,wipOn,wipUnit,wipBegin,wipDone,mk,mktClick,mktTick,mktBuild,mktRefresh,MKT,mkFee,mkTier,player,grids,asteroids,update,begin,ACT,keys,tb,camera,inv,mineAt,rayAst,pickAll,aim,serialize,restoreSave,saveGame,
@@ -4855,10 +5054,11 @@ window.addEventListener('pagehide',saveGame);
     if(!booted)return;
     const wasRun=running;
     try{if(!TUTW)saveGame();localStorage.setItem(TWKEY,b.dataset.tw+'|'+Date.now());}catch(e){toast('The practice world needs browser storage','bad');return;}
-    tw.hidden=true;toast('Loading the practice world\u2026','good');
+    tw.hidden=true;{const tcv=$('tcover');if(tcv)tcv.hidden=false;}   // black screen while the page reloads
+
     wiping=true;running=false;
     // if the page does not reload (blocked here), undo the freeze and say so
-    setTimeout(()=>{wiping=false;running=wasRun;try{localStorage.removeItem(TWKEY);}catch(e){}toast('The page could not reload here. Open the game in its own tab or full screen and try again.','bad');},4000);
+    setTimeout(()=>{{const tcv=$('tcover');if(tcv)tcv.hidden=true;}wiping=false;running=wasRun;try{localStorage.removeItem(TWKEY);}catch(e){}toast('The page could not reload here. Open the game in its own tab or full screen and try again.','bad');},4000);
     try{location.reload();}catch(e){}
   });
   const tx=$('twexit');if(tx)tx.addEventListener('click',tutExit); }
