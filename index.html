@@ -1,3 +1,4 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <meta charset="utf-8">
 <title>Void Engineers</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -200,7 +201,7 @@ body.gravity .mode{color:var(--ice)}
 .cost u{text-decoration:none;color:var(--dim);font-size:10px}
 #termbtn{display:none}
 #gname{flex:1;min-width:0;max-width:260px;background:rgba(255,255,255,.06);border:0;box-shadow:inset 0 0 0 1px var(--edge);color:var(--ink);font:600 15px var(--mono);padding:9px 10px}#gname:focus{outline:2px solid var(--ice)}
-#upbtn{color:var(--good);box-shadow:inset 0 0 0 1px var(--good)}#upbtn[hidden],#dockbtn[hidden]{display:none}#spinbtn{display:none}body.shaped #spinbtn{display:block}#dockbtn{color:var(--ice);box-shadow:inset 0 0 0 1px var(--ice)}#dockbtn.lit{color:var(--hazard-ink)}
+#upbtn{color:var(--good);box-shadow:inset 0 0 0 1px var(--good)}#upbtn[hidden],#dockbtn[hidden]{display:none}#spinbtn{display:none}body.shaped #spinbtn{display:block}#dockbtn{color:var(--ice);box-shadow:inset 0 0 0 1px var(--ice)}#dockbtn.rdy{background:var(--hazard);color:var(--hazard-ink);box-shadow:none}#dockbtn.out{background:var(--good);color:#06120c;box-shadow:none}
 body.gravity #termbtn,.piloting #termbtn{display:block}
 body[data-tool="1"] #hotbar{opacity:1}
 #hotbar{grid-auto-flow:column;align-items:center;justify-content:center}
@@ -265,8 +266,8 @@ body[data-tool="3"] #cross::before,body[data-tool="3"] #cross::after{background:
 .fin-big{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-variant-numeric:tabular-nums}
 .fin-big b{font:600 18px var(--display);letter-spacing:.04em}.fin-big small{display:block;color:var(--dim);font:500 11px var(--mono)}
 .dbar{height:6px;background:rgba(255,255,255,.1)}.dbar i{display:block;height:100%;width:0;background:var(--good)}
-.grow2{display:grid;grid-template-columns:minmax(0,1.3fr) .9fr .7fr .7fr auto;gap:6px 8px;align-items:center;font-size:12px;font-variant-numeric:tabular-nums}
-.grow2 .bt{justify-content:flex-end}
+.grow2{display:grid;grid-template-columns:minmax(0,1.3fr) .7fr .7fr auto;gap:6px 8px;align-items:center;font-size:12px;font-variant-numeric:tabular-nums}
+.grow2 .bt{justify-content:flex-end}.tgrid{display:grid;gap:4px;margin-top:8px}.tgrid .mh{margin-bottom:0}
 .sstrip{display:grid;gap:4px;padding:8px 12px;background:rgba(143,227,245,.07);box-shadow:inset 0 0 0 1px rgba(143,227,245,.35)}
 .srow{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;font-size:13px}
 .srow .sl{color:var(--dim);font-size:11px;letter-spacing:.06em;text-transform:uppercase;flex-basis:100%}
@@ -282,7 +283,7 @@ body[data-tool="3"] #cross::before,body[data-tool="3"] #cross::after{background:
 .mh i.tr{font-style:normal;font-weight:500;letter-spacing:.04em;text-transform:none;color:var(--ice);font-size:12px;margin-left:6px}
 #newg{border:0;background:transparent;box-shadow:inset 0 0 0 1px var(--edge);color:var(--dim);font:600 15px var(--display);letter-spacing:.16em;text-transform:uppercase;padding:10px 20px;cursor:pointer}
 #newg[hidden]{display:none}
-#dev,#orient{border:0;background:transparent;box-shadow:inset 0 0 0 1px var(--edge);color:var(--dim);font:600 15px var(--display);letter-spacing:.16em;text-transform:uppercase;padding:10px 20px;cursor:pointer}
+#dev,#orient,#saver{border:0;background:transparent;box-shadow:inset 0 0 0 1px var(--edge);color:var(--dim);font:600 15px var(--display);letter-spacing:.16em;text-transform:uppercase;padding:10px 20px;cursor:pointer}
 #tnote{position:fixed;left:50%;top:27%;transform:translateX(-50%);z-index:40;display:flex;gap:12px;align-items:center;max-width:min(520px,90vw);background:rgba(8,13,22,.92);box-shadow:inset 0 0 0 1px var(--hazard);padding:10px 14px;font:500 13px var(--mono);color:var(--ink)}
 #tnote[hidden]{display:none}#tnote b{color:var(--hazard)}#tnote button{border:0;background:var(--hazard);color:var(--hazard-ink);font:700 13px var(--display);letter-spacing:.12em;padding:8px 14px;cursor:pointer}
 .tutrow{align-items:center;flex-wrap:wrap}.tutrow .tl{font:600 12px var(--display);letter-spacing:.22em;color:var(--hazard);text-transform:uppercase;margin-right:4px}
@@ -293,8 +294,19 @@ body[data-tool="3"] #cross::before,body[data-tool="3"] #cross::after{background:
 #tut .tx{border:0;background:transparent;color:var(--dim);font-size:18px;line-height:1;padding:0 4px;cursor:pointer}#tut .tt{font:700 13px var(--display);letter-spacing:.08em;text-transform:uppercase;margin:4px 0 2px}#tut .td{color:var(--dim);line-height:1.4}
 #tut .tn{display:flex;flex-wrap:wrap;gap:3px 10px;margin-top:5px}#tut .tn .ok{color:var(--good)}
 body.termopen #tut{display:none}
+#tut .tb2{display:flex;gap:6px;margin-top:6px}#tut .tb2 button{flex:1;border:0;background:transparent;box-shadow:inset 0 0 0 1px var(--edge);color:var(--ink);font:600 11px var(--display);letter-spacing:.12em;text-transform:uppercase;padding:6px 4px;cursor:pointer}#tut .tb2 button.nx{background:var(--hazard);color:var(--hazard-ink);box-shadow:none}
+.winwrap{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:rgba(3,5,9,.74);padding:16px;box-sizing:border-box;touch-action:pan-y}
+.winwrap[hidden]{display:none!important}
+.win{width:min(380px,100%);max-height:100%;overflow-y:auto;background:#0b121d;box-shadow:inset 0 0 0 1px var(--edge);padding:0 0 14px;touch-action:pan-y}
+.win .stripe{height:10px}
+.win h2{margin:12px 16px 4px;font:700 18px var(--display);letter-spacing:.18em;text-transform:uppercase;color:var(--hazard)}
+.win p{margin:0 16px 8px;color:var(--dim);font-size:11px;line-height:1.4}
+.win .wb{display:grid;gap:8px;padding:0 16px}
+.win .wb button{border:0;background:transparent;box-shadow:inset 0 0 0 1px var(--edge);color:var(--ink);font:600 14px var(--display);letter-spacing:.14em;text-transform:uppercase;padding:11px 14px;text-align:left;cursor:pointer}
+.win .wb button:disabled{opacity:.4;cursor:default}.win .wb button[hidden]{display:none}
+.win .wb #fs,.win .wb #orient,.win .wb #saver,.win .wb #dev,.win .wb #tutbtn{text-align:left;padding:11px 14px;font-size:14px}
 @media (max-height:480px){#tut{top:128px;font-size:11px;padding:6px 8px}}
-#dev.on{color:var(--hazard);box-shadow:inset 0 0 0 1px var(--hazard)}
+#dev.on{color:var(--hazard);box-shadow:inset 0 0 0 1px var(--hazard)}#saver.on{color:var(--good);box-shadow:inset 0 0 0 1px var(--good)}
 #devtag{position:fixed;left:50%;bottom:4px;transform:translateX(-50%);z-index:30;font:700 10px var(--mono);letter-spacing:.2em;color:var(--hazard);background:rgba(0,0,0,.55);padding:2px 8px;pointer-events:none}
 #devtag[hidden]{display:none}
 #mp{margin:10px 0;padding:10px 12px;box-shadow:inset 0 0 0 1px var(--edge);display:grid;gap:8px}
@@ -310,6 +322,18 @@ body.termopen #tut{display:none}
 #mpbadge[hidden]{display:none}
 .pname{position:absolute;left:0;top:0;font:700 11px var(--mono);color:#fff;text-shadow:0 0 3px #000,0 0 6px #000;pointer-events:none;white-space:nowrap}
 .pname[hidden]{display:none}
+#chatlog{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(12px + env(safe-area-inset-bottom,0px));width:min(44vw,380px);display:grid;gap:2px;pointer-events:none;z-index:25}
+#chatlog div{font:500 12px/1.3 var(--mono);color:var(--ink);background:rgba(8,13,22,.66);padding:2px 8px;text-shadow:0 1px 2px #000;overflow-wrap:anywhere}
+#chatlog div b{color:var(--hazard);font-weight:700}
+#chatlog div.old{display:none}
+#chatlog.open div.old{display:block}
+#chatbar{position:fixed;left:0;right:0;top:0;z-index:40;display:flex;gap:8px;box-sizing:border-box;padding:calc(6px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 6px max(16px,env(safe-area-inset-left,0px));background:rgba(8,13,22,.94);box-shadow:0 1px 0 var(--edge)}
+#chatbar[hidden]{display:none}
+#chatbar input{flex:1;min-width:0;background:rgba(255,255,255,.06);border:0;box-shadow:inset 0 0 0 1px var(--edge);color:var(--ink);font:600 14px var(--mono);padding:8px 10px;-webkit-user-select:text;user-select:text}
+#chatbar button{border:0;background:transparent;box-shadow:inset 0 0 0 1px var(--edge);color:var(--ink);font:600 13px var(--display);letter-spacing:.14em;text-transform:uppercase;padding:8px 14px}
+#chatbar #chatsend{background:var(--hazard);color:var(--hazard-ink);box-shadow:none}
+#aux #chatbtn{grid-column:5;grid-row:3}
+body.mpon #aux #chatbtn{visibility:visible}
 @media (prefers-reduced-motion:reduce){.toast{animation:none}}
 
 /* fixed button bar: every button keeps its place; unused ones are only hidden */
@@ -347,6 +371,8 @@ body:not(.devon) #aux [data-tap=shot],body:not(.devon) #aux [data-tap=noclip],bo
 <div id="gframe"></div>
 <div id="toast"></div>
 <div id="mpbadge" hidden></div>
+<div id="chatlog"></div>
+<form id="chatbar" hidden><input id="chatin" maxlength="160" autocomplete="off" autocapitalize="sentences" enterkeyhint="send" placeholder="Message the team"><button type="submit" id="chatsend">Send</button><button type="button" id="chatx" aria-label="Close chat">X</button></form>
 
 <div id="hud">
   <div id="left">
@@ -387,6 +413,7 @@ body:not(.devon) #aux [data-tap=shot],body:not(.devon) #aux [data-tap=noclip],bo
           <button class="tb" id="dockbtn" data-tap="dock" hidden>DOCK</button>
           <button class="tb" id="rotbtn" data-tap="orient">ROT</button>
           <button class="tb" id="spinbtn" data-tap="spin">SPIN</button>
+          <button class="tb" id="chatbtn" data-tap="chat">CHAT</button>
           <button class="tb" data-tap="shot">SHOT</button>
           <button class="tb" data-tap="noclip">CLIP</button>
           <button class="tb" data-tap="drone">DRONE</button>
@@ -433,56 +460,6 @@ body:not(.devon) #aux [data-tap=shot],body:not(.devon) #aux [data-tap=noclip],bo
   <div class="card">
     <div class="stripe"></div>
     <h1>Void Engineers</h1>
-    <div id="howto" hidden>
-    <p class="sub mob" style="color:var(--hazard)">Turn your phone sideways for the full control layout.</p>
-    <h2>First shift</h2>
-    <ol class="steps">
-      <li><b>1</b><span>The rocks out there are uncharted. Take out the <em style="color:var(--hazard);font-style:normal">Detector</em> and fly close to one: it gets a name, a type and a waypoint.</span></li>
-      <li><b>2</b><span>Drill ore by hand, then walk up the steps and through the door of the PIONEER, sit in the pilot seat and mine with the ship. Dig deep: some rocks hide buried deposits.</span></li>
-      <li><b>3</b><span>Dock at the OUTPOST, move the ore into storage and refine it into ingots. Build more storage, power, lights, even new ships.</span></li>
-      <li><b>4</b><span>Build a Trade Beacon. Freight traders buy your goods, and every sale goes toward the loan.</span></li>
-    </ol>
-    <h2>Controls</h2>
-    <div class="keys desk">
-      <div><kbd>W A S D</kbd><span>move / thrust</span></div>
-      <div><kbd>Space</kbd><kbd>C</kbd><span>up / down (jump in gravity)</span></div>
-      <div><kbd>Mouse</kbd><span>look (click to capture)</span></div>
-      <div><kbd>Q</kbd><kbd>E</kbd><span>roll</span></div>
-      <div><kbd>LMB</kbd><span>use current tool</span></div>
-      <div><kbd>T</kbd><kbd>B</kbd><span>next tool: drill, torch, cutter, detector</span></div>
-      <div><kbd>RMB</kbd><span>quick cut (70% refund)</span></div>
-      <div><kbd>K</kbd><span>control panel for machines</span></div>
-      <div><kbd>Tab</kbd><span>choose block (torch)</span></div>
-      <div><kbd>U</kbd><kbd>G</kbd><span>grid panel (rename, upgrades) / dock</span></div>
-      <div><kbd>Wheel</kbd><span>next tool, or block with torch</span></div>
-      <div><kbd>X</kbd><span>rotate block facing</span></div>
-      <div><kbd>F</kbd><span>sit in / leave the pilot seat</span></div>
-      <div><kbd>Z</kbd><span>inertial dampers</span></div>
-      <div><kbd>V</kbd><span>third person (in ship)</span></div>
-      <div><kbd>R</kbd><span>melt ice into hydrogen</span></div>
-      <div><kbd>L</kbd><span>lamp</span></div>
-      <div><kbd>Shift</kbd><span>boost on foot</span></div>
-      <div><kbd>H</kbd><kbd>M</kbd><span>this menu / mute</span></div>
-      <div><kbd>P</kbd><span>screenshot (to send to Claude)</span></div>
-      <div><kbd>N</kbd><span>no clip: fly through walls (debug)</span></div>
-      <div><kbd>Arrows</kbd><span>look if mouse capture fails</span></div>
-    </div>
-    <div class="keys mob">
-      <div><kbd>Left pad</kbd><span>move / thrust</span></div>
-      <div><kbd>Drag screen</kbd><span>look</span></div>
-      <div><kbd>TOOL</kbd><span>next tool: drill, torch, cutter, detector</span></div>
-      <div><kbd>ACT</kbd><span>use the current tool</span></div>
-      <div><kbd>Block tile</kbd><span>torch only: tap the tile to choose a block (station blocks need a gravity field)</span></div>
-      <div><kbd>TERM</kbd><span>Production and Trade tabs: load goods into Cargo Containers, a Trade Beacon calls freight traders, pay down the loan</span></div>
-      <div><kbd>TERM › Interface</kbd><span>the ship or station you are on: rename it, power it down, upgrade its parts (hold an item to see what the upgrade does)</span></div>
-      <div><kbd>INTERACT</kbd><span>sit in / leave the pilot seat, open a machine or storage panel (stand within about 3 m; the button lights up when something is in reach)</span></div>
-      <div><kbd>ROT</kbd><span>rotate block facing</span></div>
-      <div><kbd>SPIN</kbd><span>slopes and corners: turn the shape a quarter turn around its facing</span></div>
-      <div><kbd>DOCK</kbd><span>while flying: appears near a Landing Pad (12 m) or with the legs within a block of a flat station panel; snaps you down and locks. UNDOCK to lift off</span></div>
-      <div><kbd>FUEL</kbd><span>melt ice into hydrogen</span></div>
-    </div>
-    <div class="btns tutrow"><span class="tl">Tutorials</span><button data-tut="move">Flight basics</button><button data-tut="mine">First shift</button></div>
-    </div>
     <div id="mp" hidden>
       <h2>Multiplayer</h2>
       <label>Your name <input id="mpname" maxlength="18" autocomplete="off" spellcheck="false"></label>
@@ -490,16 +467,22 @@ body:not(.devon) #aux [data-tap=shot],body:not(.devon) #aux [data-tap=noclip],bo
       <div id="mpst">Not connected</div>
       <button id="mpleave">Leave room</button>
     </div>
-    <div class="btns"><button id="mpbtn">Multiplayer</button><button id="go">Launch</button><button id="fs">Full screen</button><button id="newg" hidden>New game</button><button id="how">How to Play</button><button id="orient">Switch to Landscape</button><button id="dev">Dev: off</button><button id="tutbtn" hidden>Hide tutorial</button></div>
+    <div class="btns"><button id="go">Launch</button><button id="newg" hidden>New game</button><button id="mpbtn">Multiplayer</button><button id="tutmenubtn">Tutorials</button><button id="setbtn">Settings</button></div>
   </div>
 </div>
+<div id="tutwin" class="winwrap" hidden><div class="win"><div class="stripe"></div><h2>Tutorials</h2>
+  <p>Tutorials run in a separate practice world. Your saved game is not touched.</p>
+  <div class="wb"><button data-tw="move">1 &middot; Movement</button><button disabled>2 &middot; User interface (soon)</button><button disabled>3 &middot; Inventory (soon)</button><button disabled>4 &middot; Docking (soon)</button>
+  <button data-tut="mine">First shift (in your own game)</button><button id="tutbtn" hidden>Hide tutorial</button><button id="twexit" hidden>Leave the practice world</button><button id="tutclose">Close</button></div></div></div>
+<div id="setwin" class="winwrap" hidden><div class="win"><div class="stripe"></div><h2>Settings</h2>
+  <div class="wb"><button id="fs">Full screen</button><button id="orient">Switch to Landscape</button><button id="saver">Battery saver: off</button><button id="dev">Dev: off</button><button id="setclose">Close</button></div></div></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 (function(){
 'use strict';
 /* =====================  Void Engineers  =====================
    Part A: renderer, sky, procedural voxel asteroids, particles */
-const GAME_VER='119';
+const GAME_VER='131';
 /* no page zoom while playing: pinch, double-tap and ctrl+wheel are swallowed */
 (()=>{const no=e=>{e.preventDefault();};
   for(const n of['gesturestart','gesturechange','gestureend','dblclick'])document.addEventListener(n,no,{passive:false});
@@ -1018,7 +1001,7 @@ function drainDep(d,rate,dt,pt,io){
   if(room<=0){notifyFull(io.name);return false;}
   const prev=d.stage;d.acc=Math.min(d.acc+Math.min(d.stock,rate*dt),room+1);
   const take=Math.min(Math.floor(d.acc),room,Math.ceil(d.stock));
-  if(take>0){const got=io.add(RES[d.k],take);d.acc-=got;setDepStock(d,d.stock-got);tutOre(io,RES[d.k],got);}
+  if(take>0){const got=io.add(RES[d.k],take);d.acc-=got;setDepStock(d,d.stock-got);tutOre(io,RES[d.k],got);if(got>0)mpDepTake(d,got);}
   if(Math.random()<dt*14)spawnP(pt.x,pt.y,pt.z,(Math.random()-.5)*5,(Math.random()-.5)*5,(Math.random()-.5)*5,VCOL[d.k+2],.5+Math.random()*.7);
   if(d.dead){for(let i=0;i<14;i++)spawnP(d.x,d.y,d.z,(Math.random()-.5)*9,(Math.random()-.5)*9,(Math.random()-.5)*9,VCOL[d.k+2],.8+Math.random());toast(RNAME[RES[d.k]]+' deposit exhausted','good');}
   else if(d.stage!==prev){for(let i=0;i<8;i++)spawnP(d.x,d.y,d.z,(Math.random()-.5)*6,(Math.random()-.5)*6,(Math.random()-.5)*6,VCOL[d.k+2],.6+Math.random()*.6);}
@@ -1234,7 +1217,7 @@ const G={
   bcMast:new THREE.CylinderGeometry(.09,.16,2.6,8),bcBase:new THREE.BoxGeometry(1.5,.5,1.5),bcLamp:new THREE.SphereGeometry(.2,10,8),bcDish:new THREE.TorusGeometry(.5,.07,6,18),
   seatFg:new THREE.PlaneGeometry(1.485,1.90),seatSg:new THREE.PlaneGeometry(1.265,1.90),ltBase:new THREE.BoxGeometry(.5,.06,1.16),ltArt:new THREE.PlaneGeometry(.5,1.16),ltStrip:new THREE.PlaneGeometry(.2,.84),lbBase:new THREE.BoxGeometry(.5,.06,1.7),lbArt:new THREE.PlaneGeometry(.5,1.7),lbStrip:new THREE.PlaneGeometry(.17,1.22),ltLens:new THREE.CylinderGeometry(.24,.28,.1,14),
   pgBody:new THREE.BoxGeometry(1.9,1.3,1.6),pgCoil:new THREE.CylinderGeometry(.55,.55,1.5,16),pgStack:new THREE.CylinderGeometry(.13,.16,.9,10),
-  lgMount:new THREE.BoxGeometry(1.1,.3,1.1),lgStrut:new THREE.CylinderGeometry(.08,.13,1.3,8),lgFoot:new THREE.CylinderGeometry(.46,.54,.12,12),
+  lgMount:new THREE.BoxGeometry(.95,.14,.75),lgStrut:new THREE.CylinderGeometry(.12,.12,.8,10),lgRod:new THREE.CylinderGeometry(.05,.05,.8,6),lgKnee:new THREE.BoxGeometry(.5,.4,.5),lgCone:new THREE.CylinderGeometry(.32,.14,.6,6),lgToe:new THREE.BoxGeometry(.62,.1,.3),
   pane:new THREE.BoxGeometry(1.98,.14,1.98),paneD:new THREE.BoxGeometry(1.98,.12,2.83),stT:[0,1,2,3].map(i=>new THREE.BoxGeometry(.5,.5*(i+1),1.96)),dPost:new THREE.BoxGeometry(.28,4,.7),dHead:new THREE.BoxGeometry(2,.3,.7),dPanel:new THREE.BoxGeometry(1.66,3.7,.34),stSeat:new THREE.BoxGeometry(1.1,.3,1.1),stBack:new THREE.BoxGeometry(1.1,1.2,.22),stArm:new THREE.BoxGeometry(.18,.4,.8),stCon:new THREE.BoxGeometry(1.3,.7,.5),stStick:new THREE.CylinderGeometry(.06,.06,.5,6),
   pdPlate:new THREE.BoxGeometry(5.9,.24,5.9),pdBase:new THREE.BoxGeometry(1.7,1.66,1.7),pdRing:new THREE.TorusGeometry(2.1,.07,6,40),pdLamp:new THREE.BoxGeometry(.28,.1,.28)
 };
@@ -1463,8 +1446,9 @@ function buildBlock(type,f,ghostMat,rot,tier){
     case 'steps':   // four treads rising toward +x
       for(let i=0;i<4;i++)add(G.stT[i],MAT.hull,-.75+.5*i,-1+.25*(i+1),0);break;
     case 'door':{   // a frame and a sliding panel; the block is 2 tall, anchored at its lower cell
-      add(G.dPost,MAT.dark,-.86,1,0);add(G.dPost,MAT.dark,.86,1,0);add(G.dHead,MAT.dark,0,2.85,0);
-      panel=add(G.dPanel,MAT.doorPanel,0,1,0);break;}
+      const zf=(rot|0)>=4?.65:0,zp=(rot|0)>=4?.83:0;   // flush: the frame and the panel sit against the outer face of the cell, like a hull panel
+      add(G.dPost,MAT.dark,-.86,1,zf);add(G.dPost,MAT.dark,.86,1,zf);add(G.dHead,MAT.dark,0,2.85,zf);
+      panel=add(G.dPanel,MAT.doorPanel,0,1,zp);break;}
     case 'tank':
       add(G.tank,MAT.tank,0,0,0);add(G.band,MAT.dark,0,.9,0).rotation.x=Math.PI/2;add(G.band,MAT.dark,0,-.9,0).rotation.x=Math.PI/2;break;
     case 'gravgen':
@@ -1508,7 +1492,10 @@ function buildBlock(type,f,ghostMat,rot,tier){
       add(G.pgBody,MAT.thrT,0,-.35,0);add(G.pgCoil,MAT.amber,0,.3,0).rotation.z=Math.PI/2;add(G.pgStack,MAT.dark,.6,.75,-.5);
       lamp=add(G.lampG,new THREE.MeshBasicMaterial({color:0x2a3a44}),-.5,.36,.62);break;
     case 'leg':
-      add(G.lgMount,MAT.dark,0,-.8,0);add(G.lgStrut,MAT.metal,0,-.05,0);add(G.lgFoot,MAT.amber,0,.9,0);break;
+      // top plate that bolts to the ship, a piston with a rod, a knee block, then a three-toed foot on the +y end (the end that touches the ground)
+      add(G.lgMount,MAT.amber,0,-.9,0);add(G.lgStrut,MAT.metal,0,-.45,0);add(G.lgRod,MAT.amber,.2,-.45,0);add(G.lgKnee,MAT.amber,0,.12,0);add(G.lgCone,MAT.dark,0,.65,0);
+      for(const a of[0,2.0944,4.1888])add(G.lgToe,MAT.amber,Math.cos(a)*.5,.91,Math.sin(a)*.5).rotation.y=-a;
+      break;
     case 'pad':   // a full-height pedestal with the deck on top, so legs rest on the block's top face
       add(G.pdBase,MAT.dark,0,-.12,0);add(G.pdPlate,[MAT.dark,MAT.dark,MAT.padDeck,MAT.dark,MAT.dark,MAT.dark],0,.84,0);break;   // deck art: landing circle and corner lamps
     case 'bigtank':
@@ -1528,9 +1515,33 @@ function buildBlock(type,f,ghostMat,rot,tier){
 /* ---------- grids (stations and ships) ---------- */
 const grids=[];
 const isCraft=g=>!!g.seat&&!g.station;
-const cellAt=(g,key)=>g.blocks.get(key)||g.occ.get(key);
+/* ---- thin blocks (plates, glass, doors) can share a cell when the parts of the cell they use do not overlap.
+   g.blocks holds every block once (extra ones under their cell key + LAYER*n); g.cells lists who is in a shared cell. ---- */
+const EMPTYB=[],LAYER=1073741824;
+const SHARE={plate:1,platt:1,platd:1,glass:1,glassc:1,glassd:1,door:1};
+function occupants(g,key){const s=g.cells&&g.cells.get(key);if(s)return s;const b=g.blocks.get(key)||g.occ.get(key);return b?[b]:EMPTYB;}
+const cellAt=(g,key)=>{const s=g.cells&&g.cells.get(key);if(s)return s[0];return g.blocks.get(key)||g.occ.get(key);};
+function slotsOf(type,f,s){   // the faces / parts of its cell that a thin block uses
+  f=f||[0,1,0];const fs=a=>'f'+a[0]+','+a[1]+','+a[2];
+  if(type==='platd'||type==='glassd')return['d'];
+  if(type==='glassc'){const v=new V3(0,0,-1).applyQuaternion(blockQuat({f,s}));return[fs(f),fs([Math.round(v.x),Math.round(v.y),Math.round(v.z)])];}
+  if(type==='door'){const v=new V3(0,0,1).applyQuaternion(blockQuat({f:[0,1,0],s})),w=[Math.round(v.x),Math.round(v.y),Math.round(v.z)];return[fs(w),fs([-w[0],-w[1],-w[2]]),'d','door'];}
+  return[fs(f)];
+}
+function shareFits(g,type,f,spin,cells){   // true when every cell it needs is free, or holds only thin blocks that leave room for this one
+  if(!SHARE[type])return false;
+  const mine=slotsOf(type,f,spin|0);
+  for(const c of cells){
+    for(const o of occupants(g,kf(c[0],c[1],c[2]))){
+      if(!SHARE[o.type])return false;
+      const th=slotsOf(o.type,o.f,o.s|0);
+      if(mine.some(x=>th.includes(x)))return false;
+    }
+  }
+  return true;
+}
 function makeGrid(name,pos,quat){
-  const g={name,group:new THREE.Group(),blocks:new Map(),occ:new Map(),ver:0,vel:new V3(),rate:[0,0,0],fuel:0,fuelCap:400,mass:1000,com:new V3(),
+  const g={name,group:new THREE.Group(),blocks:new Map(),occ:new Map(),cells:new Map(),ver:0,vel:new V3(),rate:[0,0,0],fuel:0,fuelCap:400,mass:1000,com:new V3(),
     T:[[0,0],[0,0],[0,0]],gyros:0,seat:null,drills:[],thr:[],gravs:[],machines:[],cargos:[],beacons:[],legs:[],pads:[],lights:[],gens:[],doors:[],power:null,dock:null,bs:3,fwd:new V3(0,0,-1),up:new V3(0,1,0),right:new V3(1,0,0),
     cq:new Q(),cmd:[0,0,0],station:false};
   g.group.position.copy(pos);if(quat)g.group.quaternion.copy(quat);
@@ -1589,10 +1600,10 @@ function rebuildHull(g){
   g.hullDirty=false;
   const S=[0,1,2,3].map(()=>({P:[],N:[],U:[]}));   // plain plating, then the three painted looks
   for(const b of g.blocks.values()){
-    if(b.type!=='hull'||(b.wt>0&&b.wp<b.wt))continue;
+    if(b.type!=='hull'||b.fold||(b.wt>0&&b.wp<b.wt))continue;
     for(let fi=0;fi<6;fi++){
       const f=HF[fi],d=f[0],nb=g.blocks.get(kf(b.i+d[0],b.j+d[1],b.k+d[2]));
-      if(nb&&nb.type==='hull'&&!(nb.wt>0&&nb.wp<nb.wt))continue;
+      if(nb&&nb.type==='hull'&&!nb.fold&&!(nb.wt>0&&nb.wp<nb.wt))continue;
       const cx=b.i*2+d[0],cy=b.j*2+d[1],cz=b.k*2+d[2],u=f[1],v=f[2];
       const pt=(su,sv)=>[cx+u[0]*su+v[0]*sv,cy+u[1]*su+v[1]*sv,cz+u[2]*su+v[2]*sv];
       const cls=b.pf?b.pf[fi]|0:0,tg=S[cls];
@@ -1621,7 +1632,9 @@ const cellsOf=(type,i,j,k,tier)=>{const n=heightOf(type,tier),a=[];for(let m=0;m
 function addBlock(g,i,j,k,type,f,spin,tier){
   tier=tier||1;if(UPRIGHT.includes(type))f=[0,1,0];
   const cells=cellsOf(type,i,j,k,tier);
-  for(const c of cells)if(cellAt(g,kf(c[0],c[1],c[2])))return null;
+  if(!g.cells)g.cells=new Map();
+  if(cells.some(c=>cellAt(g,kf(c[0],c[1],c[2])))&&!shareFits(g,type,f,spin|0,cells))return null;
+  const had=cells.map(c=>occupants(g,kf(c[0],c[1],c[2])).slice());   // who is already in each cell
   spin=spin|0;
   let m={group:null};
   if(type==='hull')g.hullDirty=true;   // drawn by the merged hull mesh
@@ -1630,8 +1643,13 @@ function addBlock(g,i,j,k,type,f,spin,tier){
   b.iq=blockQuat(b).invert();
   if(BDEF[type].machine){b.queue=[];b.job=null;b.state=0;}
   if(type==='cargo')b.store={};
-  g.blocks.set(kf(i,j,k),b);
-  for(let n=1;n<cells.length;n++)g.occ.set(kf(cells[n][0],cells[n][1],cells[n][2]),b);
+  let key=kf(i,j,k);for(let L=1;g.blocks.has(key);L++)key=kf(i,j,k)+L*LAYER;
+  b.key=key;g.blocks.set(key,b);
+  cells.forEach((c,n)=>{
+    const ck=kf(c[0],c[1],c[2]);
+    if(had[n].length){let s=g.cells.get(ck);if(!s){s=had[n];g.cells.set(ck,s);}s.push(b);}   // a shared cell
+    else if(n>0)g.occ.set(ck,b);
+  });
   recalc(g);applyTier(b);return b;
 }
 function platePaint(b){   // a hull plate has two faces that can wear different skins: pf[0] on the side it faces, pf[1] on the back
@@ -1663,7 +1681,12 @@ function setTier(g,b,t){
 function removeBlock(g,b){
   const spill=b.store&&Object.keys(b.store).length?b.store:null;b.store=null;
   refundJob(b,g);
-  g.blocks.delete(kf(b.i,b.j,b.k));for(let m=1;m<(b.n||1);m++)g.occ.delete(kf(b.i,b.j+m,b.k));
+  g.blocks.delete(b.key!==undefined?b.key:kf(b.i,b.j,b.k));
+  for(let m=0;m<(b.n||1);m++){
+    const ck=kf(b.i,b.j+m,b.k),s=g.cells&&g.cells.get(ck);
+    if(s){const x=s.indexOf(b);if(x>=0)s.splice(x,1);if(!s.length)g.cells.delete(ck);}
+    if(m>0&&g.occ.get(ck)===b)g.occ.delete(ck);
+  }
   if(g.wip&&g.wip.delete(b))g.wipDirty=true;
   if(b.node)g.group.remove(b.node);else if(b.type==='hull')g.hullDirty=true;
   if(!g.blocks.size){clearHull(g);if(g.trade&&g.trade.ship){scene.remove(g.trade.ship);g.trade.ship=null;}scene.remove(g.group);const n=grids.indexOf(g);if(n>=0)grids.splice(n,1);return;}
@@ -1703,8 +1726,9 @@ function interiorOf(g){
   for(const c of all)if(c[3])wall[idx(c[0],c[1],c[2])]=1;
   const pane=new Map(),diag=new Map();   // a glass pane seals one face of its cell; an angled pane splits its cell into two halves
   for(const bl of g.blocks.values()){
-    if(bl.type==='glass'||bl.type==='plate'){pane.set(idx(bl.i,bl.j,bl.k),[bl.f||[0,1,0]]);}
-    else if(bl.type==='glassc'){const f=bl.f||[0,1,0],v=new V3(0,0,-1).applyQuaternion(blockQuat(bl));pane.set(idx(bl.i,bl.j,bl.k),[f,[Math.round(v.x),Math.round(v.y),Math.round(v.z)]]);}
+    const px=idx(bl.i,bl.j,bl.k),addP=a=>{let l=pane.get(px);if(!l){l=[];pane.set(px,l);}l.push(a);};   // several panes can share a cell
+    if(bl.type==='glass'||bl.type==='plate'){addP(bl.f||[0,1,0]);}
+    else if(bl.type==='glassc'){const f=bl.f||[0,1,0],v=new V3(0,0,-1).applyQuaternion(blockQuat(bl));addP(f);addP([Math.round(v.x),Math.round(v.y),Math.round(v.z)]);}
     else if(bl.type==='glassd'||bl.type==='platd')diag.set(idx(bl.i,bl.j,bl.k),glassdNormal(bl.f||[0,1,0],bl.s|0));
   }
   const half=(n,d)=>{const v=n[0]*d[0]+n[1]*d[1]+n[2]*d[2];return v>0?1:v<0?0:-1;};   // which half a cell face belongs to (-1: the pane cuts that face)
@@ -1736,12 +1760,12 @@ const _v=new V3(),_v2=new V3(),_p=new V3();
 const _bs=new V3();
 function blockSolidAt(b,lx,ly,lz){   // lx..lz are grid-local; some blocks only fill part of their cell
   const d=BDEF[b.type];
-  if(d.ghost)return false;
+  if(d.ghost||b.fold)return false;
   if(!d.part)return true;
   _bs.set(lx-b.i*2,ly-b.j*2,lz-b.k*2).applyQuaternion(b.iq);
   const x=_bs.x,y=_bs.y,z=_bs.z;
   if(b.type==='steps'){if((b.ext===undefined?1:b.ext)<.5)return false;const t=Math.max(0,Math.min(3,Math.floor((x+1)*2)));return y<-1+.5*(t+1)+1e-4;}
-  if(b.type==='door')return (b.oa||0)<.55&&Math.abs(z)<.5;
+  if(b.type==='door')return (b.oa||0)<.55&&((b.s|0)>=4?z>.5:Math.abs(z)<.5);
   if(b.type==='glass'||b.type==='plate')return y>.76;
   if(b.type==='platt')return y>.76&&x+z<0;
   if(b.type==='glassc')return y>.76||z<-.76;
@@ -1751,7 +1775,9 @@ function blockSolidAt(b,lx,ly,lz){   // lx..lz are grid-local; some blocks only 
 }
 function gridSolidAt(g,x,y,z){
   _v.set(x,y,z);g.group.worldToLocal(_v);
-  const b=cellAt(g,kf(Math.floor((_v.x+1)/2),Math.floor((_v.y+1)/2),Math.floor((_v.z+1)/2)));
+  const ck=kf(Math.floor((_v.x+1)/2),Math.floor((_v.y+1)/2),Math.floor((_v.z+1)/2)),s=g.cells.get(ck);
+  if(s){for(let n=0;n<s.length;n++)if(blockSolidAt(s[n],_v.x,_v.y,_v.z))return true;return false;}   // a shared cell: any of its thin blocks can be solid here
+  const b=g.blocks.get(ck)||g.occ.get(ck);
   return !!b&&blockSolidAt(b,_v.x,_v.y,_v.z);
 }
 function pointSolid(x,y,z){
@@ -1792,6 +1818,24 @@ function shipHitsAst(g){
   return false;
 }
 
+/* ---------- thin blocks: which one a ray meets, and from which side ---------- */
+const _hf=new V3();
+function paneFace(b,x,y,z){   // the grid-frame direction of the slab at this point (null for doors and diagonals)
+  const t=b.type;if(t==='door'||t==='platd'||t==='glassd')return null;
+  const f=b.f||[0,1,0];
+  if(t==='glassc'){_hf.set(x-b.i*2,y-b.j*2,z-b.k*2).applyQuaternion(b.iq);if(_hf.y>.76)return f;const v=new V3(0,0,-1).applyQuaternion(blockQuat(b));return[Math.round(v.x),Math.round(v.y),Math.round(v.z)];}
+  return f;
+}
+function pickShared(s,lo,ld,t0,t1){   // walk the ray through the cell; inner = it meets the pane from the side it faces (the open side)
+  for(let t=t0;t<=t1+1e-9;t+=.07){
+    const x=lo.x+ld.x*2*t,y=lo.y+ld.y*2*t,z=lo.z+ld.z*2*t;
+    for(let n=0;n<s.length;n++){
+      const b=s[n];
+      if(blockSolidAt(b,x,y,z)){const f=paneFace(b,x,y,z);return{b,t,inner:f?(ld.x*f[0]+ld.y*f[1]+ld.z*f[2])>0:true};}
+    }
+  }
+  return null;
+}
 /* ---------- ray picking against grids ---------- */
 function rayGrid(g,ro,rd,maxD){
   const p=g.group.position,cx=p.x-ro.x,cy=p.y-ro.y,cz=p.z-ro.z,proj=cx*rd.x+cy*rd.y+cz*rd.z;
@@ -1808,8 +1852,19 @@ function rayGrid(g,ro,rd,maxD){
   }
   const tmax=maxD/2;let nrm=[0,0,0],tcur=0;
   for(let i=0;i<64;i++){
-    const b=cellAt(g,kf(c[0],c[1],c[2]));
-    if(b&&i>0)return{t:tcur*2,b,n:nrm,c:[c[0],c[1],c[2]]};
+    const ck=kf(c[0],c[1],c[2]),b=cellAt(g,ck);
+    if(b){
+      const s=g.cells.get(ck),thin=!!SHARE[b.type]||(s&&s.length>1);
+      if(thin){   // a thin block is only hit where its slab really is (the cell you stand in counts too)
+        const hit=pickShared(s||[b],lo,ld,tcur,Math.min(tm[0],tm[1],tm[2],tmax));
+        if(hit){
+          let n=nrm;
+          if(i===0){const ax0=(Math.abs(ld.x)>=Math.abs(ld.y)&&Math.abs(ld.x)>=Math.abs(ld.z))?0:(Math.abs(ld.y)>=Math.abs(ld.z)?1:2),dv=[ld.x,ld.y,ld.z];n=[0,0,0];n[ax0]=dv[ax0]>0?-1:1;}
+          return{t:hit.t*2,b:hit.b,n,c:[c[0],c[1],c[2]],inner:hit.inner};
+        }
+        if(i>0)return{t:tcur*2,b:s?s[0]:b,n:nrm,c:[c[0],c[1],c[2]],inner:false};
+      }else if(i>0)return{t:tcur*2,b,n:nrm,c:[c[0],c[1],c[2]],inner:false};
+    }
     let ax=0;if(tm[1]<tm[ax])ax=1;if(tm[2]<tm[ax])ax=2;
     tcur=tm[ax];if(tcur>tmax)return null;
     c[ax]+=st[ax];tm[ax]+=td[ax];nrm=[0,0,0];nrm[ax]=-st[ax];
@@ -1970,6 +2025,7 @@ function toast(msg,kind){
 }
 function addRes(k,n){const m=Math.min(n,packSpace());if(m<n)notifyFull('Pack');if(m>0){inv[k]+=m;flash[k]=.7;hudDirty=true;}return m;}
 let DEV=false;   // troubleshooting: free building and upgrades
+let SAVER=false,lastR=0;   // battery saver: about 30 frames a second, 1x resolution, and almost no drawing while a menu is up
 const canStart=t=>{if(DEV)return true;const k=Object.keys(BDEF[t].cost)[0];return haveK(k)>=1;};   // a block is placed as a frame for 1 unit; the rest is welded in
 let weldAcc=0;const WELD_RATE=5;
 const canAfford=c=>{if(DEV)return true;for(const k in c)if(haveK(k)<c[k])return false;return true;};
@@ -2103,6 +2159,7 @@ const selfE=makeEngineer();
 
 /* ---------- mining ---------- */
 function mineAt(a,hit,r){
+  mpRock(a,hit,r);
   const nx=a.dims[0],ny=a.dims[1],nz=a.dims[2],R=Math.ceil(r);let removed=0;const got={};
   for(let dz=-R;dz<=R;dz++)for(let dy=-R;dy<=R;dy++)for(let dx=-R;dx<=R;dx++){
     if(dx*dx+dy*dy+dz*dz>r*r+.01)continue;
@@ -2212,17 +2269,23 @@ function buildUpdate(dt){
     parent=g;cell=[pk.h.b.i+n[0],pk.h.b.j+n[1],pk.h.b.k+n[2]];face=n;
     // the cell we hit is the one clicked on; a tall block may be hit on an upper cell
     { const hb=pk.h.b,hc=pk.h.c;if(hc){cell=[hc[0]+n[0],hc[1]+n[1],hc[2]+n[2]];} }
-    valid=cellsOf(type,cell[0],cell[1],cell[2],1).every(c=>!cellAt(g,kf(c[0],c[1],c[2])));
+    const ffg=UPRIGHT.includes(type)?[0,1,0]:(orient?ORIENTS[orient]:n),spg=(BDEF[type].shape||BDEF[type].spin)?(type==='door'?spin:spin&3):0;
+    if(pk.h.inner&&SHARE[type]&&pk.h.c){   // pointing at a thin block from its open side: build in that same cell, if the spot you picked with ROT is free
+      const hc=pk.h.c;
+      if(occupants(g,kf(hc[0],hc[1],hc[2])).every(o=>SHARE[o.type])&&shareFits(g,type,ffg,spg,cellsOf(type,hc[0],hc[1],hc[2],1)))cell=[hc[0],hc[1],hc[2]];
+    }
+    const cs1=cellsOf(type,cell[0],cell[1],cell[2],1);
+    valid=cs1.every(c=>!cellAt(g,kf(c[0],c[1],c[2])))||(SHARE[type]&&shareFits(g,type,ffg,spg,cs1));
     world=g.group.localToWorld(new V3(cell[0]*2,cell[1]*2,cell[2]*2));
   }else if(!pk||pk.t>7){
     newGrid=true;world=_o.clone().addScaledVector(_d,6);valid=true;face=[0,1,0];
   }
   if(!world){hideGhost();return;}
   // a Landing Leg placed on a station starts a new ship there, docked: build the ship up from the leg
-  const legStart=type==='leg'&&parent&&!isCraft(parent)&&!parent.legs.length;
-  let f=legStart?face.map(v=>-v):(orient?ORIENTS[orient]:face);
+  const legStart=type==='leg'&&parent&&parent.station&&!parent.legs.length;
+  let f=legStart?(orient?ORIENTS[orient]:face.map(v=>-v)):(orient?ORIENTS[orient]:face);   // the first leg of a new ship points into the platform unless ROT turns it
   if(UPRIGHT.includes(type))f=[0,1,0];
-  const sp=(BDEF[type].shape||BDEF[type].spin)?spin:0,key=type+'|'+f.join(',')+'|'+sp;
+  const sp=(BDEF[type].shape||BDEF[type].spin)?(type==='door'?spin:spin&3):0,key=type+'|'+f.join(',')+'|'+sp;
   if(key!==ghostKey||!ghost){
     if(ghost)scene.remove(ghost);
     ghost=buildBlock(type,f,MAT.ghostOK,sp,1).group;ghost.traverse(o=>{o.renderOrder=5;});ghostOK=true;scene.add(ghost);ghostKey=key;
@@ -2230,8 +2293,10 @@ function buildUpdate(dt){
   if(valid){
     const cs=cellsOf(type,cell?cell[0]:0,cell?cell[1]:0,cell?cell[2]:0,1),wp=[];
     for(const c of cs)wp.push(parent?parent.group.localToWorld(new V3(c[0]*2,c[1]*2,c[2]*2)):world.clone());
+    const thin=!!parent&&!!SHARE[type];   // a thin block only has to stay out of your body where its slab really is
+    if(thin&&paneBlocksBody(parent,type,f,sp,cs))valid=false;
     for(const w of wp){
-      if(w.distanceTo(_o)<1.9||bodyBlocksCell(w))valid=false;
+      if(!thin&&(w.distanceTo(_o)<1.9||bodyBlocksCell(w)))valid=false;
       for(let n=0;n<asteroids.length&&valid;n++){const a=asteroids[n],x=w.x,y=w.y,z=w.z;
         if(astAt(a,x,y,z)||astAt(a,x+.9,y,z)||astAt(a,x-.9,y,z)||astAt(a,x,y+.9,z)||astAt(a,x,y-.9,z)||astAt(a,x,y,z+.9)||astAt(a,x,y,z-.9))valid=false;}
     }
@@ -2265,6 +2330,27 @@ function buildUpdate(dt){
   }
 }
 
+// a thin block (plate, glass, door) must not land inside your body: test the body against the real slab, not the whole cell
+function paneBlocksBody(g,type,f,spin,cells){
+  if(player.mode!=='foot')return false;
+  const tmp={type,i:cells[0][0],j:cells[0][1],k:cells[0][2],f,s:spin|0};tmp.iq=blockQuat(tmp).invert();
+  const keys=new Set(cells.map(c=>kf(c[0],c[1],c[2])));
+  g.group.updateMatrixWorld(true);
+  const pts=[];
+  if(player.grav){
+    const U=player.lastUp,A=new V3(Math.abs(U.x)<.9?1:0,Math.abs(U.x)<.9?0:1,0).cross(U).normalize(),B=new V3().crossVectors(U,A),r=BODY_R+.12;
+    for(const h of BODY_HS)for(const q of RING5)pts.push(player.pos.clone().addScaledVector(U,h-BODY_CEN).addScaledVector(A,q[0]*r).addScaledVector(B,q[1]*r));
+  }else{
+    for(const d of AXES6)pts.push(player.pos.clone().addScaledVector(new V3(d[0],d[1],d[2]),.95));
+    pts.push(player.pos.clone());
+  }
+  for(const p of pts){
+    g.group.worldToLocal(p);
+    if(!keys.has(kf(Math.floor((p.x+1)/2),Math.floor((p.y+1)/2),Math.floor((p.z+1)/2))))continue;
+    if(blockSolidAt(tmp,p.x,p.y,p.z))return true;
+  }
+  return false;
+}
 // a block you are about to place must not land inside your body
 function bodyBlocksCell(w){
   if(player.mode!=='foot')return false;
@@ -2665,7 +2751,7 @@ function spawnDerelict(){
 /* The PIONEER: a ship you walk aboard. Forward is -z, starboard +x, up +y. Floor at j=0, walkable decks j=1..2, ceiling j=3.
    Interior, front to back (port | centre | starboard): 3 wide with the pilot seat, a corridor, the door (port side), a corridor,
    the Assembler | aisle | Refinery, a corridor, and the cargo container at the stern. 11 floor tiles. */
-const SHIP_PIONEER=[["hull",0,0,0,0,0,1],["hull",0,3,0,0,0,1],["hull",0,0,1,0,0,1],["hull",0,3,1,0,0,1],["hull",0,0,2,0,0,1],["hull",0,3,2,0,0,1],["hull",-1,1,3,0,0,1],["hull",-1,2,3,0,0,1],["hull",0,0,3,0,0,1],["hull",0,3,3,0,0,1],["hull",1,1,3,0,0,1],["hull",1,2,3,0,0,1],["hull",0,3,4,0,0,1],["hull",-1,0,5,0,0,1],["hull",-1,0,6,0,0,1],["hull",0,0,6,0,0,1],["hull",-1,0,7,0,0,1],["hull",-1,2,7,0,0,1],["hull",0,0,7,0,0,1],["hull",0,2,7,0,0,1],["door",-1,1,2,[0,1,0],1,1],["assembler",-1,1,4,[0,1,0],1,1],["refinery",1,1,4,[0,1,0],3,1],["cargo",0,1,6,0,0,1],["light",0,2,2,[0,-1,0],0,1],["light",0,2,3,[0,-1,0],0,1],["slope",1,0,0,[0,-1,0],1,1],["slope",-1,0,0,[0,-1,0],3,1],["slope",-1,3,0,[-1,0,0],3,1],["slope",0,3,-1,[0,0,-1],2,1],["corner",-1,3,-1,[0,0,-1],1,1],["corner",-1,0,-1,[0,0,-1],0,1],["corner",1,0,-1,[0,0,-1],3,1],["slope",1,3,0,[0,1,0],3,1],["corner",1,3,-1,[0,1,0],3,1],["hull",0,0,-1,[0,1,0],0,1],["glass",-1,1,0,[-1,0,0],0,1],["glass",0,1,-1,[0,0,-1],0,1],["glass",-1,2,0,[-1,0,0],0,1],["glass",0,2,-1,[0,0,-1],0,1],["slope",1,3,1,[1,0,0],1,1],["slope",1,3,2,[1,0,0],1,1],["slope",1,3,3,[0,1,0],3,1],["slope",1,3,4,[0,1,0],3,1],["hull",1,2,2,[0,1,0],0,1],["hull",1,1,2,[0,1,0],0,1],["slope",2,2,3,[0,1,0],3,1],["slope",2,1,3,[1,0,0],3,1],["slope",1,0,1,[1,0,0],3,1],["slope",1,0,2,[1,0,0],3,1],["slope",1,0,3,[1,0,0],3,1],["slope",1,0,4,[1,0,0],3,1],["slope",2,1,4,[1,0,0],3,1],["glassd",1,1,-1,[1,0,0],2,1],["glassd",1,2,-1,[1,0,0],2,1],["glassd",-1,1,-1,[1,0,0],0,1],["glassd",-1,2,-1,[1,0,0],0,1],["corner",-2,1,1,[-1,0,0],0,1],["corner",-2,2,1,[-1,0,0],3,1],["slope",-1,3,2,[0,1,0],1,1],["slope",-1,3,1,[0,1,0],1,1],["slope",-1,3,4,[0,1,0],1,1],["slope",-1,3,3,[0,1,0],1,1],["slope",-2,2,3,[0,1,0],1,1],["slope",-2,2,4,[0,1,0],1,1],["slope",-2,2,5,[0,1,0],1,1],["slope",-2,2,7,[0,1,0],1,1],["slope",-1,3,5,[0,1,0],1,1],["slope",-1,3,6,[0,1,0],1,1],["slope",1,3,5,[0,1,0],3,1],["slope",1,3,6,[0,1,0],3,1],["hull",1,2,7,[0,1,0],0,1],["hull",1,0,7,[0,1,0],0,1],["hull",1,0,5,[0,1,0],0,1],["hull",1,0,6,[0,1,0],0,1],["slope",2,2,4,[0,1,0],3,1],["slope",2,2,5,[0,1,0],3,1],["slope",2,2,6,[0,1,0],3,1],["slope",2,2,7,[0,1,0],3,1],["hull",-2,1,7,[0,1,0],0,1],["slope",-2,2,6,[-1,0,0],3,1],["slope",-2,1,4,[-1,0,0],1,1],["slope",-2,1,3,[-1,0,0],1,1],["hull",-1,0,2,[-1,0,0],0,1],["steps",-2,0,2,[-1,0,0],2,1],["powergen",1,1,6,[0,1,0],0,1],["hull",0,0,4,[0,1,0],0,1],["gyro",-1,1,6,[0,1,0],0,1],["tank",-1,1,5,[0,1,0],0,1],["tank",-1,2,5,[0,1,0],0,1],["slope",1,2,1,[0,0,-1],1,1],["slope",1,1,1,[0,0,-1],1,1],["slope",-1,2,1,[0,0,-1],3,1],["slope",-1,1,1,[0,0,-1],3,1],["glass",1,1,0,[1,0,0],0,1],["glass",1,2,0,[1,0,0],0,1],["seat",0,1,0,[0,1,0],0,1],["slope",-1,0,4,[-1,0,0],1,1],["slope",-1,0,3,[-1,0,0],1,1],["slope",-1,0,1,[-1,0,0],1,1],["slope",-2,0,5,[-1,0,0],1,1],["slope",-2,0,6,[-1,0,0],1,1],["slope",-2,0,7,[-1,0,0],1,1],["slope",2,0,7,[0,-1,0],1,1],["slope",2,0,6,[0,-1,0],1,1],["slope",2,0,5,[0,-1,0],1,1],["leg",0,-1,6,[0,-1,0],0,1],["leg",0,-1,2,[0,-1,0],0,1],["drill",0,0,-2,[0,0,-1],0,1],["hull",2,2,2,[1,0,0],0,1],["thruster",2,2,1,[0,0,-1],0,1],["thruster",-2,1,6,[-1,0,0],0,1],["thruster",0,3,5,[0,1,0],0,1],["thruster",2,1,6,[1,0,0],0,1],["slope",0,3,7,[0,0,1],0,1],["corner",-1,3,7,[0,0,1],0,1],["corner",1,3,7,[0,0,1],3,1],["thruster",-1,1,7,[0,0,1],0,1],["thruster",0,1,7,[0,0,1],0,1],["thruster",1,1,7,[0,0,1],0,1],["hull",2,1,2,[0,0,1],0,1],["thruster",2,1,1,[0,0,-1],0,1],["hull",2,1,7,[1,0,0],0,1],["thruster",2,1,5,[1,0,0],0,1],["thruster",0,3,6,[0,1,0],0,1],["thruster",-2,1,5,[-1,0,0],0,1],["thruster",0,0,5,[0,-1,0],0,1],["steps",-3,-1,2,[-1,0,0],2,1]];   // the starter ship, as laid out by J. D. Steel (entries: type, i, j, k, facing, spin, tier)
+const SHIP_PIONEER=[["plate",1,0,0,[0,1,0],0,1,"11"],["plate",1,0,1,[0,1,0],0,1,"11"],["platt",0,0,2,[0,1,0],3,1],["plate",1,0,2,[0,1,0],0,1,"11"],["platt",0,0,0,[0,1,0],2,1],["plate",3,0,2,[0,1,0],0,1,"11"],["plate",4,0,2,[0,1,0],0,1,"11"],["plate",3,0,0,[0,1,0],0,1,"11"],["plate",4,0,0,[0,1,0],0,1,"11"],["plate",5,0,0,[0,1,0],0,1,"11"],["plate",5,0,2,[0,1,0],0,1,"11"],["plate",3,1,3,[0,0,-1],0,1,"21"],["plate",4,1,3,[0,0,-1],0,1,"21"],["plate",5,1,3,[0,0,-1],0,1,"21"],["plate",3,1,-1,[0,0,1],0,1,"21"],["plate",4,1,-1,[0,0,1],0,1,"21"],["plate",5,1,-1,[0,0,1],0,1,"21"],["plate",2,1,-1,[0,0,1],0,1,"21"],["plate",1,1,-1,[0,0,1],0,1,"21"],["plate",5,2,-1,[0,0,1],0,1,"21"],["plate",2,2,-1,[0,0,1],0,1,"21"],["plate",3,2,-1,[0,0,1],0,1,"21"],["plate",3,2,3,[0,0,-1],0,1,"21"],["plate",5,2,3,[0,0,-1],0,1,"21"],["plate",1,2,-1,[0,0,1],0,1,"21"],["platd",3,3,2,[0,1,0],0,1],["platd",4,3,2,[0,1,0],0,1],["platd",5,3,2,[0,1,0],0,1],["platd",2,3,2,[0,1,0],0,1],["platd",1,3,2,[0,1,0],0,1],["platd",1,3,0,[0,1,0],2,1],["platd",2,3,0,[0,1,0],2,1],["platd",3,3,0,[0,1,0],2,1],["platd",4,3,0,[0,1,0],2,1],["platd",5,3,0,[0,1,0],2,1],["mthruster",5,3,1,[0,1,0],0,1],["plate",4,4,1,[0,-1,0],0,1,"31"],["plate",3,4,1,[0,-1,0],0,1,"31"],["plate",2,4,1,[0,-1,0],0,1,"31"],["plate",1,4,1,[0,-1,0],0,1,"31"],["light",2,3,1,[0,-1,0],0,1],["light",4,3,1,[-1,0,0],0,1],["glass",-1,1,1,[1,0,0],0,1],["glassd",0,1,0,[1,0,0],0,1],["glassd",0,1,2,[1,0,0],2,1],["glassd",0,2,2,[1,0,0],2,1],["glassd",0,2,0,[1,0,0],0,1],["glass",-1,2,1,[1,0,0],0,1],["slope",0,3,1,[0,1,0],1,1],["corner",0,3,2,[0,1,0],1,1],["corner",0,3,0,[0,1,0],0,1],["refinery",3,1,2,[0,1,0],0,1],["assembler",3,1,0,[0,1,0],0,1],["tank",4,1,0,[0,-1,0],0,1],["tank",4,2,0,[0,-1,0],0,1],["gyro",4,1,2,[0,-1,0],0,1],["hull",6,2,1,[0,0,-1],0,1,"020000"],["slope",6,2,2,[1,0,0],2,1],["slope",6,2,0,[1,0,0],0,1],["slope",6,3,1,[1,0,0],1,1],["corner",6,3,0,[1,0,0],0,1],["corner",6,3,2,[1,0,0],1,1],["mthruster",4,2,3,[0,0,1],0,1],["mthruster",4,2,-1,[0,0,-1],0,1],["mthruster",5,0,1,[0,-1,0],0,1],["hull",4,0,1,[-1,0,0],0,1,"001100"],["hull",3,0,1,[-1,0,0],0,1,"001100"],["slope",6,0,1,[1,0,0],1,1],["hull",5,1,2,[1,0,0],0,1],["hull",5,1,0,[1,0,0],0,1],["hull",6,1,1,[1,0,0],0,1],["thruster",6,1,0,[1,0,0],0,1],["thruster",6,1,2,[1,0,0],0,1],["hull",2,0,0,[0,-1,0],0,1,"000001"],["hull",2,0,2,[0,-1,0],0,1,"000010"],["hull",0,0,1,[0,-1,0],0,1,"001000"],["drill",-1,0,1,[-1,0,0],0,1],["seat",1,1,1,[0,1,0],1,1],["plate",1,1,3,[0,0,-1],0,1,"01"],["plate",1,2,3,[0,0,-1],0,1,"01"],["cargo",5,1,1,[0,1,0],0,1],["powergen",5,2,2,[0,1,0],0,1],["door",2,1,2,[0,1,0],4,1],["steps",2,0,3,[0,1,0],1,1],["hull",2,-1,3,[0,1,0],0,1],["steps",2,-1,4,[0,1,0],1,1],["leg",2,-1,2,[0,-1,0],0,1],["leg",2,-1,0,[0,-1,0],0,1],["leg",6,-1,1,[0,-1,0],0,1],["mthruster",2,0,1,[-1,0,0],0,1]];   // the starter ship, PIONEER v2, as laid out by J. D. Steel (entries: type, i, j, k, facing, spin, tier, paint). Forward is -x, the boarding steps are on the +z (port) side
 // the pilot's own interceptor: the same airframe with a seat, and a gun under each wing where the slopes were
 const WING_SLOPES=new Set(['1,0,1','-2,0,1']);
 function spawnPlayerDrone(pos){
@@ -2680,7 +2766,8 @@ function spawnPlayerDrone(pos){
 }
 function spawnShip(){
   const g=makeGrid('PIONEER',new V3(0,0,0),null);g.kind='pioneer';
-  for(const e of SHIP_PIONEER)addBlock(g,e[1],e[2],e[3],e[0],e[4]||null,e[5]|0,e[6]||1);
+  for(const e of SHIP_PIONEER){const b=addBlock(g,e[1],e[2],e[3],e[0],e[4]||null,e[5]|0,e[6]||1);
+    if(b&&e[7]&&(b.type==='hull'||b.type==='plate')){b.pf=String(e[7]).split('').map(Number);if(b.type==='plate')platePaint(b);else g.hullDirty=true;}}
   g.fuel=g.fuelCap;
 }
 const PLAN=[
@@ -2930,7 +3017,7 @@ const ACT={
     const c=nearestSeat();if(c)enterShip(c);else toast('No pilot seat or machine within reach','bad');
   },
   next(){selectBlock(player.sel+1);},prev(){selectBlock(player.sel-1);},
-  spin(){spin=(spin+1)%4;ghostKey='';lastSig='';toast('Spin: '+spin*90+'\u00b0');},
+  spin(){const dr=BORDER[player.sel]==='door';spin=(spin+1)%(dr?8:4);ghostKey='';lastSig='';toast(dr&&spin>=4?'Spin: '+(spin-4)*90+'\u00b0 \u00b7 flush with the panels':'Spin: '+spin*90+'\u00b0'+(dr?' \u00b7 centred':''));},
   orient(){if(player.tool===4){paintSel=(paintSel+1)%PAINT_NAMES.length;toast('Paint: '+PAINT_NAMES[paintSel],'good');return;}orient=(orient+1)%ORIENTS.length;ghostKey='';lastSig='';toast('Facing: '+ORIENT_NAMES[orient]);},
   damp(){player.damp=!player.damp;},
   cam(){if(player.mode==='foot'){fcam=fcam?0:1;toast(fcam?'Third person':'First person','good');return;}
@@ -2938,6 +3025,7 @@ const ACT={
   lamp(){lampOn=!lampOn;lamp.intensity=lampOn?1.7:0;},
   refuel(){refuel();},
   menu(){openMenu();},
+  chat(){chatOpen();},
   noclip(){NOCLIP=!NOCLIP;player.vel.set(0,0,0);if(NOCLIP)player.ride=null;toast(NOCLIP?'No clip ON: fly through walls':'No clip OFF','good');document.querySelectorAll('[data-tap=noclip]').forEach(b=>b.classList.toggle('lit',NOCLIP));},
   shot(){
     try{
@@ -2985,7 +3073,6 @@ $('fs').addEventListener('click',()=>{
 let showScen=false;
 $('go').addEventListener('click',begin);
 $('scenok').addEventListener('click',()=>{$('scen').hidden=true;paused=false;last=performance.now();if(!coarse)lockPointer();});
-$('how').addEventListener('click',()=>{const w=$('howto'),on=w.hidden;w.hidden=!on;$('how').textContent=on?'Back':'How to Play';if(on)w.scrollIntoView&&w.scrollIntoView({block:'start'});});
 document.addEventListener('pointerlockchange',()=>{
   locked=document.pointerLockElement===canvas;
   if(locked)wasLocked=true;else if(wasLocked&&running&&!paused&&!termOpen)openMenu();
@@ -2995,6 +3082,7 @@ canvas.addEventListener('click',()=>{if(!coarse&&running&&!paused&&!locked&&!noL
 window.addEventListener('keydown',e=>{
   if(e.target&&(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'))return;   // typing a name
   if(!running||paused)return;
+  if((e.code==='Enter'||e.code==='NumpadEnter')&&MP.on&&!termOpen){chatOpen();e.preventDefault();return;}
   if(termOpen){if(e.code==='Escape'||e.code==='KeyK'||e.code==='KeyF'){closeTerminal();e.preventDefault();}return;}
   if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Tab'].includes(e.code))e.preventDefault();
   if(e.repeat)return;
@@ -3043,6 +3131,7 @@ document.querySelectorAll('[data-tap]').forEach(b=>b.addEventListener('pointerdo
 /* ---------- main loop ---------- */
 function frame(now){
   requestAnimationFrame(frame);
+  if(SAVER){const gap=(!running||paused)?500:31;if(now-lastR<gap)return;lastR=now;}
   const dt=Math.min(.05,Math.max(.001,(now-last)/1000));last=now;
   if(running&&!paused)update(dt);
   else if(grids.length){camera.updateMatrixWorld(true);}
@@ -3137,7 +3226,7 @@ function updateGravity(dt){
   if(best)player.gT=0;
   const now=!!player.grav;
   if(now!==inGrav){inGrav=now;gravChanged();}
-  player.eye+=((now?EYE_UP:0)-player.eye)*(1-Math.exp(-6*dt));
+  if(now)player.eye+=(EYE_UP-player.eye)*(1-Math.exp(-6*dt));   // leaving a field keeps the eye where it was, so the view does not drop
   // show the field bubble while building or from outside
   for(const g of grids)for(const b of g.gravs)if(b.field)b.field.visible=!!b.pw&&(!inGrav||player.tool===1);
 }
@@ -3166,13 +3255,25 @@ function rideSync(){
   R.q.copy(g.group.quaternion);
 }
 /* ---- automatic doors: they slide open as you come near ---- */
-function stepsTick(dt){   // the lower flight of steps (below the deck) folds away while a ship is undocked
+function stepsTick(dt){   // every flight of steps on the outside of the hull (and any below the deck) folds away while a ship is undocked; steps inside the cabin stay
   for(const g of grids){
     if(!g.steps||!g.steps.length||!g.seat)continue;
     if(g._deckV!==g.ver){let m=1e9;for(const b of g.blocks.values())if(b.type==='hull'&&b.j<m)m=b.j;g._deck=m;g._deckV=g.ver;}
     const out=!g.lock;
+    let inn=null;
     for(const b of g.steps){
-      const tgt=(out&&b.j<g._deck)?0:1,e=b.ext===undefined?1:b.ext;
+      let fold=out&&b.j<g._deck;
+      if(out&&!fold){   // a step with a sealed cabin cell next to it is an indoor step
+        if(!inn)inn=interiorOf(g);
+        fold=!AXES6.some(d=>inn.has(kf(b.i+d[0],b.j+d[1],b.k+d[2])));
+      }
+      const tgt=fold?0:1,e=b.ext===undefined?1:b.ext;
+      const h=g.blocks.get(kf(b.i,b.j-1,b.k));   // a lone hull block under the steps is part of the stair: it goes too
+      if(h&&h.type==='hull'){
+        if(h._stV!==g.ver){h._stV=g.ver;h._stub=true;for(const d of AXES6){if(d[1]===1)continue;const o=g.blocks.get(kf(h.i+d[0],h.j+d[1],h.k+d[2]));if(o&&o.type!=='steps'&&o.type!=='leg'){h._stub=false;break;}}}
+        const want=h._stub&&tgt===0&&e<.5;
+        if(!!h.fold!==want){h.fold=want;g.hullDirty=true;}
+      }
       if(e===tgt)continue;
       b.ext=e+(tgt-e)*Math.min(1,dt*4);if(Math.abs(tgt-b.ext)<.02)b.ext=tgt;
       if(b.node){b.node.visible=b.ext>.06;b.node.scale.x=Math.max(.05,b.ext);}
@@ -3466,6 +3567,9 @@ function mktBuild(){
   const g=mkG();
   let h='<div class="mcard"><div class="fin-big"><div><small>Credits</small><b id="m-cr"></b></div><div><small>Station</small><b id="m-gn" style="font-size:15px"></b></div></div>'+
     '<div class="qrow" id="m-note"></div></div>';
+  h+='<div class="mcard"><div class="fin-big"><div><small>Debt</small><b id="t-debt"></b></div><div><small>Loan repaid</small><b id="t-pct"></b></div></div>'+
+    '<div class="dbar"><i id="t-dbar"></i></div><div class="bt"><small class="qrow" id="t-paid" style="flex:1;align-self:center"></small>'+
+    '<button class="rb" data-act="pay" data-n="1000000">Pay 1M</button><button class="rb" data-act="pay" data-n="10000000">Pay 10M</button><button class="rb" data-act="pay" data-n="1e12">Pay all I can</button></div></div>';
   h+='<div class="mcard"><div class="mh"><b>Settlements</b><span>next drone</span></div><div class="bt" style="justify-content:flex-start;flex-wrap:wrap">'+
     MKT.map(s=>'<button class="rb chip" data-mk="sel" data-s="'+s.id+'">'+s.name+' <small></small></button>').join('')+'</div>'+
     '<div class="qrow" id="m-info" style="white-space:pre-line"></div></div>';
@@ -3516,8 +3620,16 @@ function mktClick(btn){
     toast('Order sent to '+s.name+'. Drone due in '+fmtClock(mk.tm[s.id]),'good');return;}
 }
 const mkSellPlanCost=(s,cart,except)=>{let c=0;for(const q in cart.buy)if(q!==except)c+=cart.buy[q]*mkCost(s,q);return c+mkFee(s,cart.sell,cart.buy).fee;};
+function finRefresh(){
+  if(!$('t-debt'))return;
+  const pc=Math.max(0,Math.min(100,100*(1-eco.debt/170000000)));
+  setT($('t-debt'),fmtCr(eco.debt));setT($('t-pct'),eco.debt<=0?'Cleared':Math.round(pc)+'%');
+  $('t-dbar').style.width=pc.toFixed(1)+'%';
+  setT($('t-paid'),eco.debt<=0?'Debt cleared':Math.round(pc)+'% of the 170,000,000 loan repaid');
+}
 function mktRefresh(){
   if(!$('m-cr'))return;
+  finRefresh();
   const s=MKT[mk.sel],g=mkG(),cart=mkCart();
   setT($('m-cr'),fmtCr(eco.cr));setT($('m-gn'),g?g.name:'none');
   setT($('m-note'),mkGuest()?'Guests can look around. The host runs the Market for now.':!g?'Needs a station with a Trade Beacon and a Cargo Container.':'Goods leave '+g.name+' storage when you submit. Drones deliver and pay when they arrive. Shipping depends on distance and weight.');
@@ -3590,7 +3702,7 @@ function tradeTick(dt){
       const P=BEACON[tierOf(bcn)-1];
       tr.timer=Math.min(tr.timer,P.every);
       if(tr.timer>0)tr.timer-=dt;
-      if(tr.timer<=0&&whTotals(g).u>0)startTrader(g,bcn);
+      /* freight trader retired: the Market replaces it, no new runs start */
     }else if(tr.state===1){
       tr.t+=dt/TR_IN;placeShip(tr,tr.start,tr.dock,tr.t);
       if(tr.t>=1){tr.state=2;tr.t=0;if(g.group.position.distanceTo(player.pos)<120)beep(440,.12);}
@@ -3680,13 +3792,14 @@ function dockCheck(g){
   for(const p of best.pads){_bw.set(p.i*2,p.j*2,p.k*2);best.group.localToWorld(_bw);if(_bw.distanceTo(g.group.position)<=PAD_REACH)t=Math.max(t,tierOf(p));}
   return{h:best,pad:t,rate:t?PAD_RATE[t-1]:BASE_RATE};
 }
-/* ---------- DOCK button: snap a craft's legs onto a Landing Pad (12 m) or a flat station face (within one block) ---------- */
-const PAD_SNAP=12,LEG_SNAP=2.2,AXES=[[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];
+/* ---------- DOCK button: appears within 5 m of a Landing Pad (or a block of a flat station face); lit and usable under 3.1 m/s; snaps you down and locks ---------- */
+const PAD_SNAP=5,LEG_SNAP=2.2,DOCK_MAX=3.1,ZV=new V3(),AXES=[[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];
 function legDown(g){const d=new V3();for(const l of g.legs){const f=l.f||[0,1,0];d.add(new V3(f[0],f[1],f[2]).applyQuaternion(g.group.quaternion));}return d.normalize();}
 function legFeet(g){g.group.updateMatrixWorld(true);return g.legs.map(l=>{const f=l.f||[0,1,0];return g.group.localToWorld(new V3(l.i*2+f[0],l.j*2+f[1],l.k*2+f[2]));});}
 function dockPlan(g){
   if(!g.legs.length)return{err:g.name+' has no Landing Leg'};
   const D=legDown(g),feet=legFeet(g);
+  const FC=new V3();for(const F of feet)FC.add(F);FC.multiplyScalar(1/feet.length);   // centre of the landing legs: this is what has to be within 5 m of the pad
   let pad=null;
   for(const h of grids){
     if(h===g||isCraft(h)||!h.pads.length)continue;
@@ -3696,7 +3809,7 @@ function dockPlan(g){
       const f=p.f||[0,1,0],n=new V3(f[0],f[1],f[2]).applyQuaternion(h.group.quaternion);
       if(n.dot(D)>-.5)continue;                       // the pad has to face the legs
       const k=kf(p.i+f[0],p.j+f[1],p.k+f[2]);if(cellAt(h,k))continue;   // something built on top of it
-      const pc=h.group.localToWorld(new V3(p.i*2,p.j*2,p.k*2)),d=pc.distanceTo(g.group.position);
+      const pc=h.group.localToWorld(new V3(p.i*2,p.j*2,p.k*2)),d=pc.distanceTo(FC);
       const top=pc.clone().addScaledVector(n,2);
       if(grids.some(c=>c!==g&&!c.station&&((c.lock&&c.lock.pad===p)||c.group.position.distanceTo(top)<5)))continue;   // pad already taken
       if(d<=PAD_SNAP&&(!pad||d<pad.d))pad={h,n,pc,d,pad:p};
@@ -3720,8 +3833,9 @@ function dockPlan(g){
       }
     }
   }
-  return best||{err:'No landing pad within 12 m, and no flat panel within one block of the legs'};
+  return best||{err:'No landing pad within 5 m, and no flat panel within one block of the legs'};
 }
+function dockRelSpeed(g,P){return g.vel.clone().sub((P&&P.h&&P.h.vel)||ZV).length();}   // speed relative to the station you are docking with
 const ROT24=(()=>{   // the 24 ways to turn a cube onto itself
   const out=[],perms=[[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]];
   for(const p of perms)for(const sx of[-1,1])for(const sy of[-1,1])for(const sz of[-1,1]){
@@ -3763,6 +3877,7 @@ function toggleDock(){
   if(g.lock){undock(g);return;}
   const P=dockPlan(g);
   if(P.err){toast(P.err,'bad');return;}
+  if(dockRelSpeed(g,P)>=DOCK_MAX){toast('You are traveling too fast to dock.','bad');return;}
   const p0=g.group.position.clone(),q0=g.group.quaternion.clone();
   snapDock(g,P);
   if(shipHitsAst(g)){   // the spot is taken or blocked: put the ship back where it was
@@ -3776,9 +3891,13 @@ let dkbAcc=0;
 function dockBtnTick(dt){
   dkbAcc+=dt;if(dkbAcc<.3)return;dkbAcc=0;
   const b=$('dockbtn'),g=player.ship;
-  let show=false,label='DOCK';
-  if(g&&g.legs.length){if(g.lock){show=true;label='UNDOCK';}else{const P=dockPlan(g);show=!P.err;}}
-  if(b.hidden===show)b.hidden=!show;setT(b,label);b.classList.toggle('lit',!!(g&&g.lock));
+  let show=false,label='DOCK',cls='';
+  if(g&&g.legs.length){
+    if(g.lock){show=true;label='UNDOCK';cls='out';}   // docked: green UNDOCK
+    else{const P=dockPlan(g);show=!P.err;if(show&&dockRelSpeed(g,P)<DOCK_MAX)cls='rdy';}   // in range: lit only when slow enough
+  }
+  if(b.hidden===show)b.hidden=!show;setT(b,label);
+  b.classList.toggle('out',cls==='out');b.classList.toggle('rdy',cls==='rdy');
   // a parked, docked craft nobody is flying stays locked in place
   for(const c of grids)if(isCraft(c)&&c!==g&&c.dock&&!c.lock&&c.vel.lengthSq()<.01)c.lock={pos:c.group.position.clone(),q:c.group.quaternion.clone()};
 }
@@ -3971,7 +4090,7 @@ function upbTick(dt){
 
 const selGrid=()=>grids.find(g=>g.name===termSel&&viewOK(g))||storGrids()[0]||null;
 const ifaceGrids=()=>{const l=[],c=connGrid();if(c)l.push(c);for(const g of grids)if(!l.includes(g)&&l.length<4&&inReach(g))l.push(g);return l;};   // every ship or station you can reach has its own Interface tab
-const tabsHTML=(m,cur)=>'<div class="ttabs"><button class="ttab'+(m==='prod'?' on':'')+'" data-tab="prod">Production</button><button class="ttab'+(m==='trade'?' on':'')+'" data-tab="trade">Storage &amp; Trade</button><button class="ttab'+(m==='mkt'?' on':'')+'" data-tab="mkt">Market</button>'+ifaceGrids().map(g=>'<button class="ttab'+(m==='upg'&&cur===g?' on':'')+'" data-tab="upg" data-g="'+g.name.replace(/"/g,'&quot;')+'">Interface ('+g.name.replace(/[<>&]/g,'')+')</button>').join('')+'</div>';
+const tabsHTML=(m,cur)=>'<div class="ttabs"><button class="ttab'+(m==='prod'?' on':'')+'" data-tab="prod">Production</button><button class="ttab'+(m==='trade'?' on':'')+'" data-tab="trade">Inventory</button><button class="ttab'+(m==='mkt'?' on':'')+'" data-tab="mkt">Market</button>'+ifaceGrids().map(g=>'<button class="ttab'+(m==='upg'&&cur===g?' on':'')+'" data-tab="upg" data-g="'+g.name.replace(/"/g,'&quot;')+'">Interface ('+g.name.replace(/[<>&]/g,'')+')</button>').join('')+'</div>';
 function openTerminal(focusUid,mode){
   if(mode==='upg'){openUpg();return;}
   sheet='';setT(document.querySelector('.thead h2'),'Control panel');
@@ -4015,19 +4134,14 @@ function buildProd(list){
 }
 const ITEM_ICON=k=>{const i=RES.indexOf(k),j=['feI','siI','ptI'].indexOf(k);if(j>=0)return 'background-image:url('+ING_IMG[j]+')';if(COMP_IMG[k])return 'background-image:url('+COMP_IMG[k]+')';return i>=0?'background-image:url('+ORE_IMG[i][0]+')':'background:'+RCOL[k]+';border-radius:3px;transform:scale(.6)';};
 function buildTrade(sg){
-  let h='<div class="mcard"><div class="fin-big"><div><small>Credits</small><b id="t-cr"></b></div><div><small>Debt</small><b id="t-debt"></b></div></div>'+
-    '<div class="dbar"><i id="t-dbar"></i></div><div class="bt"><small class="qrow" id="t-paid" style="flex:1;align-self:center"></small>'+
-    '<button class="rb" data-act="pay" data-n="1000000">Pay 1M</button><button class="rb" data-act="pay" data-n="10000000">Pay 10M</button><button class="rb" data-act="pay" data-n="1e12">Pay all I can</button></div></div>';
+  let h='<div class="mcard" id="t-tot"></div>';
   h+='<div class="mcard"><div class="mh"><b>Storage</b><span id="t-pack"></span></div>'+
     (sg.length?'<div class="bt" style="justify-content:flex-start" id="t-chips">'+sg.map(g=>'<button class="rb chip'+(undocked(g)?' nd':'')+'" data-act="sel" data-g="'+g.name+'">'+g.name+(undocked(g)?' (not docked)':'')+' <small></small></button>').join('')+'</div>':'<div class="qrow">No cargo container in reach and no craft docked. Build a Cargo Container, or land a craft on the station.</div>')+
     '<div class="qrow" id="t-dock" style="white-space:pre-line"></div>'+
     (sg.length>1?'<div class="mfoot"><button class="rb" data-act="moveall" id="t-move"></button></div>':'')+
-    '<div class="grow2 h"><span>Goods</span><span>Price</span><span>Your pack</span><span id="t-here">Here</span><span></span></div>'+
-    ITEMS.map(k=>'<div class="grow2" data-k="'+k+'"><span class="nm"><i style="'+ITEM_ICON(k)+'"></i>'+SHORT[k]+'</span><span class="pr"></span><span class="cg"></span><span class="wh"></span>'+
+    '<div class="grow2 h"><span>Goods</span><span>Your pack</span><span id="t-here">Here</span><span></span></div>'+
+    ITEMS.map(k=>'<div class="grow2" data-k="'+k+'"><span class="nm"><i style="'+ITEM_ICON(k)+'"></i>'+SHORT[k]+'</span><span class="cg"></span><span class="wh"></span>'+
       '<span class="bt"><button class="rb" data-act="load" data-k="'+k+'" data-n="50">+50</button><button class="rb" data-act="load" data-k="'+k+'" data-n="99999">All in</button><button class="rb" data-act="take" data-k="'+k+'" data-n="99999">Take</button><button class="rb mvi" data-act="moveitem" data-k="'+k+'">Move</button></span></div>').join('')+'</div>';
-  h+='<div class="mcard"><div class="mh"><b>Freight</b><span id="t-fname"></span><em class="st" id="t-state">—</em></div><div class="qrow" id="t-info"></div>'+
-    '<div class="mfoot"><button class="rb up" data-act="call" id="t-call">Call trader now · '+fmtCr(RUSH_FEE)+' cr</button></div></div>';
-  h+='<div class="mcard" id="t-fac"></div>';
   return h;
 }
 function termRefresh(){
@@ -4072,24 +4186,8 @@ function termRefresh(){
   }
 }
 function tradeRefresh(){
-  if(!$('t-cr'))return;
+  if(!$('t-pack'))return;
   const f=termF,sel=selGrid();
-  setT($('t-cr'),fmtCr(eco.cr));setT($('t-debt'),fmtCr(eco.debt));
-  $('t-dbar').style.width=Math.max(0,Math.min(100,100*(1-eco.debt/170000000))).toFixed(1)+'%';
-  setT($('t-paid'),eco.debt<=0?'Debt cleared':Math.round(100*(1-eco.debt/170000000))+'% of the 170,000,000 loan repaid');
-  // freight
-  const bcn=f?bestBeacon(f):null,tr=f&&f.trade,fw=f?whTotals(f):{u:0,t:{},c:0};
-  let st='No trade beacon',info='Build a Trade Beacon (station page) so freight traders can find you. Traders collect from that station\'s containers.';
-  setT($('t-fname'),f?f.name:'');
-  if(bcn){
-    const P=BEACON[tierOf(bcn)-1];
-    if(tr&&tr.state>0)st=['','Trader inbound','Trader loading','Trader departing'][tr.state];
-    else st=fw.u>0?'Next trader '+fmtClock(tr?tr.timer:P.every):'Waiting for goods';
-    info='Each trader takes up to '+P.cap+' units from '+f.name+' ('+fw.u+' stored), best prices first, and keeps '+Math.round(P.fee*100)+'%.'+(eco.last?'  Last run: '+eco.last.units+' units, '+fmtCr(eco.last.net)+' cr paid.':'');
-    if(tr&&tr.state===3&&tr.pay>0)info+='  Payment on the way: '+fmtCr(tr.pay)+' cr.';
-  }
-  setT($('t-state'),st);setT($('t-info'),info);
-  $('t-call').disabled=!bcn||!!(tr&&tr.state>0)||fw.u<=0||eco.cr<RUSH_FEE;
   // storage
   setT($('t-pack'),'Pack '+packUsed()+' / '+PACK_CAP);
   const chips=$('t-chips');
@@ -4116,23 +4214,19 @@ function tradeRefresh(){
   const wt=sel?whTotals(sel):{t:{},u:0,c:0};
   setT($('t-here'),sel?sel.name:'Here');
   for(const row of $('tbody').querySelectorAll('.grow2[data-k]')){
-    const k=row.dataset.k,pr=row.querySelector('.pr');
-    setT(pr,fmtCr(price[k])+(pdir[k]>0?' ▲':pdir[k]<0?' ▼':''));pr.className='pr '+(pdir[k]>0?'up2':pdir[k]<0?'dn2':'');
+    const k=row.dataset.k;
     setT(row.querySelector('.cg'),String(inv[k]|0));setT(row.querySelector('.wh'),String(wt.t[k]||0));
     const mvb=row.querySelector('.mvi');if(mvb){const ot=moveTarget(sel);mvb.style.display=ot?'':'none';mvb.disabled=!(wt.t[k]>0);}
   }
-  const fac=$('t-fac');
-  const list=sel?sel.cargos.filter(b=>b.type==='cargo').concat(sel.beacons):[];
-  const key=(sel?sel.name:'')+'|'+list.map(b=>b.uid+':'+tierOf(b)).join(',');
-  if(fac._key!==key){
-    fac._key=key;fac.innerHTML='<div class="fac"><b>'+(sel?sel.name+' facilities':'Facilities')+'</b><span id="t-wh"></span></div>'+
-      list.map(b=>'<div class="fac" data-u="'+b.uid+'"><span>'+BDEF[b.type].name+' · <em class="tt" style="font-style:normal;color:var(--ice)"></em></span><button class="rb up" data-act="upg" data-u="'+b.uid+'"></button></div>').join('');
-  }
-  setT($('t-wh'),wt.u+' / '+wt.c+' units stored');
-  for(const row of fac.querySelectorAll('.fac[data-u]')){
-    const b=list.find(x=>x.uid===+row.dataset.u);if(!b)continue;
-    setT(row.querySelector('.tt'),'T'+tierOf(b)+' · '+TIER_DEF[b.type].fx(tierOf(b)));
-    const btn=row.querySelector('button'),uc=upCost(b);setT(btn,uc?'Upgrade to T'+(tierOf(b)+1)+' · '+fmtItems(uc):'Max tier');btn.disabled=!uc||!canAfford(uc);
+  // all commodities, one block per container or docked craft, then the pack
+  const tot=$('t-tot');
+  if(tot){
+    const GR=[['Ore',['fe','si','ice','pt']],['Ingots',['feI','siI','ptI']],['Components',['plate','constr','motor','comp']]];
+    const rest=ITEMS.filter(k=>!GR.some(x=>x[1].includes(k)));if(rest.length)GR.push(['Other',rest]);
+    const tg=[];if(chips)for(const c of chips.querySelectorAll('.chip')){const g=grids.find(x=>x.name===c.dataset.g);if(g)tg.push(g);}
+    const blk=(name,get,cap)=>'<div class="tgrid"><div class="mh"><b>'+name+'</b><span>'+cap+'</span></div>'+GR.map(x=>'<div class="srow">'+x[1].map(k=>'<span class="sc"><i style="'+ITEM_ICON(k)+'"></i>'+SHORT[k]+' <b>'+get(k)+'</b></span>').join('')+'</div>').join('')+'</div>';
+    const html='<div class="mh"><b>All commodities</b></div>'+tg.map(g=>{const w=whTotals(g);return blk(g.name+(undocked(g)?' (not docked)':''),k=>w.t[k]||0,w.u+'/'+w.c);}).join('')+blk('Your pack',k=>inv[k]|0,packUsed()+'/'+PACK_CAP);
+    if(tot._h!==html){tot._h=html;tot.innerHTML=html;}
   }
 }
 function closeTerminal(){
@@ -4304,24 +4398,55 @@ function tutOre(io,k,n){
   if((st.src==='pack'&&fromPack)||(st.src==='ship'&&fromShip)){tut.got[k]=(tut.got[k]||0)+n;}
 }
 function tutFuel(){if(tut&&player.ship&&player.ship.kind==='pioneer')tut.fuel=true;}
+/* practice world: a flag in storage makes the next boot build a fresh sandbox that never reads or writes the real save */
+const TWKEY='void-engineers-tutworld';
+let TUTW=null;try{const v=localStorage.getItem(TWKEY)||'',q=v.split('|');if(q[0]&&Date.now()-(+q[1]||0)<45000)TUTW=q[0];else if(v)localStorage.removeItem(TWKEY);}catch(e){}
+window.addEventListener('error',e=>{try{toast('Error: '+String(e.message||e).slice(0,110)+' (line '+e.lineno+')','bad');}catch(_){}});   // shows a crash on screen so it can be reported
+const tSpd=()=>(player.ship?player.ship.vel:player.vel).length();
+const tInput=()=>Math.hypot(stick.x||0,stick.y||0)>.12||!!(keys.KeyW||keys.KeyA||keys.KeyS||keys.KeyD);
+const tStn=()=>grids.find(g=>g.station&&g.name==='OUTPOST')||grids.find(g=>g.station);
+const tPio=()=>grids.find(g=>g.kind==='pioneer');
+const tFix=n=>n.toFixed(1);
 const MOVE=[
-  {t:'Thrust',d:coarse?'Push the joystick (the left pad) to fly. Travel 20 m.':'Use W A S D to fly. Travel 20 m.',done:()=>tut.dist>=20,prog:()=>Math.min(20,Math.round(tut.dist))+' / 20 m'},
+  {t:'Joystick',d:coarse?'Push the joystick (the left pad) to fly. Travel 15 m.':'Use W A S D to fly. Travel 15 m.',done:()=>tut.dist>=15,prog:()=>Math.min(15,Math.round(tut.dist))+' / 15 m'},
   {t:'Look and aim',d:coarse?'Drag a finger across the right side of the screen to look around and aim.':'Move the mouse to look around and aim.',done:()=>tut.look>=3,prog:()=>Math.min(100,Math.round(tut.look/3*100))+'%'},
-  {t:'Roll, rise and fall',d:coarse?'Hold ↶ or ↷ to roll, and hold UP or DOWN to rise and fall.':'Hold Q or E to roll, and Space or C to rise and fall.',done:()=>tut.roll>=1&&tut.vert>=1,prog:()=>'Roll '+(tut.roll>=1?'✓':'…')+' · Rise/fall '+(tut.vert>=1?'✓':'…')},
-  {t:'Dampeners',d:(coarse?'Tap DAMP':'Press Z')+' to switch the inertial dampeners off and drift, then switch them back on. With dampeners on, you stop when you let go.',done:()=>tut.dOff&&player.damp,prog:()=>'Off '+(tut.dOff?'✓':'…')+' · On again '+(tut.dOff&&player.damp?'✓':'…')}
+  {t:'Roll, rise and fall',d:coarse?'Hold \u21b6 or \u21b7 to roll, and hold UP or DOWN to rise and fall.':'Hold Q or E to roll, and Space or C to rise and fall.',done:()=>tut.roll>=1&&tut.vert>=1,prog:()=>'Roll '+(tut.roll>=1?'\u2713':'\u2026')+' \u00b7 Rise/fall '+(tut.vert>=1?'\u2713':'\u2026')},
+  {t:'Speed up',d:'Hold the joystick forward until you reach 8 m/s. Your speed is shown top right.',done:()=>tSpd()>=8,prog:()=>tFix(tSpd())+' / 8 m/s'},
+  {t:'Slow down',d:'Let go of the joystick. The dampeners are ON, so you brake by yourself. Wait until you stop.',done:()=>tSpd()<.5&&player.damp&&!tInput(),prog:()=>tFix(tSpd())+' m/s'},
+  {t:'Coasting',d:(coarse?'Tap DAMP':'Press Z')+' to switch the dampeners OFF. Push to reach 3 m/s, then let go. You keep drifting.',done:()=>!player.damp&&tSpd()>=3&&!tInput(),prog:()=>'Dampeners '+(player.damp?'ON':'OFF')+' \u00b7 '+tFix(tSpd())+' m/s'},
+  {t:'Brake',d:(coarse?'Tap DAMP':'Press Z')+' to switch the dampeners back ON. They push against your drift until you stop.',done:()=>player.damp&&tSpd()<.5,prog:()=>tFix(tSpd())+' m/s'},
+  {t:'Fly to the PIONEER',d:'Turn around and fly back to the OUTPOST (follow its marker). Get within 18 m of the PIONEER, the ship sitting on the pad.',done:()=>{const p=tPio();return !!p&&p.group.position.distanceTo(player.pos)<18;},prog:()=>{const p=tPio();return p?Math.round(p.group.position.distanceTo(player.pos))+' m away':'';}},
+  {t:'Board the PIONEER',d:'Climb the steps on its port side, go through the door and tap INTERACT at the pilot seat.',done:()=>!!(player.ship&&player.ship.kind==='pioneer')},
+  {t:'Ships fly the same way',d:'In the seat the joystick thrusts and dragging turns, just like on foot. Tap UNDOCK, then fly 30 m from the OUTPOST.',done:()=>{const g=player.ship,o=tStn();return !!(g&&!g.lock&&o&&g.group.position.distanceTo(o.group.position)>30);},prog:()=>{const g=player.ship,o=tStn();return g&&o?(g.lock?'Docked \u00b7 tap UNDOCK':Math.round(g.group.position.distanceTo(o.group.position))+' / 30 m'):'';}},
+  {t:'Ship speed',d:'Thrust to 10 m/s, then let go. With the dampeners ON the ship brakes itself. Wait until it stops.',done:()=>tut.m.hi&&tSpd()<1&&player.damp,prog:()=>tFix(tSpd())+' m/s'+(tut.m.hi?' \u00b7 now let go':'')},
+  {t:'Ship coasting',d:'Switch the dampeners OFF, thrust a little, then let go and coast. Then switch them ON to brake.',done:()=>tut.m.coast&&player.damp&&tSpd()<1,prog:()=>'Drift '+(tut.m.coast?'\u2713':'\u2026')+' \u00b7 Dampeners '+(player.damp?'ON':'OFF')}
 ];
 const TUTS={
   mine:{name:'First shift',steps:TUT,end:'Set the PIONEER down on the OUTPOST, then refine the ore in the machines aboard (TERM). Every ingot you sell pays down the loan.'},
-  move:{name:'Flight basics',steps:MOVE,end:'You can fly. Try First shift next, from the menu, to start mining.'}
+  move:{name:'Movement',steps:MOVE,end:'You can fly on foot and in a ship. Next up: User interface, Inventory and Docking. Tap Exit to go back to your game.'}
 };
+if(TUTW&&!TUTS[TUTW])TUTW=null;
 const tutSet=()=>TUTS[(tut&&tut.id)||'mine'];
 function startTut(id){
-  tut={id,s:0,got:{},hid:false,dist:0,look:0,roll:0,vert:0,dOff:false};
+  tut={id,s:0,got:{},hid:false,dist:0,look:0,roll:0,vert:0,dOff:false,m:{}};
   tutLastP=null;tutLastQ=null;tutDraw();toast(TUTS[id].name+' tutorial started','good');
 }
+function tutExit(){try{localStorage.removeItem(TWKEY);}catch(e){}wiping=true;running=false;location.reload();}   // back to the real game and its save
+function tutAdvance(){
+  if(!tut)return;const S=tutSet().steps;if(tut.s>=S.length)return;
+  tut.s++;tut.got={};tut.m={};beep(990,.15);
+  toast(tut.s<S.length?'Next: '+S[tut.s].t:tutSet().name+' complete!','good');
+  if(tut.s>=S.length&&!TUTW)tut.endT=10;
+  tutDraw();
+}
+tutEl.addEventListener('pointerdown',e=>{
+  const b=e.target.closest('[data-a]');if(!b||!tut)return;e.preventDefault();e.stopPropagation();
+  const a=b.dataset.a;if(a==='next'||a==='skip')tutAdvance();else if(a==='exit')tutExit();
+});
 let tutLastP=null,tutLastQ=null;
 function tutFrame(dt){   // movement tutorial bookkeeping, every frame
   if(!tut||tut.id!=='move'||tut.fin||!running||paused||termOpen)return;
+  if(!tut.m)tut.m={};
   const p=player.ship?player.ship.group.position:player.pos;
   if(tutLastP)tut.dist+=Math.min(5,p.distanceTo(tutLastP));
   tutLastP=(tutLastP||new V3()).copy(p);
@@ -4331,16 +4456,20 @@ function tutFrame(dt){   // movement tutorial bookkeeping, every frame
   if(tb.rl||tb.rr||keys.KeyQ||keys.KeyE)tut.roll+=dt;
   if(tb.up||tb.down||keys.Space||keys.KeyC)tut.vert+=dt;
   if(!player.damp)tut.dOff=true;
+  const sp=tSpd();
+  if(sp>=10)tut.m.hi=true;
+  if(!player.damp&&sp>=2&&!tInput())tut.m.coast=true;
 }
 function tutTick(dt){
   tutFrame(dt);
   if(!tut)return;tutAcc+=dt;if(tutAcc<.5)return;tutAcc=0;
   const S=tutSet().steps;
   if(tut.s<S.length){
-    const st=S[tut.s],ok=st.need?Object.keys(st.need).every(k=>(tut.got[k]||0)>=st.need[k]):st.done();
-    if(ok){tut.s++;tut.got={};beep(990,.15);
-      toast(tut.s<S.length?'Done! Next: '+S[tut.s].t:tutSet().name+' complete!','good');
-      if(tut.s>=S.length)tut.endT=10;}
+    const st=S[tut.s];
+    if(!st.next){
+      const ok=st.need?Object.keys(st.need).every(k=>(tut.got[k]||0)>=st.need[k]):st.done();
+      if(ok)tutAdvance();
+    }
   }else if(tut.endT>0){tut.endT-=.5;if(tut.endT<=0){tut.fin=true;}}
   tutDraw();
 }
@@ -4350,11 +4479,13 @@ function tutDraw(){
   const mb=$('tutbtn');if(mb){mb.hidden=!(tut&&!tut.fin);setT(mb,tut&&tut.hid?'Show tutorial':'Hide tutorial');}
   if(!show)return;
   const T=tutSet(),S=T.steps;let h;
-  if(tut.s>=S.length)h='<div class="th">'+T.name+' complete</div><div class="td">'+T.end+'</div>';
+  const ex=TUTW?'<button data-a="exit">Exit</button>':'';
+  if(tut.s>=S.length)h='<div class="th">'+T.name+' complete</div><div class="td">'+T.end+'</div>'+(ex?'<div class="tb2">'+ex+'</div>':'');
   else{const st=S[tut.s];
-    h='<div class="th">'+T.name+' · '+(tut.s+1)+'/'+S.length+'<button class="tx" aria-label="Hide">×</button></div><div class="tt">'+st.t+'</div><div class="td">'+st.d+'</div>';
+    h='<div class="th">'+T.name+' \u00b7 '+(tut.s+1)+'/'+S.length+'<button class="tx" aria-label="Hide">\u00d7</button></div><div class="tt">'+st.t+'</div><div class="td">'+st.d+'</div>';
     if(st.need)h+='<div class="tn">'+Object.keys(st.need).map(k=>{const g=Math.min(st.need[k],tut.got[k]||0);return '<span class="'+(g>=st.need[k]?'ok':'')+'">'+RNAME[k]+' '+g+'/'+st.need[k]+'</span>';}).join('')+'</div>';
-    else if(st.prog)h+='<div class="tn"><span>'+st.prog()+'</span></div>';}
+    else if(st.prog)h+='<div class="tn"><span>'+st.prog()+'</span></div>';
+    if(TUTW||st.next)h+='<div class="tb2">'+(st.next?'<button class="nx" data-a="next">Next</button>':'')+'<button data-a="skip">Skip</button>'+ex+'</div>';}
   if(tutEl._h!==h){tutEl._h=h;tutEl.innerHTML=h;}
 }
 
@@ -4387,6 +4518,7 @@ function mpSend(o){try{if(MP.ws&&MP.ws.readyState===1)MP.ws.send(typeof o==='str
 function mpStatus(s){const e=$('mpst');if(e)e.textContent=s;}
 function mpBadge(){
   const b=$('mpbadge');if(!b)return;
+  document.body.classList.toggle('mpon',!!MP.on);if(!MP.on&&typeof chatClose==='function')chatClose();
   if(!MP.on){b.hidden=true;return;}
   b.hidden=false;b.textContent=(MP.id===MP.host?'HOST':'GUEST')+' · '+MP.code+' · '+(MP.peers.size+1)+' online';
 }
@@ -4452,6 +4584,9 @@ function mpHandle(m){
     if(MP.chunks.got===m.n){const S=JSON.parse(MP.chunks.parts.join(''));MP.chunks=null;mpApplyWorld(S);}
     return;
   }
+  if(m.t==='chat'){if(m.from===MP.id)return;const p=MP.peers.get(m.from);chatAdd((p&&p.name)||String(m.n||'Engineer').slice(0,18),m.m,false);return;}
+  if(m.t==='dep'){if(m.from!==MP.id)mpApplyDep(m);return;}
+  if(m.t==='rock'){if(m.from!==MP.id)mpApplyRock(m);return;}
   if(m.t==='p'){
     let p=MP.peers.get(m.from);if(!p){p=mpPeer(m.from,'Engineer');MP.peers.set(m.from,p);mpBadge();}
     p.tp.set(m.p[0],m.p[1],m.p[2]);p.up.set(m.u[0],m.u[1],m.u[2]);p.face.set(m.f[0],m.f[1],m.f[2]);
@@ -4476,10 +4611,76 @@ function mpApplyWorld(S){
   toast('Joined room '+MP.code+' as '+MP.name,'good');
   $('mp').hidden=true;
 }
+/* ---------- chat ---------- */
+const CHAT={open:false,last:0};
+function chatAdd(name,text,mine){
+  text=String(text||'').slice(0,160);if(!text)return;
+  const box=$('chatlog'),row=document.createElement('div'),b=document.createElement('b');
+  b.textContent=String(name||'Engineer').slice(0,18)+': ';row.appendChild(b);row.appendChild(document.createTextNode(text));
+  box.appendChild(row);while(box.children.length>6)box.removeChild(box.firstChild);
+  setTimeout(()=>row.classList.add('old'),12000);
+  if(!mine&&!CHAT.open){const cb=$('chatbtn');if(cb)cb.classList.add('lit');}
+}
+function chatOpen(){
+  if(!MP.on){toast('Chat needs a room. Host or join one from the menu.','bad');return;}
+  Object.keys(keys).forEach(k=>keys[k]=false);mFire=mGrind=false;
+  CHAT.open=true;$('chatbar').hidden=false;$('chatlog').classList.add('open');$('chatbtn').classList.remove('lit');
+  const i=$('chatin');i.value='';i.focus();
+}
+function chatClose(){
+  if(!CHAT.open)return;
+  CHAT.open=false;$('chatbar').hidden=true;$('chatlog').classList.remove('open');
+  try{$('chatin').blur();}catch(e){}
+}
+{
+  const f=$('chatbar'),i=$('chatin');
+  f.addEventListener('submit',e=>{
+    e.preventDefault();
+    const t=i.value.trim().slice(0,160),now=Date.now();
+    if(t&&MP.on&&now-CHAT.last>400){CHAT.last=now;mpSend({t:'chat',n:MP.name,m:t});chatAdd(MP.name,t,true);}
+    i.value='';chatClose();
+  });
+  $('chatx').addEventListener('click',chatClose);
+  i.addEventListener('keydown',e=>{if(e.code==='Escape'){chatClose();e.preventDefault();}});
+}
+/* ---------- shared mining: ore taken from a deposit and rock carved away are sent to the others ---------- */
+const MPD=new Map();let mpQuiet=false;
+function mpDepId(d){
+  if(d._id)return d._id;
+  for(let a=0;a<asteroids.length;a++){const i=asteroids[a].deps?asteroids[a].deps.indexOf(d):-1;if(i>=0)return d._id=[a,i];}
+  return null;
+}
+function mpDepTake(d,n){
+  if(!MP.on||!(n>0))return;
+  const id=mpDepId(d);if(!id)return;
+  const k=id[0]+':'+id[1];MPD.set(k,(MPD.get(k)||0)+n);
+}
+function mpDepFlush(){
+  if(!MPD.size)return;
+  for(const [k,n] of MPD){const q=k.split(':');mpSend({t:'dep',a:+q[0],i:+q[1],n});}
+  MPD.clear();
+}
+function mpApplyDep(m){
+  const a=asteroids[m.a|0],d=a&&a.deps&&a.deps[m.i|0];
+  if(!d||d.dead||!(m.n>0))return;
+  setDepStock(d,d.stock-Math.min(+m.n,d.max));
+}
+function mpRock(a,hit,r){
+  if(!MP.on||mpQuiet||!hit)return;
+  const ai=asteroids.indexOf(a);if(ai<0)return;
+  mpSend({t:'rock',a:ai,x:hit.ix,y:hit.iy,z:hit.iz,nx:+(hit.nx||0).toFixed(2),ny:+(hit.ny||0).toFixed(2),nz:+(hit.nz||0).toFixed(2),r});
+}
+function mpApplyRock(m){
+  const a=asteroids[m.a|0];if(!a||!a.data)return;
+  mpQuiet=true;
+  try{mineAt(a,{ix:m.x|0,iy:m.y|0,iz:m.z|0,nx:+m.nx||0,ny:+m.ny||0,nz:+m.nz||0},Math.min(3,+m.r||1));}
+  finally{mpQuiet=false;}
+}
 const _mpv=new V3(),_mpf=new V3();
 function mpFrame(dt){
   if(!MP.on)return;
-  MP.pt+=dt;
+  MP.pt+=dt;MP.dq=(MP.dq||0)+dt;
+  if(MP.dq>=.25){MP.dq=0;mpDepFlush();}
   if(MP.pt>=.1){
     MP.pt=0;
     const pil=player.ship,pos=pil?seatWorld(pil):player.pos;
@@ -4513,7 +4714,7 @@ function mpFrame(dt){
 
 let wiping=false;
 function saveGame(){
-  if(!booted||wiping||MP.guest)return;   // a guest never overwrites their own save with the host's world
+  if(!booted||wiping||TUTW||MP.guest)return;   // a guest never overwrites their own save with the host's world
   try{localStorage.setItem(SAVE_KEY,JSON.stringify(serialize()));}catch(e){}
 }
 function restoreSave(S){
@@ -4571,8 +4772,8 @@ function boot(){
     setTimeout(boot,0);return;
   }
   buildSlots();
-  let S=hotSave;
-  if(!S){try{S=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');}catch(e){S=null;}}
+  let S=TUTW?null:hotSave;
+  if(!S&&!TUTW){try{S=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');}catch(e){S=null;}}
   let restored=false;
   if(S){
     try{restored=restoreSave(S);}
@@ -4582,24 +4783,30 @@ function boot(){
     }
   }
   if(!restored){
-    showTutNote=true;showScen=true;
-    spawnStation();spawnShip();spawnPlayerDrone(new V3(-20,7,-22));
+    if(!TUTW){showTutNote=true;showScen=true;}
+    spawnStation();spawnShip();if(!TUTW)spawnPlayerDrone(new V3(-20,7,-22));
     // the PIONEER starts set down on the landing platform; you start at the foot of its boarding steps, facing it
     const pi=grids.find(g=>g.kind==='pioneer'),os=grids.find(g=>g.station);
     if(pi&&os){
-      pi.group.position.set(6,4,-4);pi.group.updateMatrixWorld(true);
+      pi.group.position.set(0,4,-4);pi.group.updateMatrixWorld(true);
       pi.lock={pos:pi.group.position.clone(),q:pi.group.quaternion.clone(),h:os,pad:null};
-      player.pos.set(-9.5,2.85,0);camera.quaternion.setFromAxisAngle(AXY,-Math.PI/2);
+      if(TUTW)player.pos.set(0,6,38);else player.pos.set(4,2.85,12);   // practice world: float 38 m out, clear of the gravity field, facing the outpost
+      camera.quaternion.setFromAxisAngle(AXY,TUTW?Math.PI:0);   // practice world: facing away from the outpost, so the flight lessons happen in open space
     }
   }
-  if(!grids.some(x=>x.kind==='derelict')&&!(restored&&S&&S.der))spawnDerelict();
+  if(!TUTW&&!grids.some(x=>x.kind==='derelict')&&!(restored&&S&&S.der))spawnDerelict();
   savedGame=restored;
   for(const g of grids)markGrid(g);
   for(const g of grids)g.group.updateMatrixWorld(true);
-  go.disabled=false;go.textContent=restored?'Continue':'Launch';
+  go.disabled=false;go.textContent=TUTW?'Begin tutorial':restored?'Continue':'Launch';
   if(restored)$('newg').hidden=false;
   booted=true;setBuildUI();hudDirty=true;
-  try{if(window.claude&&window.claude.hot&&window.claude.hot.snapshot)window.claude.hot.snapshot(()=>({save:wiping?null:serialize()}));}catch(e){}
+  if(TUTW){   // practice world: start the tutorial straight away, no second tap
+    startTut(TUTW);const tx=$('twexit');if(tx)tx.hidden=false;
+    try{localStorage.removeItem(TWKEY);}catch(e){}
+    try{begin();}catch(e){console.error(e);}
+  }
+  try{if(window.claude&&window.claude.hot&&window.claude.hot.snapshot)window.claude.hot.snapshot(()=>({save:(wiping||TUTW)?null:serialize()}));}catch(e){}
   window.__VE={grindStep,gridOn,powerTick,spawnDrone,spawnPlayerDrone,droneTick,damageBlock,repairBlock,hpOf,dmgEff,fireBolt,boltsTick,bolts,wipOn,wipUnit,wipBegin,wipDone,mk,mktClick,mktTick,mktBuild,mktRefresh,MKT,mkFee,mkTier,player,grids,asteroids,update,begin,ACT,keys,tb,camera,inv,mineAt,rayAst,pickAll,aim,serialize,restoreSave,saveGame,
     addToGrid,gridHas,gridSpace,takeFromGrid,packUsed,packSpace,PACK_CAP,PACKIO,shipIO,spawnShip,interiorOf,bodyHit,bodyMove,cellAt,setTier,growCheck,doorTick,rideSync,seatWorld,nearestSeat,spawnStation,haveK,spend,upgradeBlock,gravR,qMax,tierOf,upCost,recalc,eco,price,PRICE0,ITEMS,loadItem,takeItem,whTotals,payDebt,tradeTick,BEACON,CARGO_CAP,panelSummary,openTerminal,closeTerminal,scanOre,setTool,setPage,addBlock,makeGrid,removeBlock,RECIPES,BDEF,BORDER,
     setDev:v=>{DEV=!!v;},platePaint,openPicker,openUpg,connGrid,surveyAst,revealBuried,tutState:()=>tut,startTut,renameGrid,dockPlan,toggleDock,pointSolid,shipHitsAst,enterShip,exitShip,inReach,gridsTouch,isCraft,dockCheck,dockTick,startXfer,moveTarget,PAD_RATE,BASE_RATE,xferState:()=>xfer,
@@ -4611,7 +4818,25 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden)saveGame();
 window.addEventListener('pagehide',saveGame);
 { const st=$('start');st.style.setProperty('--cover','url('+TEX_IMG.cover+')');st.classList.add('cover'); }
 { const tb2=$('tutbtn');tb2.addEventListener('click',()=>{if(tut){tut.hid=!tut.hid;tutDraw();}});
-  for(const b of document.querySelectorAll('[data-tut]'))b.addEventListener('click',()=>{if(!booted)return;startTut(b.dataset.tut);const go=$('go');if(!go.disabled)go.click();}); }
+  const tw=$('tutwin'),sw=$('setwin');
+  for(const b of document.querySelectorAll('[data-tut]'))b.addEventListener('click',()=>{if(!booted)return;tw.hidden=true;startTut(b.dataset.tut);const go=$('go');if(!go.disabled)go.click();});
+  $('tutmenubtn').addEventListener('click',()=>{tw.hidden=false;});
+  $('tutclose').addEventListener('click',()=>{tw.hidden=true;});
+  $('tutbtn').addEventListener('click',()=>{tw.hidden=true;});
+  $('setbtn').addEventListener('click',()=>{sw.hidden=false;});
+  $('setclose').addEventListener('click',()=>{sw.hidden=true;});
+  for(const w of [tw,sw])w.addEventListener('pointerdown',e=>{if(e.target===w)w.hidden=true;});   // tap outside the window to close it
+  for(const b of document.querySelectorAll('[data-tw]'))b.addEventListener('click',()=>{
+    if(!booted)return;
+    const wasRun=running;
+    try{if(!TUTW)saveGame();localStorage.setItem(TWKEY,b.dataset.tw+'|'+Date.now());}catch(e){toast('The practice world needs browser storage','bad');return;}
+    tw.hidden=true;toast('Loading the practice world\u2026','good');
+    wiping=true;running=false;
+    // if the page does not reload (blocked here), undo the freeze and say so
+    setTimeout(()=>{wiping=false;running=wasRun;try{localStorage.removeItem(TWKEY);}catch(e){}toast('The page could not reload here. Open the game in its own tab or full screen and try again.','bad');},4000);
+    try{location.reload();}catch(e){}
+  });
+  const tx=$('twexit');if(tx)tx.addEventListener('click',tutExit); }
 // first launch of a new game: point at the tutorials in the menu
 let showTutNote=false;
 const tnote=document.createElement('div');tnote.id='tnote';tnote.hidden=true;
@@ -4634,6 +4859,10 @@ function tutNoteTick(){if(showTutNote&&running&&!paused){showTutNote=false;tnote
   });
   db.addEventListener('click',()=>{DEV=!DEV;try{localStorage.setItem('void-engineers-dev',DEV?'1':'0');}catch(e){}apply();});
   apply();
+  const sb=$('saver'),applyS=()=>{sb.textContent='Battery saver: '+(SAVER?'on':'off');sb.classList.toggle('on',SAVER);renderer.setPixelRatio(SAVER?1:Math.min(window.devicePixelRatio||1,coarse?1.5:2));resize();};
+  try{SAVER=localStorage.getItem('void-engineers-saver')==='1';}catch(e){}
+  sb.addEventListener('click',()=>{SAVER=!SAVER;try{localStorage.setItem('void-engineers-saver',SAVER?'1':'0');}catch(e){}applyS();});
+  applyS();
 }
 { // new game: two taps, because confirm() is not available in a page like this
   const nb=$('newg');let armed=0;
@@ -4656,3 +4885,5 @@ try{
 })();
 
 </script>
+
+</body></html>
