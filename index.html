@@ -125,6 +125,10 @@ body[data-tool="1"] #blk{display:flex}
 .tb{width:44px;height:40px;border:0;background:var(--panel);box-shadow:inset 0 0 0 1px var(--edge);font:600 10px var(--mono);letter-spacing:.04em;touch-action:none;padding:0}
 .tb.big{width:88px;height:62px;font:700 17px var(--display);letter-spacing:.16em}
 #main #dampbtn{height:40px;font-size:14px}
+#fuelbtn.fw{background:#c9a21a;color:#171000;box-shadow:none}
+#fuelbtn.fc{background:#c0392b;color:#fff;box-shadow:none}
+#fuelbtn.fe{background:#c0392b;color:#fff;box-shadow:none;animation:fuelflash .6s steps(2,start) infinite}
+@keyframes fuelflash{50%{background:#3a0d09;color:#ff8a7a}}
 #act{background:var(--hazard);color:var(--hazard-ink);box-shadow:none}
 body[data-tool="1"] #act{background:var(--ice)}
 body[data-tool="2"] #act{background:var(--bad)}
@@ -377,7 +381,7 @@ body:not(.devon) #aux [data-tap=shot],body:not(.devon) #aux [data-tap=noclip],bo
           <button class="tb" id="usebtn" data-tap="use">INTERACT</button>
           <button class="tb" data-tap="cam">CAM</button>
           <button class="tb" data-tap="lamp">LAMP</button>
-          <button class="tb" data-tap="refuel">FUEL</button>
+          <button class="tb" id="fuelbtn" data-tap="refuel">FUEL</button>
           <button class="tb" data-tap="menu">MENU</button>
           <button class="tb" id="termbtn" data-tap="term">TERM</button>
           <button class="tb" id="dockbtn" data-tap="dock" hidden>DOCK</button>
@@ -495,7 +499,7 @@ body:not(.devon) #aux [data-tap=shot],body:not(.devon) #aux [data-tap=noclip],bo
 'use strict';
 /* =====================  Void Engineers  =====================
    Part A: renderer, sky, procedural voxel asteroids, particles */
-const GAME_VER='109';
+const GAME_VER='119';
 /* no page zoom while playing: pinch, double-tap and ctrl+wheel are swallowed */
 (()=>{const no=e=>{e.preventDefault();};
   for(const n of['gesturestart','gesturechange','gestureend','dblclick'])document.addEventListener(n,no,{passive:false});
@@ -1071,7 +1075,11 @@ const BDEF={
   corner:{name:'Corner Block',cost:{fe:2},mass:300,shape:true,spec:'angled armour \u00b7 0.3 t'},
   icorner:{name:'Inverted Corner',cost:{fe:5},mass:800,shape:true,spec:'angled armour \u00b7 0.8 t'},
   window:{name:'Window',cost:{fe:3,si:2},mass:500,spec:'0.5 t'},
+  glassc:{name:'Corner Glass',cost:{fe:3,si:10},mass:200,part:true,spin:true,spec:'glass on two adjacent sides of its cell, for a rounded corner \u00b7 ROT and SPIN turn it \u00b7 0.2 t'},
   glassd:{name:'Angled Glass',cost:{fe:3,si:8},mass:150,part:true,spin:true,spec:'a pane across the diagonal of its cell, for corners \u00b7 ROT and SPIN turn it'},
+  platt:{name:'Triangle Plate',cost:{fe:2},mass:80,part:true,spin:true,spec:'half a hull plate, a right triangle, for tapers and wing tips \u00b7 ROT and SPIN turn it \u00b7 0.1 t'},
+  plate:{name:'Hull Plate',cost:{fe:2},mass:120,part:true,spec:'a thin armour plate on any side of its cell \u00b7 turn it with ROT \u00b7 0.1 t'},
+  platd:{name:'Angled Plate',cost:{fe:3},mass:170,part:true,spin:true,spec:'a plate across the diagonal of its cell, for streamlining \u00b7 ROT and SPIN turn it \u00b7 0.2 t'},
   glass:{name:'Glass',cost:{fe:2,si:6},mass:100,part:true,spec:'one window pane on any side of its cell \u00b7 turn it with ROT'},
   door:{name:'Door',cost:{fe:20,si:10},mass:800,part:true,spin:true,spec:'automatic \u00b7 1 wide, 2 tall \u00b7 SPIN turns it \u00b7 0.8 t'},
   steps:{name:'Steps',cost:{fe:8},mass:500,part:true,spin:true,spec:'climbable \u00b7 SPIN turns the rise \u00b7 0.5 t'},
@@ -1097,7 +1105,7 @@ const BDEF={
   pad:{name:'Landing Pad',cost:{fe:30,si:10},mass:2000,spec:'6 m deck \u00b7 DOCK snaps craft from 12 m \u00b7 faster transfers \u00b7 2.0 t'},
   beacon:{name:'Trade Beacon',cost:{plate:3,constr:3,comp:1},mass:1500,panel:true,spec:'calls freight traders \u00b7 1.5 t'}
 };
-const BORDER=['hull','slope','corner','icorner','window','glass','glassd','door','steps','seat','light','powergen','thruster','mthruster','gun','bigthruster','gyro','lgyro','tank','bigtank','drill','bigdrill','cargo','leg','gravgen'];
+const BORDER=['hull','slope','corner','icorner','window','glass','glassc','glassd','plate','platd','platt','door','steps','seat','light','powergen','thruster','mthruster','gun','bigthruster','gyro','lgyro','tank','bigtank','drill','bigdrill','cargo','leg','gravgen'];
 const kf=(i,j,k)=>(i+512)+((j+512)<<10)+((k+512)<<20);
 
 const ICONS={
@@ -1111,7 +1119,11 @@ const ICONS={
   seat:'<path d="M7 4h6v10H7z"/><path d="M7 14h11v4H7z"/><path d="M9 18v3M16 18v3" opacity=".6"/>',
   door:'<rect x="6" y="3" width="12" height="18"/><path d="M12 3v18" opacity=".5"/><path d="M10 12h.01M14 12h.01"/>',
   steps:'<path d="M4 20h4v-4h4v-4h4V8h4v12z"/>',
+  glassc:'<path d="M4 4h16v16H4z" opacity=".3"/><path d="M4 4h16M4 4v16" stroke-width="3.5"/>',
   glassd:'<path d="M4 4h16v16H4z" opacity=".4"/><path d="M4 20L20 4"/><path d="M8 20l12-12" opacity=".5"/>',
+  plate:'<rect x="4" y="4" width="16" height="16" opacity=".3"/><rect x="4" y="15" width="16" height="5"/>',
+  platt:'<rect x="4" y="4" width="16" height="16" opacity=".25"/><path d="M4 20V4l16 16z"/>',
+  platd:'<rect x="4" y="4" width="16" height="16" opacity=".25"/><path d="M4 20L20 4" stroke-width="3.5"/>',
   glass:'<rect x="4" y="4" width="16" height="16"/><path d="M7 12l5-5M9 16l7-7" opacity=".5"/>',
   tank:'<rect x="6" y="3" width="12" height="18" rx="5"/><path d="M6 9h12M6 15h12" opacity=".5"/>',
   drill:'<circle cx="12" cy="6" r="3"/><path d="M9 9h6v6H9z"/><path d="M12 15v7M6 20l6-5 6 5" opacity=".5"/>',
@@ -1255,6 +1267,7 @@ const SHAPES={
     [[-1,-1,-1],[1,-1,-1],[1,-1,1],[-1,-1,1]],[[1,-1,-1],[1,1,-1],[1,1,1],[1,-1,1]],[[-1,-1,1],[1,-1,1],[1,1,1],[-1,1,1]],
     [[1,1,-1],[1,1,1],[-1,1,1]],[[-1,-1,-1],[-1,-1,1],[-1,1,1]],[[-1,-1,-1],[1,-1,-1],[1,1,-1]],[[-1,-1,-1],[1,1,-1],[-1,1,1]]])
 };
+SHAPES.platt=polyGeo([[[-1,.78,-1],[1,.78,-1],[-1,.78,1]],[[-1,1,-1],[1,1,-1],[-1,1,1]],[[-1,.78,-1],[1,.78,-1],[1,1,-1],[-1,1,-1]],[[-1,.78,-1],[-1,.78,1],[-1,1,1],[-1,1,-1]],[[1,.78,-1],[-1,.78,1],[-1,1,1],[1,1,-1]]]);   // a right triangle slab on the +y side of the cell
 const REF_SIDES=[MAT.refS,MAT.refS,MAT.hull,MAT.hull,MAT.refF,MAT.refF],ASM_SIDES=[MAT.asmS,MAT.asmS,MAT.hull,MAT.hull,MAT.asmF,MAT.asmF];   // fronts on the two z faces
 /* ---- cockpit and drill bit models matching Mike's art ---- */
 function triGeo(P){   // flat-shaded triangles -> geometry (normals per face, planar uvs)
@@ -1318,6 +1331,7 @@ const GLASS_FRAME=(()=>{   // the 12 edges of a glass block as ONE mesh (draw ca
 })();
 const THR_SIDES=[MAT.thrT,MAT.thrT,MAT.noz,MAT.thrT,MAT.thrT,MAT.thrT];   // box faces +x -x +y -y +z -z; +y is the exhaust side
 /* ---- the vent of a Maneuvering Thruster, and the frames of blocks that are still being welded ---- */
+G.paneW=new THREE.BoxGeometry(1.98,1.98,.14);G.plate=new THREE.BoxGeometry(1.98,.22,1.98);G.plateD=new THREE.BoxGeometry(1.98,.2,2.83);
 G.gnBase=new THREE.BoxGeometry(1.9,.8,1.9);G.gnBar=new THREE.CylinderGeometry(.2,.26,1.5,10);G.gnTip=new THREE.CylinderGeometry(.3,.3,.22,10);
 G.mtVent=new THREE.BoxGeometry(1.2,.08,1.2);G.mtFl=cone(.3,1.1,8);G.mtFlc=cone(.15,.7,8);
 G.mtBars=triGeo([].concat(boxTris(0,0,-.38,1.0,.08,.12),boxTris(0,0,0,1.0,.08,.12),boxTris(0,0,.38,1.0,.08,.12)));
@@ -1431,8 +1445,15 @@ function buildBlock(type,f,ghostMat,rot,tier){
       add(G.bgBase,THR_SIDES,0,-.43,0);add(G.bgNoz,MAT.noz,0,.62,0);mkFlame(G.bgFl,G.bgFlc,1.25);break;
     case 'gyro':
       add(G.box19,MAT.gyro,0,0,0);add(G.ring,MAT.ring,0,0,1.0);add(G.ring,MAT.ring,0,0,-1.0);break;
+    case 'glassc':   // glass on the +y face and the -z face of the cell
+      add(G.pane,MAT.glassPane,0,.9,0);add(G.paneW,MAT.glassPane,0,0,-.9);break;
     case 'glassd':   // a pane across the diagonal of the cell (plane y+z=0 in block space)
       add(G.paneD,MAT.glassPane,0,0,0).rotation.x=Math.PI/4;break;
+    case 'platt':add(SHAPES.platt,MAT.hull,0,0,0);break;
+    case 'plate':
+      add(G.plate,MAT.hull,0,.88,0);break;   // one plate on the +y side of the cell; the block's facing turns it
+    case 'platd':   // a plate across the diagonal of the cell, like the angled glass
+      add(G.plateD,MAT.hull,0,0,0).rotation.x=Math.PI/4;break;
     case 'glass':
       add(G.pane,MAT.glassPane,0,.9,0);break;   // one pane on the +y side of the cell; the block's facing turns it
     case 'seat':   // faces -z: cushion, backrest, arm rests and a small console in front
@@ -1613,6 +1634,12 @@ function addBlock(g,i,j,k,type,f,spin,tier){
   for(let n=1;n<cells.length;n++)g.occ.set(kf(cells[n][0],cells[n][1],cells[n][2]),b);
   recalc(g);applyTier(b);return b;
 }
+function platePaint(b){   // a hull plate has two faces that can wear different skins: pf[0] on the side it faces, pf[1] on the back
+  if(b.type!=='plate'||!b.node)return;
+  const m=b.node.children[0]&&b.node.children[0].children[0];if(!m)return;
+  const L=[MAT.hull,MAT.floor,MAT.wall,MAT.roof],pf=b.pf||[0,0];
+  m.material=[MAT.hull,MAT.hull,L[pf[0]|0]||MAT.hull,L[pf[1]|0]||MAT.hull,MAT.hull,MAT.hull];
+}
 function applyTier(b){if(b.field)b.field.scale.setScalar(gravR(b)/GRAV_R);}
 // raise a block's tier; machines grow a block taller at tier 2, which needs the cell above to be free
 function growCheck(g,b,t){
@@ -1657,7 +1684,7 @@ function repairBlock(g,b,amt){
 function glassdNormal(f,s){   // unit-ish normal (components 0 or +-1) of an angled pane, in the grid frame
   const q=blockQuat({f,s}),v=new V3(0,1,1).applyQuaternion(q);return [Math.round(v.x),Math.round(v.y),Math.round(v.z)];
 }
-const seals=b=>{const d=BDEF[b.type];return !d.ghost&&b.type!=='seat'&&b.type!=='glass'&&b.type!=='glassd';};
+const seals=b=>{const d=BDEF[b.type];return !d.ghost&&b.type!=='seat'&&b.type!=='glass'&&b.type!=='glassd'&&b.type!=='glassc'&&b.type!=='plate'&&b.type!=='platd'&&b.type!=='platt';};
 function interiorOf(g){
   if(g._int&&g._intVer===g.ver)return g._int;
   if(g._int&&g._int.size>3000&&performance.now()-g._intT<1500)return g._int;   // a huge station: don't redo this every time a block is welded
@@ -1676,8 +1703,9 @@ function interiorOf(g){
   for(const c of all)if(c[3])wall[idx(c[0],c[1],c[2])]=1;
   const pane=new Map(),diag=new Map();   // a glass pane seals one face of its cell; an angled pane splits its cell into two halves
   for(const bl of g.blocks.values()){
-    if(bl.type==='glass'){pane.set(idx(bl.i,bl.j,bl.k),bl.f||[0,1,0]);}
-    else if(bl.type==='glassd')diag.set(idx(bl.i,bl.j,bl.k),glassdNormal(bl.f||[0,1,0],bl.s|0));
+    if(bl.type==='glass'||bl.type==='plate'){pane.set(idx(bl.i,bl.j,bl.k),[bl.f||[0,1,0]]);}
+    else if(bl.type==='glassc'){const f=bl.f||[0,1,0],v=new V3(0,0,-1).applyQuaternion(blockQuat(bl));pane.set(idx(bl.i,bl.j,bl.k),[f,[Math.round(v.x),Math.round(v.y),Math.round(v.z)]]);}
+    else if(bl.type==='glassd'||bl.type==='platd')diag.set(idx(bl.i,bl.j,bl.k),glassdNormal(bl.f||[0,1,0],bl.s|0));
   }
   const half=(n,d)=>{const v=n[0]*d[0]+n[1]*d[1]+n[2]*d[2];return v>0?1:v<0?0:-1;};   // which half a cell face belongs to (-1: the pane cuts that face)
   const seen2=new Uint8Array(di*dj*dk*2);
@@ -1690,8 +1718,8 @@ function interiorOf(g){
       if(a<i0-1||a>i1+1||b<j0-1||b>j1+1||c<k0-1||c>k1+1)continue;
       const x=idx(a,b,c);if(wall[x])continue;
       if(dn&&half(dn,d)!==h)continue;                                         // the angled pane blocks leaving by the other half's faces
-      if(p1&&p1[0]===d[0]&&p1[1]===d[1]&&p1[2]===d[2])continue;
-      const p2=pane.get(x);if(p2&&p2[0]===-d[0]&&p2[1]===-d[1]&&p2[2]===-d[2])continue;
+      if(p1&&p1.some(n=>n[0]===d[0]&&n[1]===d[1]&&n[2]===d[2]))continue;
+      const p2=pane.get(x);if(p2&&p2.some(n=>n[0]===-d[0]&&n[1]===-d[1]&&n[2]===-d[2]))continue;
       let h2=0;const dn2=diag.get(x);
       if(dn2){h2=half(dn2,[-d[0],-d[1],-d[2]]);if(h2<0)continue;}
       if(seen2[x*2+h2])continue;seen2[x*2+h2]=1;st.push([a,b,c,h2]);
@@ -1714,8 +1742,10 @@ function blockSolidAt(b,lx,ly,lz){   // lx..lz are grid-local; some blocks only 
   const x=_bs.x,y=_bs.y,z=_bs.z;
   if(b.type==='steps'){if((b.ext===undefined?1:b.ext)<.5)return false;const t=Math.max(0,Math.min(3,Math.floor((x+1)*2)));return y<-1+.5*(t+1)+1e-4;}
   if(b.type==='door')return (b.oa||0)<.55&&Math.abs(z)<.5;
-  if(b.type==='glass')return y>.78;
-  if(b.type==='glassd')return Math.abs(y+z)<.2;
+  if(b.type==='glass'||b.type==='plate')return y>.76;
+  if(b.type==='platt')return y>.76&&x+z<0;
+  if(b.type==='glassc')return y>.76||z<-.76;
+  if(b.type==='glassd'||b.type==='platd')return Math.abs(y+z)<.2;
   if(b.type==='seat')return y<-.45&&Math.abs(x)<.85&&Math.abs(z)<.85;
   return true;
 }
@@ -1966,7 +1996,7 @@ function refreshBar(){
 }
 const TOOLS=['Drill','Torch','Cutter','Detector','Paint','None'];
 const PAINT_NAMES=['Plating','Floor','Wall','Roof'];let paintSel=1;
-const paintOK=()=>{const g=connGrid();return !!g&&(g.station||!!g.lock);};   // only at a station or a docked ship
+const paintOK=()=>{const g=connGrid();return !!g&&(DEV||g.station||!!g.lock);};   // only at a station or a docked ship
 const TOOL_HINT=['Drill: mine ore','Torch: weld blocks','Cutter: remove blocks, 70% back','Detector: ore within 40 m. PING sweeps 80 m','Paint: ROT picks Plating, Floor, Wall or Roof. Aim at a hull face and tap PAINT','No tool: hands free. USE still works'];
 // the hand drill only works near ore: a deposit or an asteroid surface within 5 m
 let nodeNear=false,nodeT=0;
@@ -2131,20 +2161,26 @@ function buildUpdate(dt){
   }
   if(player.tool===4){   // paint: aim at a hull face and fire
     if(!paintOK()){setTool(0);return;}
-    const pt=(pk&&pk.kind==='blk'&&pk.t<10&&pk.h.b.type==='hull')?pk:null;
+    const pt=(pk&&pk.kind==='blk'&&pk.t<10&&(pk.h.b.type==='hull'||pk.h.b.type==='plate'))?pk:null;
     if(pt){
       const b=pt.h.b,n=pt.h.n,g=pt.g;
-      const fi=HF.findIndex(h=>h[0][0]===n[0]&&h[0][1]===n[1]&&h[0][2]===n[2]);
-      paintQuad.position.copy(g.group.localToWorld(new V3(b.i*2+n[0]*1.02,b.j*2+n[1]*1.02,b.k*2+n[2]*1.02)));
-      paintQuad.quaternion.copy(g.group.quaternion).multiply(_q1.setFromUnitVectors(new V3(0,0,1),new V3(n[0],n[1],n[2])));
+      let fi=HF.findIndex(h=>h[0][0]===n[0]&&h[0][1]===n[1]&&h[0][2]===n[2]);
+      let pn=n,off=1.02;
+      if(b.type==='plate'){   // a plate: the face is the side of it the player is looking at
+        const f=b.f||[0,1,0],lc=g.group.worldToLocal(camera.position.clone());
+        const s=((lc.x-b.i*2)*f[0]+(lc.y-b.j*2)*f[1]+(lc.z-b.k*2)*f[2])>0?0:1;
+        fi=s;pn=s?[-f[0],-f[1],-f[2]]:f;off=1.0;
+      }
+      paintQuad.position.copy(g.group.localToWorld(new V3(b.i*2+pn[0]*off,b.j*2+pn[1]*off,b.k*2+pn[2]*off)));
+      paintQuad.quaternion.copy(g.group.quaternion).multiply(_q1.setFromUnitVectors(new V3(0,0,1),new V3(pn[0],pn[1],pn[2])));
       paintQuad.visible=true;
       if(fire&&placeCD<=0&&fi>=0){
         placeCD=.3;
-        const pf=b.pf||[0,0,0,0,0,0];pf[fi]=paintSel;b.pf=pf.some(x=>x)?pf:null;g.hullDirty=true;
+        const pf=b.pf||(b.type==='plate'?[0,0]:[0,0,0,0,0,0]);pf[fi]=paintSel;b.pf=pf.some(x=>x)?pf:null;if(b.type==='plate')platePaint(b);else g.hullDirty=true;
         const w=paintQuad.position;for(let i=0;i<6;i++)spawnP(w.x,w.y,w.z,(Math.random()-.5)*3,(Math.random()-.5)*3,(Math.random()-.5)*3,0xc58cff,.4);
         toast('Painted: '+PAINT_NAMES[paintSel],'good');
       }
-    }else if(fire&&placeCD<=0){placeCD=.5;toast('Aim at a hull block face','bad');}
+    }else if(fire&&placeCD<=0){placeCD=.5;toast('Aim at a hull block or plate','bad');}
     return;
   }
   if(!torch)return;
@@ -2539,7 +2575,24 @@ function spawnDerelict(){
         else put(i,s,k,'hull');}}   // each deck adds its own ceiling; only the bottom deck adds a floor
       if(edge)for(let j=L.f+1;j<L.c;j++){
         const mid=j===Math.round((L.f+L.c)/2)&&(L.r<=10),ang=Math.atan2(k,i);
-        put(i,j,k,mid&&Math.round(ang*8/Math.PI)%2===0?'window':'hull');
+        const win=mid&&Math.round(ang*8/Math.PI)%2===0,ex=D(i+1,k)>R,wx=D(i-1,k)>R,ez=D(i,k+1)>R,wz=D(i,k-1)>R;
+        if(win&&(ex?1:0)+(wx?1:0)+(ez?1:0)+(wz?1:0)===1)put(i,j,k,'glass',[ex?1:wx?-1:0,0,ez?1:wz?-1:0]);   // a glass pane on the outer face (the old window block is gone)
+        else put(i,j,k,'hull');
+      }
+    }
+  }
+  // soften the outline: where the round wall steps out to a convex corner, a vertical slope takes off the edge and a corner piece caps it under the roof
+  for(const L of LV){
+    const R=L.r+.5;
+    for(let i=-L.r-1;i<=L.r+1;i++)for(let k=-L.r-1;k<=L.r+1;k++){
+      if(D(i,k)>R)continue;
+      const ex=D(i+1,k)>R,wx=D(i-1,k)>R,ez=D(i,k+1)>R,wz=D(i,k-1)>R;
+      if(ex===wx||ez===wz)continue;   // not a corner of the outline
+      const sx=ex?1:-1,sz=ez?1:-1,f=[0,0,sz],sp=sx>0?3:1;
+      for(let j=L.f+1;j<=L.c;j++){
+        const o=M.get(key(i,j,k));if(!o)continue;
+        if(j===L.c&&(o.t==='slope'||o.t==='hull')){o.t='corner';o.f=f;o.s=sp;}
+        else if(j<L.c&&o.t==='hull'){o.t='slope';o.f=f;o.s=sp;}
       }
     }
   }
@@ -2673,6 +2726,8 @@ function updateHUD(dt){
     const a=g.fwd.x?0:g.fwd.y?1:2,s=g.fwd.x+g.fwd.y+g.fwd.z;
     setT(stEl.acc,(g.T[a][s>0?1:0]*1000/g.mass).toFixed(1)+' m/s²');
   }
+  // the FUEL button warns as the tanks run down: yellow at 25%, red at 5%, flashing when empty
+  {const fb=$('fuelbtn');if(fb){const sg=player.ship,fr=sg&&sg.fuelCap?sg.fuel/sg.fuelCap:1,st=!sg?0:sg.fuel<=0?3:fr<=.05?2:fr<=.25?1:0;if(fb._s!==st){fb._s=st;fb.classList.toggle('fw',st===1);fb.classList.toggle('fc',st===2);fb.classList.toggle('fe',st===3);}}}
   // INTERACT lights up when there is something to use; DAMP when the dampers are on
   {let av=!!player.ship;
    if(!av&&player.mode==='foot'&&!player.build&&player.tool!==1){av=!!nearestSeat();if(!av){const am=aimedMachine(USE_R);av=!!am;}}
@@ -2792,10 +2847,10 @@ function droneTick(dt){
     ai.t+=dt;
     const gp=g.group.position,tp=tg.group.localToWorld(tg.com.clone()),rel=tp.clone().sub(gp),range=rel.length()||1,rh=rel.clone().multiplyScalar(1/range);
     // what it is willing to do
-    if(!g.guns.length||g.blocks.size<ai.n0*.5)ai.state='flee';
+    if(!g.guns.length||g.blocks.size<ai.n0*.3)ai.state='flee';
     else if(ai.state==='approach'&&range<110)ai.state='attack';
     else if(ai.state==='attack'&&range>180)ai.state='approach';
-    if(ai.state==='flee'&&range>650){scene.remove(g.group);const n=grids.indexOf(g);if(n>=0)grids.splice(n,1);continue;}
+    if(ai.state==='flee'&&range>1200){scene.remove(g.group);const n=grids.indexOf(g);if(n>=0)grids.splice(n,1);continue;}
     // where it wants to be going
     const vdes=tg.vel.clone();
     if(ai.state==='approach')vdes.addScaledVector(rh,clamp((range-ai.orbit)*.3,8,45));   // slow down as it arrives
@@ -3010,7 +3065,7 @@ Object.assign(RCOL,{feI:'#e0905a',siI:'#d3dcec',ptI:'#ffe9a0',plate:'#9fb2c8',co
 const SHORT={fe:'Iron',si:'Silicon',ice:'Ice',pt:'Platinum',feI:'Iron ingot',siI:'Silicon ingot',ptI:'Platinum ingot',plate:'Plate',constr:'Construction',motor:'Motor',comp:'Computer'};
 const ALLK=Object.keys(inv);
 // ship and structure parts can be built anywhere; station machines need a gravity field
-const PAGE_BASIC=['hull','slope','corner','icorner','window','glass','glassd','door','steps','seat','light','powergen','thruster','mthruster','gun','bigthruster','gyro','lgyro','tank','bigtank','drill','bigdrill','cargo','refinery','assembler','leg','gravgen'];
+const PAGE_BASIC=['hull','slope','corner','icorner','glass','glassc','glassd','plate','platd','platt','door','steps','seat','light','powergen','thruster','mthruster','gun','bigthruster','gyro','lgyro','tank','bigtank','drill','bigdrill','cargo','refinery','assembler','leg','gravgen'];
 const PAGE_STN=['beacon','pad','lightbar'];
 let page=0,inGrav=false,booted=false;
 BORDER.length=0;BORDER.push(...PAGE_BASIC,...PAGE_STN);   // one list; the picker groups it
@@ -3084,7 +3139,7 @@ function updateGravity(dt){
   if(now!==inGrav){inGrav=now;gravChanged();}
   player.eye+=((now?EYE_UP:0)-player.eye)*(1-Math.exp(-6*dt));
   // show the field bubble while building or from outside
-  for(const g of grids)for(const b of g.gravs)if(b.field)b.field.visible=!inGrav||player.tool===1;
+  for(const g of grids)for(const b of g.gravs)if(b.field)b.field.visible=!!b.pw&&(!inGrav||player.tool===1);
 }
 /* ---- riding: while you stand in a grid's gravity you move with it (position, turning and velocity) ---- */
 function setRide(g){
@@ -4098,7 +4153,15 @@ $('tbody').addEventListener('click',e=>{
   if(btn.dataset.act==='rename'){renameGrid(upgG,$('gname').value);return;}
   if(btn.dataset.act==='export'){
     const g=upgG;if(!g)return;
-    const txt='VEPLAN1 '+JSON.stringify({n:g.name,b:Array.from(g.blocks.values()).map(b=>{const r=[b.type,b.i,b.j,b.k,b.f||0,b.s|0,tierOf(b)];if(b.pf)r.push(b.pf.join(''));return r;})});
+    let txt;
+    if(g.kind==='derelict'){   // the hub is huge: send only what differs from the freshly generated station
+      const base=spawnDerelict();scene.remove(base.group);const bn=grids.indexOf(base);if(bn>=0)grids.splice(bn,1);
+      const sig=b=>b.type+'|'+(b.f?b.f.join(','):'')+'|'+(b.s|0);
+      const add=[],del=[];
+      for(const[k,b]of g.blocks){const o=base.blocks.get(k);if(!o||sig(o)!==sig(b))add.push([b.type,b.i,b.j,b.k,b.f||0,b.s|0]);}
+      for(const[k,o]of base.blocks)if(!g.blocks.has(k))del.push([o.i,o.j,o.k]);
+      txt='VEDIFF '+JSON.stringify({n:g.name,add,del});
+    }else txt='VEPLAN1 '+JSON.stringify({n:g.name,b:Array.from(g.blocks.values()).map(b=>{const r=[b.type,b.i,b.j,b.k,b.f||0,b.s|0,tierOf(b)];if(b.pf)r.push(b.pf.join(''));return r;})});
     const ta=$('expout');ta.hidden=false;ta.value=txt;ta.focus();ta.select();
     let done=false;try{navigator.clipboard.writeText(txt).then(()=>toast('Plans copied ('+g.blocks.size+' blocks). Paste them to Claude.','good'),()=>toast('Select the text below and copy it','good'));done=true;}catch(e){}
     if(!done)toast('Select the text below and copy it','good');
@@ -4474,7 +4537,7 @@ function restoreSave(S){
     for(const e of sg.b){
       if(!BDEF[e[0]])continue;
       const b=addBlock(g,e[1],e[2],e[3],e[0],e[4]||null,e[9]|0,Math.min(TIER_MAX,Math.max(1,e[7]|0)));
-      if(b&&e[10]&&b.type==='hull'){b.pf=String(e[10]).split('').map(Number);g.hullDirty=true;}
+      if(b&&e[10]&&(b.type==='hull'||b.type==='plate')){b.pf=String(e[10]).split('').map(Number);if(b.type==='plate')platePaint(b);else g.hullDirty=true;}
       if(b&&e[11])wipRestore(g,b,e[11]);
       if(b&&e[12])b.dmg=e[12];
       if(b&&b.queue){if(e[5])b.queue=e[5].slice();if(e[6])b.job={id:e[6][0],t:e[6][1]};}
@@ -4539,7 +4602,7 @@ function boot(){
   try{if(window.claude&&window.claude.hot&&window.claude.hot.snapshot)window.claude.hot.snapshot(()=>({save:wiping?null:serialize()}));}catch(e){}
   window.__VE={grindStep,gridOn,powerTick,spawnDrone,spawnPlayerDrone,droneTick,damageBlock,repairBlock,hpOf,dmgEff,fireBolt,boltsTick,bolts,wipOn,wipUnit,wipBegin,wipDone,mk,mktClick,mktTick,mktBuild,mktRefresh,MKT,mkFee,mkTier,player,grids,asteroids,update,begin,ACT,keys,tb,camera,inv,mineAt,rayAst,pickAll,aim,serialize,restoreSave,saveGame,
     addToGrid,gridHas,gridSpace,takeFromGrid,packUsed,packSpace,PACK_CAP,PACKIO,shipIO,spawnShip,interiorOf,bodyHit,bodyMove,cellAt,setTier,growCheck,doorTick,rideSync,seatWorld,nearestSeat,spawnStation,haveK,spend,upgradeBlock,gravR,qMax,tierOf,upCost,recalc,eco,price,PRICE0,ITEMS,loadItem,takeItem,whTotals,payDebt,tradeTick,BEACON,CARGO_CAP,panelSummary,openTerminal,closeTerminal,scanOre,setTool,setPage,addBlock,makeGrid,removeBlock,RECIPES,BDEF,BORDER,
-    setDev:v=>{DEV=!!v;},openPicker,openUpg,connGrid,surveyAst,revealBuried,tutState:()=>tut,startTut,renameGrid,dockPlan,toggleDock,pointSolid,shipHitsAst,enterShip,exitShip,inReach,gridsTouch,isCraft,dockCheck,dockTick,startXfer,moveTarget,PAD_RATE,BASE_RATE,xferState:()=>xfer,
+    setDev:v=>{DEV=!!v;},platePaint,openPicker,openUpg,connGrid,surveyAst,revealBuried,tutState:()=>tut,startTut,renameGrid,dockPlan,toggleDock,pointSolid,shipHitsAst,enterShip,exitShip,inReach,gridsTouch,isCraft,dockCheck,dockTick,startXfer,moveTarget,PAD_RATE,BASE_RATE,xferState:()=>xfer,
     state:()=>({inGrav,page,termOpen,detRange,detSummary,paused,running}),
     setFire:v=>{mFire=v;},setGrind:v=>{mGrind=v;},MP,mpHandle};
 }
