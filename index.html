@@ -273,6 +273,7 @@ body[data-tool="3"] #cross::before,body[data-tool="3"] #cross::after{background:
 .srow{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;font-size:13px}
 .srow .sl{color:var(--dim);font-size:11px;letter-spacing:.06em;text-transform:uppercase;flex-basis:100%}
 .sc{display:inline-flex;align-items:center;gap:6px}.sc i{width:22px;height:22px;background:center/contain no-repeat;flex:none}.sc b{color:var(--ink);font-variant-numeric:tabular-nums}
+.gtab{display:grid;grid-template-columns:minmax(0,1.3fr) .7fr .7fr auto;gap:6px 8px;align-items:center}.gtab .grow2{display:contents}
 .grow2.h{color:var(--dim);font:600 10px var(--display);letter-spacing:.14em;text-transform:uppercase}
 .grow2 .nm{display:flex;align-items:center;gap:6px;min-width:0}.grow2 .nm i{width:18px;height:18px;flex:none;background:center/contain no-repeat}
 .up2{color:var(--good)}.dn2{color:var(--bad)}
@@ -311,12 +312,20 @@ body.tdemo #tdemo{display:block}
 #tdemo i{position:absolute;left:-22px;top:-22px;width:44px;height:44px;border-radius:50%;box-shadow:inset 0 0 0 2px rgba(245,165,36,.55)}
 #tdemo b{position:absolute;left:-9px;top:-9px;width:18px;height:18px;border-radius:50%;background:rgba(245,165,36,.8);animation:tdrag 2.4s ease-in-out infinite}
 @keyframes tdrag{0%{transform:translate(0,0)}30%{transform:translate(38px,-14px)}65%{transform:translate(-38px,12px)}100%{transform:translate(0,0)}}
+body.menutut #term{justify-content:flex-start}
+body.menutut .tcard{width:calc(100% - 262px)}
+body.termopen.menutut #tut{display:block}
+.sm{margin-top:6px;display:grid;gap:5px}.sm .smr{display:flex;justify-content:space-between;color:var(--dim)}.sm .smr b{color:var(--ink)}
+.sm button{border:0;background:var(--hazard);color:var(--hazard-ink);font:700 14px var(--display);letter-spacing:.12em;padding:7px;cursor:pointer}
+.smb{display:block;height:100%;width:0;background:var(--good)}.smb.dn{width:100%}.smb.run{animation:smelt 2s linear forwards}
+@keyframes smelt{from{width:0}to{width:100%}}
 #uidim{position:fixed;inset:0;background:rgba(0,0,0,.64);display:none;pointer-events:none}
 #uiblock{position:fixed;inset:0;z-index:5;display:none;touch-action:none}
 body.uitut #uidim,body.uitut #uiblock{display:block}
 body.uitut #aux .tb{visibility:visible!important;display:block!important}
 body.uitut #aux #dockbtn[hidden],body.uitut #aux #spinbtn{display:block!important}
 body.uitut #aux #chatbtn{visibility:hidden!important}
+body.uitut #act{visibility:visible!important}
 body.uitut #aux [data-tap=shot],body.uitut #aux [data-tap=noclip],body.uitut #aux [data-tap=drone]{display:none!important}
 .uihl{animation:uihl .7s steps(2,start) infinite;outline-offset:3px}
 @keyframes uihl{0%{outline:3px solid transparent}50%{outline:3px solid var(--good);box-shadow:0 0 18px 4px var(--good)}}
@@ -507,7 +516,7 @@ body:not(.devon) #aux [data-tap=shot],body:not(.devon) #aux [data-tap=noclip],bo
 </div>
 <div id="tutwin" class="winwrap" hidden><div class="win"><div class="stripe"></div><h2>Tutorials</h2>
   <p>Tutorials run in a separate practice world. Your saved game is not touched.</p>
-  <div class="wb"><button data-tw="move">1 &middot; Movement</button><button data-tw="ui">2 &middot; User interface</button><button disabled>3 &middot; Inventory (soon)</button><button disabled>4 &middot; Docking (soon)</button><button disabled>5 &middot; Tools (soon)</button>
+  <div class="wb"><button data-tw="ui">1 &middot; User interface</button><button data-tw="move">2 &middot; Movement</button><button data-tw="menus">3 &middot; Menus</button><button disabled>4 &middot; Docking (soon)</button><button disabled>5 &middot; Tools (soon)</button>
   <button data-tut="mine">First shift (in your own game)</button><button id="tutbtn" hidden>Hide tutorial</button><button id="twexit" hidden>Leave the practice world</button><button id="tutclose">Close</button></div></div></div>
 <div id="setwin" class="winwrap" hidden><div class="win"><div class="stripe"></div><h2>Settings</h2>
   <div class="wb"><button id="fs">Full screen</button><button id="orient">Switch to Landscape</button><button id="saver">Battery saver: off</button><button id="dev">Dev: off</button><button id="setclose">Close</button></div></div></div>
@@ -517,7 +526,7 @@ body:not(.devon) #aux [data-tap=shot],body:not(.devon) #aux [data-tap=noclip],bo
 'use strict';
 /* =====================  Void Engineers  =====================
    Part A: renderer, sky, procedural voxel asteroids, particles */
-const GAME_VER='144';
+const GAME_VER='146';
 /* no page zoom while playing: pinch, double-tap and ctrl+wheel are swallowed */
 (()=>{const no=e=>{e.preventDefault();};
   for(const n of['gesturestart','gesturechange','gestureend','dblclick'])document.addEventListener(n,no,{passive:false});
@@ -2680,7 +2689,8 @@ function spawnStation(){
   for(let x=-5;x<=7;x++)for(let z=-5;z<=7;z++)addBlock(g,x,0,z,'hull',null);
   addBlock(g,-4,1,-3,'cargo',null);
   addBlock(g,-4,1,4,'powergen',[0,1,0]);
-  addBlock(g,-4,1,1,'gravgen',[0,1,0],0,TUTW?3:1);   // practice world only: tier 3 (24 m field) takes in the PIONEER and its boarding steps
+  addBlock(g,-4,1,1,'gravgen',[0,1,0],0,TUTW?3:1);
+  if(TUTW==='menus'){for(const e of [['refinery',-5,1,-5],['assembler',-5,1,-2],['beacon',-4,1,-1]])try{addBlock(g,e[1],e[2],e[3],e[0],[0,1,0]);}catch(err){console.error(err);}}   // machines and a Trade Beacon so the panel tabs have something to show   // practice world only: tier 3 (24 m field) takes in the PIONEER and its boarding steps
   g.fuel=g.fuelCap;   // a full tank of hydrogen to start; after that it burns ice from the warehouse
 }
 
@@ -4200,9 +4210,9 @@ function buildTrade(sg){
     (sg.length?'<div class="bt" style="justify-content:flex-start" id="t-chips">'+sg.map(g=>'<button class="rb chip'+(undocked(g)?' nd':'')+'" data-act="sel" data-g="'+g.name+'">'+g.name+(undocked(g)?' (not docked)':'')+' <small></small></button>').join('')+'</div>':'<div class="qrow">No cargo container in reach and no craft docked. Build a Cargo Container, or land a craft on the station.</div>')+
     '<div class="qrow" id="t-dock" style="white-space:pre-line"></div>'+
     (sg.length>1?'<div class="mfoot"><button class="rb" data-act="moveall" id="t-move"></button></div>':'')+
-    '<div class="grow2 h"><span>Goods</span><span>Your pack</span><span id="t-here">Here</span><span></span></div>'+
+    '<div class="gtab"><div class="grow2 h"><span>Goods</span><span>Your pack</span><span id="t-here">Here</span><span></span></div>'+
     ITEMS.map(k=>'<div class="grow2" data-k="'+k+'"><span class="nm"><i style="'+ITEM_ICON(k)+'"></i>'+SHORT[k]+'</span><span class="cg"></span><span class="wh"></span>'+
-      '<span class="bt"><button class="rb" data-act="load" data-k="'+k+'" data-n="50">+50</button><button class="rb" data-act="load" data-k="'+k+'" data-n="99999">All in</button><button class="rb" data-act="take" data-k="'+k+'" data-n="99999">Take</button><button class="rb mvi" data-act="moveitem" data-k="'+k+'">Move</button></span></div>').join('')+'</div>';
+      '<span class="bt"><button class="rb" data-act="load" data-k="'+k+'" data-n="50">+50</button><button class="rb" data-act="load" data-k="'+k+'" data-n="99999">All in</button><button class="rb" data-act="take" data-k="'+k+'" data-n="99999">Take</button><button class="rb mvi" data-act="moveitem" data-k="'+k+'">Move</button></span></div>').join('')+'</div></div>';
   return h;
 }
 function termRefresh(){
@@ -4494,7 +4504,7 @@ const UIT=[
   {next:true,demo:true,t:'Looking around',d:'Drag a finger across any area free of buttons to turn your view and aim. There is no button for it.'},
   {next:true,ui:'#dampbtn',t:'DAMP',d:'Dampers ON: you slow to a stop when you let go. OFF: you keep drifting. The Status window shows which one is active.'},
   {next:true,cycle:true,ui:'#toolbtn,#act',t:'TOOL',d:'Each tap switches to the next tool. The big button beside it shows the tool you hold: DRILL, WELD (torch), CUT, PING (detector) and PAINT. Watch it change.'},
-  {next:true,ui:'#act',t:'Tool button',d:'Uses the current tool on whatever the crosshair points at. Hold it down to drill, weld or cut. Its name changes with the tool.'},
+  {next:true,show:true,ui:'#act',t:'Tool button',d:'Uses the current tool on whatever the crosshair points at. Hold it down to drill, weld or cut. Its name changes with the tool.'},
   {next:true,ui:'#usebtn',t:'INTERACT',d:'Lights up when something is within about 3 m: tap it to sit in the pilot seat, leave it, or open a machine or storage.'},
   {next:true,ui:'[data-tap=cam]',t:'CAM',d:'Changes the camera view, such as flying your ship from behind.'},
   {next:true,ui:'[data-tap=lamp]',t:'LAMP',d:'Switches your lamp on and off.'},
@@ -4511,21 +4521,67 @@ const UIT=[
   {next:true,ui:'#cross',t:'Crosshair',d:'The aim point. Tools work on whatever it touches, and its name appears at the top of the screen.'},
   {next:true,t:'Tools',d:'For a look at each tool, check out the Tools Tutorial.'}
 ];
+/* ---------- Menus tutorial: the real control panel, opened and driven by the tour ---------- */
+function tutPanel(m){   // open the control panel on tab m (prod, trade, mkt, upg); gives up quietly after 3 tries
+  if(!tut||!tut.m)return;
+  const cur=termOpen?(sheet==='upg'?'upg':termMode):null;
+  if(cur===m)return;
+  tut.m.pa=(tut.m.pa||0)+1;if(tut.m.pa>3)return;
+  try{openTerminal(0,m);}catch(e){console.error(e);}
+}
+const tUsed=g=>g?gridUsed(g):0;
+const tSelect=g=>{if(g){termSel=g.name;try{termRefresh();}catch(e){}}};
+const MENUS=[
+  {next:true,t:'The control panel',d:'The TERM button opens the control panel. It has four tabs: Production, Inventory, Market and Interface. We will visit each one. Tap Next and the panel opens by itself.'},
+  {next:true,panel:'prod',ui:'[data-tab=prod]',t:'Production tab',d:'Machines live here. A refinery turns ore into ingots and an assembler turns ingots into parts. Each has a progress bar and a queue.'},
+  {next:true,panel:'prod',smelt:true,ui:'#tbody .mcard',t:'Smelting an ingot',d:'To smelt an Iron Ingot while you have Iron Ore available, tap +1 as below.'},
+  {next:true,panel:'trade',ui:'[data-tab=trade]',t:'Inventory tab',d:'This is where all your goods live: your pack, the Outpost’s storage and any docked ship.'},
+  {next:true,panel:'trade',ui:'#t-tot',t:'All commodities',d:'The top card lists everything you own: first each container or docked craft, then your pack. Ore, ingots and parts are counted separately.'},
+  {next:true,panel:'trade',ui:'#t-chips',t:'Storage card',d:'One chip per container or craft, with how full it is. Tap a chip to select it; the table below then works on that one.'},
+  {next:true,panel:'trade',ui:'.grow2.h',t:'The goods table',d:'Your pack is what you carry. Here is what the selected container holds. +50 and All in load goods into it, Take brings them back to your pack, and Move sends them to the other container.'},
+  {panel:'trade',ui:'[data-g=OUTPOST],.grow2[data-k=fe] [data-act=load]',t:'Pack to the Outpost',
+    enter(){tSelect(tStn());tut.m.b=tUsed(tStn());},d:'OUTPOST is selected. On the Iron row, tap +50 or All in to load it from your pack into the Outpost.',
+    done:()=>tUsed(tStn())>tut.m.b},
+  {panel:'trade',ui:'[data-g=PIONEER],.grow2[data-k=si] [data-act=load]',t:'Pack to the Pioneer',
+    enter(){tut.m.b=tUsed(tPio());},d:'Tap the PIONEER chip, then on the Silicon row tap +50 or All in. The PIONEER is docked, so you can load it from here.',
+    done:()=>tUsed(tPio())>tut.m.b},
+  {panel:'trade',ui:'[data-g=OUTPOST],.grow2[data-k=fe] .mvi',t:'Outpost to Pioneer',
+    enter(){tSelect(tStn());tut.m.b=tUsed(tPio());},d:'Select OUTPOST, then on the Iron row tap Move. It sends the Iron to the other container, the PIONEER. Ship transfers take a few seconds.',
+    done:()=>tUsed(tPio())>tut.m.b&&!xfer},
+  {panel:'trade',ui:'[data-g=PIONEER],.grow2[data-k=fe] .mvi',t:'And back again',
+    enter(){tSelect(tPio());tut.m.b=tUsed(tStn());},d:'Now select PIONEER and tap Move on the Iron row to send it back to the Outpost.',
+    done:()=>tUsed(tStn())>tut.m.b&&!xfer},
+  {panel:'trade',ui:'#t-move',t:'Move all',
+    enter(){tut.m.b=tUsed(tStn());},d:'The Move all button below the chips moves everything from the selected container to the other one. Tap it.',
+    done:()=>!!tut.m.xf||tUsed(tStn())!==tut.m.b},
+  {next:true,panel:'trade',ui:'#t-dock',t:'Docked ships',d:'The PIONEER is listed because it is docked. A ship that is not docked is greyed out and cannot be loaded. The Docking tutorial shows how.'},
+  {next:true,panel:'mkt',ui:'[data-tab=mkt]',t:'Market tab',d:'The Market buys and sells goods. They pay is the price you get, You pay is the price to buy. Use the Sell and Buy buttons for quantities. Your loan’s Debt card with its Pay buttons is here too. This is a quick look; a full Market tutorial will follow.'},
+  {next:true,panel:'upg',ui:'[data-tab=upg]',t:'Interface tab',d:'This tab is for the ship or station you are connected to, here the OUTPOST. You can reach it from a storage container or a pilot seat.'},
+  {next:true,panel:'upg',ui:'#gname',t:'Name',d:'Rename the ship or station here.'},
+  {next:true,panel:'upg',ui:'#pwbtn',t:'Power',d:'Shuts the generators down so an idle ship stops burning hydrogen and ice. Lights and gravity go off too.'},
+  {next:true,panel:'upg',ui:'.urow',t:'Upgrades',d:'Every part that can be upgraded is listed. Press and hold one to see what the upgrade does.'},
+  {next:true,t:'The MENU button',ui:'[data-tap=menu]',enter(){try{if(termOpen)closeTerminal();}catch(e){}},d:'MENU pauses the game and opens the main menu: resume, new game, multiplayer, tutorials and settings.'}
+];
 const TUTS={
+  menus:{name:'Menus',steps:MENUS,end:'That is the control panel and the main menu. Next up: Docking. Tap Exit to go back to your game.'},
   ui:{name:'User interface',steps:UIT,end:'That is every button and window. Next up: Inventory and Docking. Tap Exit to go back to your game.'},
   mine:{name:'First shift',steps:TUT,end:'Set the PIONEER down on the OUTPOST, then refine the ore in the machines aboard (TERM). Every ingot you sell pays down the loan.'},
   move:{name:'Movement',steps:MOVE,end:'You can fly on foot and in a ship. Next up: User interface, Inventory and Docking. Tap Exit to go back to your game.'}
 };
 if(TUTW&&!TUTS[TUTW])TUTW=null;
 const tutSet=()=>TUTS[(tut&&tut.id)||'mine'];
+function tutEnter(){   // run a step's setup when it begins, and open its control-panel tab
+  if(!tut)return;const S=tutSet().steps,st=S[tut.s];if(!st)return;
+  try{if(st.panel)tutPanel(st.panel);if(st.enter)st.enter();}catch(e){console.error(e);}
+}
 function startTut(id){
   tut={id,s:0,got:{},hid:false,dist:0,look:0,roll:0,vert:0,dOff:false,m:{}};
-  tutLastP=null;tutLastQ=null;tutDraw();toast(TUTS[id].name+' tutorial started','good');
+  tutLastP=null;tutLastQ=null;tutEnter();tutDraw();toast(TUTS[id].name+' tutorial started','good');
 }
 function tutExit(){try{localStorage.removeItem(TWKEY);}catch(e){}wiping=true;running=false;location.reload();}   // back to the real game and its save
 function tutAdvance(){
   if(!tut)return;const S=tutSet().steps;if(tut.s>=S.length)return;
-  tut.s++;tut.got={};tut.m={};beep(990,.15);
+  tut.s++;tut.got={};tut.m={};beep(990,.15);tutEnter();
   toast(tut.s<S.length?'Next: '+S[tut.s].t:tutSet().name+' complete!','good');
   if(tut.s>=S.length&&!TUTW)tut.endT=10;
   tutDraw();
@@ -4533,9 +4589,11 @@ function tutAdvance(){
 tutEl.addEventListener('pointerdown',e=>{
   const b=e.target.closest('[data-a]');if(!b||!tut)return;e.preventDefault();e.stopPropagation();
   const a=b.dataset.a;if(a==='next'||a==='skip')tutAdvance();else if(a==='exit')tutExit();
+  else if(a==='smelt'&&!(tut.m.sm|0)){tut.m.sm=1;tutDraw();const T0=tut.s;setTimeout(()=>{if(tut&&tut.s===T0){tut.m.sm=2;tutDraw();}},2200);}
 });
 let tutLastP=null,tutLastQ=null;
 function tutFrame(dt){   // movement tutorial bookkeeping, every frame
+  if(tut&&tut.id==='menus'&&xfer&&tut.m)tut.m.xf=true;
   if(!tut||tut.id!=='move'||tut.fin||!running||paused||termOpen)return;
   if(!tut.m)tut.m={};
   const p=player.ship?player.ship.group.position:player.pos;
@@ -4557,6 +4615,7 @@ function tutTick(dt){
   const S=tutSet().steps;
   if(tut.s<S.length){
     const st=S[tut.s];
+    if(st.panel&&running)tutPanel(st.panel);
     if(!st.next){
       const ok=st.need?Object.keys(st.need).every(k=>(tut.got[k]||0)>=st.need[k]):st.done();
       if(ok)tutAdvance();
@@ -4566,20 +4625,23 @@ function tutTick(dt){
 }
 let tutHL=[],tutUIs=null,tutCyc=0,uiMock=false;
 function tutUI(st){   // User interface tour: dim the world, force every button visible, blink the current target green
-  if(tutUIs===st)return;tutUIs=st;
+  const chg=tutUIs!==st;tutUIs=st;
+  document.body.classList.toggle('uitut',!!st&&tut&&tut.id==='ui');document.body.classList.toggle('menutut',!!st&&tut&&tut.id==='menus');
+  if(chg){
   uiMock=!!(st&&st.mock);document.body.classList.toggle('mockship',uiMock);
   clearInterval(tutCyc);tutCyc=0;
   if(actDemo){actDemo=false;const a=$('act');if(a)a._t=null;updateAct();}
+  if(st&&st.show){const a=$('act');actDemo=true;if(a){if(!a.textContent||a.style.visibility==='hidden'){a.textContent='DRILL';a._t='DRILL';}a.style.visibility='';}}
   if(st&&st.cycle){const a=$('act'),L=['DRILL','WELD','CUT','PING','PAINT'];let i=0;actDemo=true;
     const f=()=>{if(a){a.textContent=L[i%L.length];a.style.visibility='';a._t=L[i%L.length];}i++;};f();tutCyc=setInterval(f,2000);}
-  document.body.classList.toggle('uitut',!!st);
   for(const e of tutHL)e.classList.remove('uihl');tutHL=[];
-  if(st&&st.ui)for(const e of document.querySelectorAll(st.ui)){e.classList.add('uihl');tutHL.push(e);}
+  }
+  if(st&&st.ui){let first=true;for(const e of document.querySelectorAll(st.ui)){if(e.classList.contains('uihl'))continue;e.classList.add('uihl');tutHL.push(e);if(first&&tut&&tut.id==='menus'&&e.scrollIntoView){first=false;try{e.scrollIntoView({block:'nearest'});}catch(_){}}}}
 }
 function tutDraw(){
   const show=!!tut&&!tut.hid&&!tut.fin&&running;
   try{const cs=show&&tut.s<tutSet().steps.length?tutSet().steps[tut.s]:null;document.body.classList.toggle('tdemo',!!(cs&&cs.demo));}catch(e){}
-  try{tutUI(show&&tut.id==='ui'&&tut.s<tutSet().steps.length?tutSet().steps[tut.s]:null);}catch(e){}
+  try{tutUI(show&&(tut.id==='ui'||tut.id==='menus')&&tut.s<tutSet().steps.length?tutSet().steps[tut.s]:null);}catch(e){}
   try{const sw=$('status');if(sw)sw.classList.toggle('tutglow',!!(tut&&!tut.hid&&!tut.fin&&running&&tut.s<tutSet().steps.length&&tutSet().steps[tut.s].hl==='status'));}catch(e){}
   if(tutEl.hidden===show)tutEl.hidden=!show;
   const mb=$('tutbtn');if(mb){mb.hidden=!(tut&&!tut.fin);setT(mb,tut&&tut.hid?'Show tutorial':'Hide tutorial');}
@@ -4591,13 +4653,18 @@ function tutDraw(){
     h='<div class="th">'+T.name+' \u00b7 '+(tut.s+1)+'/'+S.length+'<button class="tx" aria-label="Hide">\u00d7</button></div><div class="tt">'+st.t+'</div><div class="td">'+st.d+'</div>';
     if(st.need)h+='<div class="tn">'+Object.keys(st.need).map(k=>{const g=Math.min(st.need[k],tut.got[k]||0);return '<span class="'+(g>=st.need[k]?'ok':'')+'">'+RNAME[k]+' '+g+'/'+st.need[k]+'</span>';}).join('')+'</div>';
     else if(st.prog)h+='<div class="tn"><span>'+st.prog()+'</span></div>';
-    if(TUTW||st.next)h+='<div class="tb2">'+(st.next?'<button class="nx" data-a="next">Next</button>':'<button data-a="skip">Skip</button>')+ex+'</div>';}
+    if(st.smelt){const sm=tut.m.sm|0;
+      h+='<div class="sm"><div class="smr"><span>Iron Ore <b>'+(sm===2?22:30)+'</b></span><span>Iron Ingots <b>'+(sm===2?5:0)+'</b></span></div><div class="pb"><i class="smb '+(sm===1?'run':sm===2?'dn':'')+'"></i></div>'+
+        (sm===0?'<button class="nx" data-a="smelt">+1</button>':sm===1?'<div class="td">Smelting\u2026</div>':'<div class="td">Smelting used 8 Iron Ore and made 5 Iron Ingots. You can use ingots in the Assembler.</div>')+'</div>';}
+    const nxOK=st.next&&(!st.smelt||tut.m.sm===2);
+    if(TUTW||st.next)h+='<div class="tb2">'+(nxOK?'<button class="nx" data-a="next">Next</button>':st.next?'':'<button data-a="skip">Skip</button>')+ex+'</div>';}
   if(tutEl._h!==h){tutEl._h=h;tutEl.innerHTML=h;}
   tutPlace(tut.s<S.length&&S[tut.s].at==='status');
 }
 /* the card covers the Cargo panel (top left); a step with at:'status' (one that talks about Cargo contents) moves it over the Status panel instead; never the joystick */
 function tutPlace(st){
   try{
+    if(tut&&tut.id==='menus'&&document.body.classList.contains('termopen')&&!FLIP){const w=tutEl.offsetWidth||250;tutEl.style.left=Math.max(4,window.innerWidth-w-8)+'px';tutEl.style.top='8px';return;}
     if(FLIP){tutEl.style.left=tutEl.style.top='';return;}
     const r=($(st?'status':'res')).getBoundingClientRect();
     if(!r.width){tutEl.style.left=tutEl.style.top='';return;}
@@ -5010,8 +5077,8 @@ function boot(){
     if(pi&&os){
       pi.group.position.set(0,4,-4);pi.group.updateMatrixWorld(true);
       pi.lock={pos:pi.group.position.clone(),q:pi.group.quaternion.clone(),h:os,pad:null};
-      if(TUTW)player.pos.set(0,6,38);else player.pos.set(4,2.85,12);   // practice world: float 38 m out, clear of the gravity field, facing the outpost
-      camera.quaternion.setFromAxisAngle(AXY,TUTW?Math.PI:0);   // practice world: facing away from the outpost, so the flight lessons happen in open space
+      if(TUTW&&TUTW!=='menus')player.pos.set(0,6,38);else player.pos.set(4,2.85,12);if(TUTW==='menus'){inv.fe=80;inv.si=60;inv.ice=40;inv.pt=20;}   // practice world: float 38 m out, clear of the gravity field, facing the outpost
+      camera.quaternion.setFromAxisAngle(AXY,TUTW&&TUTW!=='menus'?Math.PI:0);   // practice world: facing away from the outpost, so the flight lessons happen in open space
     }
   }
   if(!TUTW&&!grids.some(x=>x.kind==='derelict')&&!(restored&&S&&S.der))spawnDerelict();
