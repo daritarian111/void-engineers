@@ -548,7 +548,7 @@ body.devon #fps{display:block}
 'use strict';
 /* =====================  Void Engineers  =====================
    Part A: renderer, sky, procedural voxel asteroids, particles */
-const GAME_VER='156';
+const GAME_VER='157';
 /* no page zoom while playing: pinch, double-tap and ctrl+wheel are swallowed */
 (()=>{const no=e=>{e.preventDefault();};
   for(const n of['gesturestart','gesturechange','gestureend','dblclick'])document.addEventListener(n,no,{passive:false});
@@ -3222,7 +3222,7 @@ function tdroneTick(dt){
 }
 /* FPS readout (dev mode): frames per second, frame time, draw calls, triangles */
 const fpsEl=document.getElementById('fps');
-let fpsN=0,fpsT0=-1;
+let fpsN=0,fpsT0=-1,fpsUpd=0,fpsRnd=0;
 function fpsCount(now){
   if(fpsT0<0){fpsT0=now;return;}
   fpsN++;
@@ -3230,9 +3230,9 @@ function fpsCount(now){
   if(el<500)return;
   if(fpsEl&&document.body.classList.contains('devon')){
     const inf=renderer.info.render;
-    fpsEl.textContent=Math.round(fpsN*1000/el)+' fps · '+(el/fpsN).toFixed(1)+' ms · '+inf.calls+' calls · '+Math.round(inf.triangles/1000)+'k tris';
+    fpsEl.textContent=Math.round(fpsN*1000/el)+' fps · '+(el/fpsN).toFixed(1)+' ms (game '+(fpsUpd/fpsN).toFixed(1)+' + draw '+(fpsRnd/fpsN).toFixed(1)+') · '+inf.calls+' calls · '+Math.round(inf.triangles/1000)+'k tris · px'+renderer.getPixelRatio().toFixed(2)+(SAVER?' · saver':'');
   }
-  fpsN=0;fpsT0=now;
+  fpsN=0;fpsUpd=0;fpsRnd=0;fpsT0=now;
 }
 
 /* ---------- input ---------- */
@@ -3392,9 +3392,12 @@ function frame(now){
   requestAnimationFrame(frame);
   if(SAVER){const gap=(!running||paused)?500:31;if(now-lastR<gap)return;lastR=now;}
   const dt=Math.min(.05,Math.max(.001,(now-last)/1000));last=now;
+  const p0=performance.now();
   if(running&&!paused)update(dt);
   else if(grids.length){camera.updateMatrixWorld(true);}
+  const p1=performance.now();
   renderer.render(scene,camera);
+  fpsUpd+=p1-p0;fpsRnd+=performance.now()-p1;
   fpsCount(now);
 }
 
