@@ -548,7 +548,7 @@ body.devon #fps{display:block}
 'use strict';
 /* =====================  Void Engineers  =====================
    Part A: renderer, sky, procedural voxel asteroids, particles */
-const GAME_VER='155';
+const GAME_VER='156';
 /* no page zoom while playing: pinch, double-tap and ctrl+wheel are swallowed */
 (()=>{const no=e=>{e.preventDefault();};
   for(const n of['gesturestart','gesturechange','gestureend','dblclick'])document.addEventListener(n,no,{passive:false});
@@ -3126,7 +3126,7 @@ function tplMerge(parts){
   G.computeBoundingSphere();
   return G;
 }
-const TPL_COL={or:0xd9772b,or2:0xb35c1c,gm:0x4a4d52,dk:0x2b2d31,lt:0x8a8d92,cu:0xb8873a,yl:0xe8b923,bk:0x1a1a1a,gl:0xffb52e};
+const TPL_COL={or:0xa84e17,or2:0x823a10,gm:0x30333a,dk:0x1b1d21,lt:0x4d525a,cu:0x8a5f26,yl:0xc99a14,bk:0x121212,gl:0xffb52e};
 /* Mining Drone (laser drill): nose points to -z, up is +y, feet rest at y=0. About 5 m long, 2.2 m wide, 2 m tall. */
 function buildMiningDrone(){
   const C=TPL_COL,body=[],glow=[],drill=[],H=Math.PI/2;
@@ -3138,6 +3138,9 @@ function buildMiningDrone(){
   tplBox(body,0.1,0.3,0.1,-0.4,1.8,0.15,C.lt);tplBox(body,0.1,0.3,0.1,0.4,1.8,0.15,C.lt);
   tplBox(body,0.9,0.1,0.1,0,1.97,0.15,C.lt);
   tplBox(body,0.05,0.5,0.05,0.5,1.9,0.9,C.cu);
+  tplBox(body,0.6,0.06,0.7,0,1.7,0.55,C.dk);
+  for(let k=0;k<4;k++)tplBox(body,0.5,0.04,0.06,0,1.74,0.35+k*0.16,C.lt);
+  tplBox(body,1.58,1.02,0.12,0,0.95,0.12,C.dk);
   // front eye housing and eye
   tplBox(body,1.0,0.85,0.35,0,1.0,-1.0,C.dk);
   tplCyl(glow,0.28,0.28,0.08,8,0,1.0,-1.2,C.gl,H,0,0);
@@ -3156,8 +3159,8 @@ function buildMiningDrone(){
   }
   // four legs with flat feet
   for(const s of[-1,1])for(const z of[-0.55,0.95]){
-    tplBox(body,0.16,0.75,0.16,s*0.82,0.45,z,C.gm,0,0,s*0.3);
-    tplBox(body,0.55,0.1,0.9,s*0.95,0.05,z,C.dk);
+    tplBox(body,0.24,0.75,0.24,s*0.82,0.45,z,C.gm,0,0,s*0.3);
+    tplBox(body,0.62,0.12,1.0,s*0.95,0.06,z,C.dk);
   }
   // laser drill emitter: housing, rings, glowing lens, claw arms, hose
   tplCyl(body,0.4,0.4,0.7,10,0,1.0,-1.55,C.gm,H,0,0);
@@ -3167,8 +3170,8 @@ function buildMiningDrone(){
   tplCyl(glow,0.41,0.41,0.05,10,0,1.0,-1.66,C.gl,H,0,0);
   tplCyl(glow,0.31,0.31,0.06,10,0,1.0,-1.94,C.gl,H,0,0);
   for(const s of[-1,1]){
-    tplBox(body,0.09,0.09,0.55,0,1.0+s*0.5,-2.0,C.lt);
-    tplBox(body,0.09,0.24,0.09,0,1.0+s*0.4,-2.3,C.lt);
+    tplBox(body,0.12,0.12,0.55,0,1.0+s*0.5,-2.0,C.gm);
+    tplBox(body,0.12,0.28,0.12,0,1.0+s*0.4,-2.3,C.gm);
   }
   tplBox(body,0.07,0.07,0.65,0.34,0.72,-1.45,C.cu);
   return{body:tplMerge(body),glow:tplMerge(glow)};
