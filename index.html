@@ -555,7 +555,7 @@ body.devon #perfbtns{display:flex}
 'use strict';
 /* =====================  Void Engineers  =====================
    Part A: renderer, sky, procedural voxel asteroids, particles */
-const GAME_VER='159';
+const GAME_VER='160';
 /* no page zoom while playing: pinch, double-tap and ctrl+wheel are swallowed */
 (()=>{const no=e=>{e.preventDefault();};
   for(const n of['gesturestart','gesturechange','gestureend','dblclick'])document.addEventListener(n,no,{passive:false});
@@ -744,7 +744,7 @@ function rebuildAst(a){
   geo.setAttribute('color',new THREE.BufferAttribute(Cl,3));
   geo.setIndex(new THREE.BufferAttribute(new Uint32Array(tri),1));
   if(a.mesh){a.mesh.geometry.dispose();a.mesh.geometry=geo;}
-  else{a.mesh=new THREE.Mesh(geo,voxMat);a.mesh.frustumCulled=true;scene.add(a.mesh);}
+  else{a.mesh=new THREE.Mesh(geo,voxMat);a.mesh.frustumCulled=true;a.mesh.matrixAutoUpdate=false;scene.add(a.mesh);}
   a.dirty=false;
 }
 function astAt(a,wx,wy,wz){
@@ -959,7 +959,7 @@ function depBuild(d){
   const g=nodeGeos(d,d.stage);
   if(d.meshes){for(let i=0;i<2;i++){d.meshes[i].geometry.dispose();d.meshes[i].geometry=g[i];}return;}
   const rock=new THREE.Mesh(g[0],rockMat),cry=new THREE.Mesh(g[1],CRYS_MAT[d.k]);
-  for(const m of[rock,cry]){m.position.set(d.x,d.y,d.z);scene.add(m);}
+  for(const m of[rock,cry]){m.position.set(d.x,d.y,d.z);m.updateMatrix();m.matrixAutoUpdate=false;scene.add(m);}
   d.meshes=[rock,cry];
 }
 // Find the clumps of ore on an asteroid's surface and put a 3D node on each, then turn the ore voxels back into plain rock.
@@ -1717,6 +1717,8 @@ function rebuildHull(g){
     const m=new THREE.Mesh(geo,mats[c]);g.group.add(m);g.hullMeshes.push(m);
   }
 }
+const FROZEN_TYPES=new Set(['slope','corner','icorner','glass','glassc','glassd','plate','platd','platt','window','seat','tank','bigtank','gyro','lgyro','light']);
+function freezeNode(root){root.traverse(o=>{o.updateMatrix();o.matrixAutoUpdate=false;});}
 const cellsOf=(type,i,j,k,tier)=>{const n=heightOf(type,tier),a=[];for(let m=0;m<n;m++)a.push([i,j+m,k]);return a;};
 function addBlock(g,i,j,k,type,f,spin,tier){
   tier=tier||1;if(UPRIGHT.includes(type))f=[0,1,0];
@@ -1727,7 +1729,7 @@ function addBlock(g,i,j,k,type,f,spin,tier){
   spin=spin|0;
   let m={group:null};
   if(type==='hull')g.hullDirty=true;   // drawn by the merged hull mesh
-  else{m=buildBlock(type,f,null,spin,tier);m.group.position.set(i*2,j*2,k*2);g.group.add(m.group);m.group._f=f;}
+  else{m=buildBlock(type,f,null,spin,tier);m.group.position.set(i*2,j*2,k*2);g.group.add(m.group);m.group._f=f;if(FROZEN_TYPES.has(type))freezeNode(m.group);g._pk=null;}
   const b={type,i,j,k,f,s:spin,node:m.group,flame:m.flame,spin:m.spin,lamp:m.lamp,field:m.field,glow:m.glow,panel:m.panel,oa:0,t:0,uid:++UID,n:cells.length,tier:tier};
   b.iq=blockQuat(b).invert();
   if(BDEF[type].machine){b.queue=[];b.job=null;b.state=0;}
@@ -3092,7 +3094,13 @@ function droneTick(dt){
 }
 function update(dt){
   const lap=ptLap();hitCool-=dt;boltsTick(dt);droneTick(dt);lap('shots+drones');
-  for(const g of grids){if(g.hullDirty)rebuildHull(g);if(g.wipDirty)rebuildWip(g);g.group.updateMatrixWorld(true);}lap('rebuild+matrix');
+  for(const g of grids){
+    let ch=false;if(g.hullDirty){rebuildHull(g);ch=true;}if(g.wipDirty){rebuildWip(g);ch=true;}
+    const gp=g.group.position,gq=g.group.quaternion,k=g._pk;
+    if(ch||!k||k[0]!==gp.x||k[1]!==gp.y||k[2]!==gp.z||k[3]!==gq.x||k[4]!==gq.y||k[5]!==gq.z||k[6]!==gq.w){
+      g.group.updateMatrixWorld(true);g._pk=[gp.x,gp.y,gp.z,gq.x,gq.y,gq.z,gq.w];
+    }
+  }lap('rebuild+matrix');
   beamN=0;for(const m of beams)m.visible=false;
   const pg=player.ship;
   if(pg){if(!pg.seat||!grids.includes(pg))exitShip();}
