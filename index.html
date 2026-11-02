@@ -409,8 +409,13 @@ body:not(.devon) #aux [data-tap=shot],body:not(.devon) #aux [data-tap=noclip],bo
 #aux [data-tap=mdrone]{grid-column:5;grid-row:1;height:34px}
 body.devon #aux [data-tap=mdrone]{visibility:visible}
 body:not(.devon) #aux [data-tap=mdrone],body:not(.devon) [data-tap=mdrone]{display:none!important}
-#fps{position:fixed;left:50%;top:2px;transform:translateX(-50%);z-index:40;display:none;font:600 11px var(--mono);background:rgba(0,0,0,.72);color:#9fe8c8;padding:1px 9px;pointer-events:none;white-space:nowrap}
+#fps{position:fixed;left:50%;top:2px;transform:translateX(-50%);z-index:40;display:none;font:600 11px var(--mono);background:rgba(0,0,0,.72);color:#9fe8c8;padding:1px 9px;pointer-events:none;white-space:pre;text-align:center}
 body.devon #fps{display:block}
+#perfbtns{position:fixed;left:50%;top:34px;transform:translateX(-50%);z-index:41;display:none;gap:8px}
+body.devon #perfbtns{display:flex}
+#perfbtns button{font:700 12px var(--mono);height:30px;min-width:64px;padding:0 10px;border:0;background:var(--hazard);color:var(--hazard-ink);touch-action:manipulation}
+#perfbtns #perfcopy{background:var(--ice)}
+#perfout{position:fixed;left:5%;top:12%;width:90%;height:50%;z-index:60;background:#000;color:#9fe8c8;font:11px var(--mono);-webkit-user-select:text;user-select:text;box-sizing:border-box}
 @media (max-width:460px){#aux{grid-template-rows:auto repeat(2,36px);grid-template-columns:56px repeat(5,38px);gap:4px}#aux #shot{height:30px}}
 
 .mkr{display:grid;grid-template-columns:minmax(0,1.3fr) .8fr .8fr 1.25fr 1.25fr;gap:4px 6px;align-items:center;font-size:12px;font-variant-numeric:tabular-nums;padding:3px 0}
@@ -427,6 +432,8 @@ body.devon #fps{display:block}
 <div id="vignette"></div>
 <div id="gframe"></div>
 <div id="fps"></div>
+<div id="perfbtns"><button id="perflog" type="button">LOG</button><button id="perfcopy" type="button">COPY</button></div>
+<textarea id="perfout" hidden readonly></textarea>
 <div id="toast"></div>
 <div id="mpbadge" hidden></div>
 <div id="chatlog"></div>
@@ -548,7 +555,7 @@ body.devon #fps{display:block}
 'use strict';
 /* =====================  Void Engineers  =====================
    Part A: renderer, sky, procedural voxel asteroids, particles */
-const GAME_VER='157';
+const GAME_VER='159';
 /* no page zoom while playing: pinch, double-tap and ctrl+wheel are swallowed */
 (()=>{const no=e=>{e.preventDefault();};
   for(const n of['gesturestart','gesturechange','gestureend','dblclick'])document.addEventListener(n,no,{passive:false});
@@ -737,7 +744,7 @@ function rebuildAst(a){
   geo.setAttribute('color',new THREE.BufferAttribute(Cl,3));
   geo.setIndex(new THREE.BufferAttribute(new Uint32Array(tri),1));
   if(a.mesh){a.mesh.geometry.dispose();a.mesh.geometry=geo;}
-  else{a.mesh=new THREE.Mesh(geo,voxMat);a.mesh.frustumCulled=false;scene.add(a.mesh);}
+  else{a.mesh=new THREE.Mesh(geo,voxMat);a.mesh.frustumCulled=true;scene.add(a.mesh);}
   a.dirty=false;
 }
 function astAt(a,wx,wy,wz){
@@ -3084,21 +3091,21 @@ function droneTick(dt){
   }
 }
 function update(dt){
-  hitCool-=dt;boltsTick(dt);droneTick(dt);
-  for(const g of grids){if(g.hullDirty)rebuildHull(g);if(g.wipDirty)rebuildWip(g);g.group.updateMatrixWorld(true);}
+  const lap=ptLap();hitCool-=dt;boltsTick(dt);droneTick(dt);lap('shots+drones');
+  for(const g of grids){if(g.hullDirty)rebuildHull(g);if(g.wipDirty)rebuildWip(g);g.group.updateMatrixWorld(true);}lap('rebuild+matrix');
   beamN=0;for(const m of beams)m.visible=false;
   const pg=player.ship;
   if(pg){if(!pg.seat||!grids.includes(pg))exitShip();}
-  driftGrids(dt);rideSync();
-  updateGravity(dt);machineTick(dt);ecoTick(dt);dockTick(dt);doorTick(dt);
+  driftGrids(dt);rideSync();lap('drift+ride');
+  updateGravity(dt);lap('gravity');machineTick(dt);lap('machines');ecoTick(dt);lap('eco');dockTick(dt);doorTick(dt);lap('dock+door');
   if(termOpen){camera.updateMatrixWorld(true);termTick(dt);}else if(player.ship)shipUpdate(player.ship,dt);else footUpdate(dt);
-  detectorUpdate(dt);tdroneTick(dt);
+  lap('player');detectorUpdate(dt);tdroneTick(dt);lap('detector');
   const now=performance.now();
   for(const a of asteroids)if(a.dirty&&now-a.lastBuild>110){rebuildAst(a);a.lastBuild=now;}
-  updateP(dt);
+  lap('rockmesh');updateP(dt);lap('particles');
   sky.position.copy(camera.position);
   camera.updateMatrixWorld(true);
-  updateMarkers();radarTick();updateHUD(dt);if(uiMock){setT(stEl.mode,'Piloting PIONEER');setT(stEl.fuel,'1500 L');stEl.fb.style.width='100%';stEl.bar.classList.remove('low');setT(stEl.mass,'42.6 t');setT(stEl.acc,'3.1 m/s\u00b2');}updateStn(dt);mpFrame(dt);
+  lap('camera');updateMarkers();lap('markers');radarTick();lap('radar');updateHUD(dt);lap('hud');if(uiMock){setT(stEl.mode,'Piloting PIONEER');setT(stEl.fuel,'1500 L');stEl.fb.style.width='100%';stEl.bar.classList.remove('low');setT(stEl.mass,'42.6 t');setT(stEl.acc,'3.1 m/s\u00b2');}updateStn(dt);mpFrame(dt);lap('station+mp');
 }
 
 /* ---------- TEMPLATES (v154): fixed, ready-made objects built in code. First entry: the Mining Drone ---------- */
@@ -3223,6 +3230,8 @@ function tdroneTick(dt){
 /* FPS readout (dev mode): frames per second, frame time, draw calls, triangles */
 const fpsEl=document.getElementById('fps');
 let fpsN=0,fpsT0=-1,fpsUpd=0,fpsRnd=0;
+const ptm={};
+function ptLap(){let p=performance.now();return n=>{const q=performance.now();ptm[n]=(ptm[n]||0)+q-p;p=q;};}
 function fpsCount(now){
   if(fpsT0<0){fpsT0=now;return;}
   fpsN++;
@@ -3230,10 +3239,46 @@ function fpsCount(now){
   if(el<500)return;
   if(fpsEl&&document.body.classList.contains('devon')){
     const inf=renderer.info.render;
-    fpsEl.textContent=Math.round(fpsN*1000/el)+' fps · '+(el/fpsN).toFixed(1)+' ms (game '+(fpsUpd/fpsN).toFixed(1)+' + draw '+(fpsRnd/fpsN).toFixed(1)+') · '+inf.calls+' calls · '+Math.round(inf.triangles/1000)+'k tris · px'+renderer.getPixelRatio().toFixed(2)+(SAVER?' · saver':'');
+    fpsEl.textContent=Math.round(fpsN*1000/el)+' fps · '+(el/fpsN).toFixed(1)+' ms (game '+(fpsUpd/fpsN).toFixed(1)+' + draw '+(fpsRnd/fpsN).toFixed(1)+') · '+inf.calls+' calls · '+Math.round(inf.triangles/1000)+'k tris · px'+renderer.getPixelRatio().toFixed(2)+(SAVER?' · saver':'')+'\n'+Object.entries(ptm).sort((a,b)=>b[1]-a[1]).slice(0,5).map(e=>e[0]+' '+(e[1]/fpsN).toFixed(1)).join(' · ');perfLast=fpsEl.textContent;
   }
+  for(const k in ptm)delete ptm[k];
   fpsN=0;fpsUpd=0;fpsRnd=0;fpsT0=now;
 }
+/* Perf log (dev): LOG saves the current readout plus where you are to a hidden list, COPY sends the list to the clipboard */
+let perfLast='';
+let perfLog=[];
+try{perfLog=JSON.parse(localStorage.getItem('void-engineers-perflog')||'[]');if(!Array.isArray(perfLog))perfLog=[];}catch(e){perfLog=[];}
+function perfSave(){try{localStorage.setItem('void-engineers-perflog',JSON.stringify(perfLog));}catch(e){}}
+function perfLabel(){const b=document.getElementById('perfcopy');if(b)b.textContent='COPY '+perfLog.length;}
+function perfCtx(){
+  const p=camera.position;
+  return 'pos '+Math.round(p.x)+', '+Math.round(p.y)+', '+Math.round(p.z)+' | '+(player.mode||'?')+(document.body.classList.contains('gravity')?' | in gravity field':'')+' | mining drones '+tdrones.length;
+}
+function perfLogAdd(){
+  if(!perfLast){toast('No reading yet, wait a second','bad');return;}
+  perfLog.push('#'+(perfLog.length+1)+' v'+GAME_VER+' | '+perfCtx()+'\n'+perfLast);
+  perfSave();perfLabel();toast('Logged '+perfLog.length,'good');
+}
+function perfCopyText(txt,done){
+  const fb=()=>{try{const ta=document.createElement('textarea');ta.value=txt;ta.style.cssText='position:fixed;left:0;top:0;opacity:0';document.body.appendChild(ta);ta.focus();ta.select();const r=document.execCommand('copy');ta.remove();done(!!r);}catch(e){done(false);}};
+  try{navigator.clipboard.writeText(txt).then(()=>done(true),fb);}catch(e){fb();}
+}
+function perfLogCopy(){
+  if(!perfLog.length){toast('Nothing logged yet','bad');return;}
+  const txt=perfLog.join('\n\n'),n=perfLog.length;
+  perfCopyText(txt,ok=>{
+    if(ok){perfLog=[];perfSave();perfLabel();toast('Copied '+n+' readings. Paste them to Claude.','good');}
+    else{const o=document.getElementById('perfout');o.value=txt;o.hidden=false;o.focus();o.select();toast('Select the text and copy it','good');}
+  });
+}
+(()=>{
+  const a=document.getElementById('perflog'),b=document.getElementById('perfcopy'),o=document.getElementById('perfout');
+  if(a)a.addEventListener('click',perfLogAdd);
+  if(b)b.addEventListener('click',perfLogCopy);
+  if(o)o.addEventListener('blur',()=>{o.hidden=true;});
+  perfLabel();
+})();
+
 
 /* ---------- input ---------- */
 const ACT={
