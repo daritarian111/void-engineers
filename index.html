@@ -178,6 +178,7 @@ body:not(.devon) [data-tap=shot],body:not(.devon) [data-tap=noclip],body:not(.de
 .keys kbd{font:500 11px var(--mono);background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 1px var(--edge);padding:1px 6px;min-width:1.4em;text-align:center;flex:none}
 .keys span{color:var(--dim)}
 .btns{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0 0;padding:10px 20px calc(12px + env(safe-area-inset-bottom,0px));position:sticky;bottom:0;background:#0b121d;box-shadow:0 -1px 0 var(--edge)}
+#verlab{margin-left:auto;align-self:center;color:var(--dim);font:500 12px var(--mono);letter-spacing:.06em}
 #fs{border:0;background:transparent;box-shadow:inset 0 0 0 1px var(--edge);color:var(--ink);font:600 15px var(--display);letter-spacing:.16em;text-transform:uppercase;padding:10px 20px;cursor:pointer}
 #go{margin:0;border:0;background:var(--hazard);color:var(--hazard-ink);font:700 18px var(--display);letter-spacing:.2em;text-transform:uppercase;padding:11px 28px;cursor:pointer;
   clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px))}
@@ -542,7 +543,7 @@ body.devon #perfbtns{display:flex}
       <div id="mpst">Not connected</div>
       <button id="mpleave">Leave room</button>
     </div>
-    <div class="btns"><button id="go">Launch</button><button id="newg" hidden>New game</button><button id="mpbtn">Multiplayer</button><button id="tutmenubtn">Tutorials</button><button id="setbtn">Settings</button></div>
+    <div class="btns"><button id="go">Launch</button><button id="newg" hidden>New game</button><button id="mpbtn">Multiplayer</button><button id="tutmenubtn">Tutorials</button><button id="setbtn">Settings</button><span id="verlab"></span></div>
   </div>
 </div>
 <div id="tutwin" class="winwrap" hidden><div class="win"><div class="stripe"></div><h2>Tutorials</h2>
@@ -557,7 +558,8 @@ body.devon #perfbtns{display:flex}
 'use strict';
 /* =====================  Void Engineers  =====================
    Part A: renderer, sky, procedural voxel asteroids, particles */
-const GAME_VER='162';
+const GAME_VER='163';
+{const vl=document.getElementById('verlab');if(vl)vl.textContent='v'+GAME_VER;}
 /* no page zoom while playing: pinch, double-tap and ctrl+wheel are swallowed */
 (()=>{const no=e=>{e.preventDefault();};
   for(const n of['gesturestart','gesturechange','gestureend','dblclick'])document.addEventListener(n,no,{passive:false});
