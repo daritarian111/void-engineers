@@ -558,7 +558,7 @@ body.devon #perfbtns{display:flex}
 'use strict';
 /* =====================  Void Engineers  =====================
    Part A: renderer, sky, procedural voxel asteroids, particles */
-const GAME_VER='164';
+const GAME_VER='165';
 {const vl=document.getElementById('verlab');if(vl)vl.textContent='v'+GAME_VER;}
 /* no page zoom while playing: pinch, double-tap and ctrl+wheel are swallowed */
 (()=>{const no=e=>{e.preventDefault();};
@@ -1719,17 +1719,28 @@ function rebuildHull(g){
     const m=new THREE.Mesh(geo,mats[c]);g.group.add(m);g.hullMeshes.push(m);
   }
 }
-/* ---------- BAKING (v162): the static blocks of a grid are merged into one mesh per material, so a station costs a handful of draw calls ---------- */
+/* ---------- BAKING (v165): the static parts of a grid are merged into one mesh per material, so a station costs a handful of draw calls ---------- */
 let BAKE_ON=true;try{BAKE_ON=localStorage.getItem('void-engineers-bake')!=='0';}catch(e){}
 const BAKE_IDLE=2500;   // ms of quiet after the last build change before a grid is merged again
+// whole blocks that never move or change: merged completely
 const BAKE_FULL=new Set(['slope','corner','icorner','window','glass','glassc','glassd','plate','platt','platd','gyro','lgyro','tank','bigtank']);
-const BAKE_PART=new Set(['light','lightbar']);   // the fixture is merged; its lens stays live so it can switch on and off
+// blocks with a moving or glowing part: the still parts are merged, flames, lenses, force fields, drill heads and panels stay live
+const BAKE_PART=new Set(['light','lightbar','mthruster','thruster','bigthruster','leg','pad','cargo','gravgen','powergen','beacon','drill','bigdrill']);
 const bakeSrcCache=new Map();
 function bakeSrc(geo){
   let s=bakeSrcCache.get(geo);if(s)return s;
   const g=geo.index?geo.toNonIndexed():geo,a=g.attributes;
   s={p:a.position.array,n:a.normal.array,u:a.uv?a.uv.array:null,cnt:a.position.count};
   bakeSrcCache.set(geo,s);return s;
+}
+function bakePieces(o){   // [{mat,start,count}] (vertex ranges, one per material), or null when the mesh cannot be merged
+  const geo=o.geometry,s=bakeSrc(geo),mt=o.material;
+  if(!mt)return null;
+  if(!Array.isArray(mt))return[{mat:mt,start:0,count:s.cnt}];
+  const gr=geo.groups;if(!gr||!gr.length)return null;
+  const out=[];
+  for(const q of gr){const m=mt[q.materialIndex];if(m&&q.start<s.cnt)out.push({mat:m,start:q.start,count:Math.min(q.count,s.cnt-q.start)});}
+  return out.length?out:null;
 }
 function bakeMat(o,gg){   // the mesh's matrix in the grid's own frame (null when a scale is involved)
   const st=[];let p=o;while(p&&p!==gg){st.push(p);p=p.parent;}
@@ -1743,7 +1754,7 @@ function bakeMat(o,gg){   // the mesh's matrix in the grid's own frame (null whe
   return m;
 }
 function bakeSoon(g,now){g.bakeAt=performance.now()+(now?0:BAKE_IDLE);}
-function unbakeGrid(g){   // put every merged block back as its own object
+function unbakeGrid(g){   // put every merged part back as its own object
   if(g._bakeMeshes){for(const m of g._bakeMeshes){g.group.remove(m);m.geometry.dispose();}g._bakeMeshes=null;}
   for(const b of g.blocks.values()){
     if(!b._baked)continue;
@@ -1760,33 +1771,37 @@ function bakeGrid(g){
     const full=BAKE_FULL.has(b.type),part=BAKE_PART.has(b.type);
     if(!(full||part)||!b.node||b.node.parent!==gg||!b.node.visible)continue;
     if(b.wt>0&&b.wp<b.wt)continue;
-    const ms=[];let ok=true;
+    const keep=[b.flame,b.spin,b.field,b.panel,b.lamp].filter(Boolean),ms=[];let ok=true;
     b.node.traverse(o=>{
       if(!o.isMesh)return;
-      if(part&&o===b.lamp)return;
-      if(!o.visible||Array.isArray(o.material)||!o.geometry||!o.geometry.attributes.position||!o.geometry.attributes.normal)ok=false;else ms.push(o);
+      for(let p=o;p&&p!==b.node;p=p.parent)if(keep.includes(p))return;   // a moving or glowing part stays live
+      if(!o.visible||!o.geometry||!o.geometry.attributes.position||!o.geometry.attributes.normal||!bakePieces(o)){if(!part)ok=false;return;}
+      ms.push(o);
     });
     if(!ok||!ms.length)continue;
     const per=[];
-    for(const o of ms){const m=bakeMat(o,gg);if(!m){ok=false;break;}per.push([o,m]);}
-    if(!ok)continue;
-    for(const e of per){const o=e[0];let bk=buckets.get(o.material);if(!bk){bk={mat:o.material,ro:o.renderOrder,items:[]};buckets.set(o.material,bk);}bk.items.push([o.geometry,e[1]]);}
-    done.push([b,ms,part]);
+    for(const o of ms){const m=bakeMat(o,gg);if(!m){if(part)continue;ok=false;break;}per.push([o,m]);}
+    if(!ok||!per.length)continue;
+    for(const e of per){
+      const o=e[0];
+      for(const pc of bakePieces(o)){let bk=buckets.get(pc.mat);if(!bk){bk={mat:pc.mat,ro:o.renderOrder,items:[]};buckets.set(pc.mat,bk);}bk.items.push([o.geometry,e[1],pc.start,pc.count]);}
+    }
+    done.push([b,per.map(e=>e[0]),part]);
   }
   g._bakeMeshes=[];
   for(const bk of buckets.values()){
     let n=0,hasU=false;
-    const srcs=bk.items.map(it=>{const s=bakeSrc(it[0]);n+=s.cnt;if(s.u)hasU=true;return[s,it[1].elements];});
+    const srcs=bk.items.map(it=>{const s=bakeSrc(it[0]);n+=it[3];if(s.u)hasU=true;return[s,it[1].elements,it[2],it[3]];});
     const P=new Float32Array(n*3),Nm=new Float32Array(n*3),U=hasU?new Float32Array(n*2):null;let o=0;
     for(const sr of srcs){
-      const s=sr[0],e=sr[1],p=s.p,nn=s.n;
-      for(let i=0;i<s.cnt;i++){
-        const x=p[i*3],y=p[i*3+1],z=p[i*3+2],nx=nn[i*3],ny=nn[i*3+1],nz=nn[i*3+2],k=(o+i)*3;
+      const s=sr[0],e=sr[1],p=s.p,nn=s.n,st=sr[2],cnt=sr[3];
+      for(let i=0;i<cnt;i++){
+        const j=(st+i)*3,x=p[j],y=p[j+1],z=p[j+2],nx=nn[j],ny=nn[j+1],nz=nn[j+2],k=(o+i)*3;
         P[k]=e[0]*x+e[4]*y+e[8]*z+e[12];P[k+1]=e[1]*x+e[5]*y+e[9]*z+e[13];P[k+2]=e[2]*x+e[6]*y+e[10]*z+e[14];
         Nm[k]=e[0]*nx+e[4]*ny+e[8]*nz;Nm[k+1]=e[1]*nx+e[5]*ny+e[9]*nz;Nm[k+2]=e[2]*nx+e[6]*ny+e[10]*nz;
       }
-      if(U&&s.u)U.set(s.u,o*2);
-      o+=s.cnt;
+      if(U&&s.u)U.set(s.u.subarray(st*2,(st+cnt)*2),o*2);
+      o+=cnt;
     }
     const geo=new THREE.BufferGeometry();
     geo.setAttribute('position',new THREE.BufferAttribute(P,3));
