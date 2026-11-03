@@ -558,7 +558,7 @@ body.devon #perfbtns{display:flex}
 'use strict';
 /* =====================  Void Engineers  =====================
    Part A: renderer, sky, procedural voxel asteroids, particles */
-const GAME_VER='163';
+const GAME_VER='164';
 {const vl=document.getElementById('verlab');if(vl)vl.textContent='v'+GAME_VER;}
 /* no page zoom while playing: pinch, double-tap and ctrl+wheel are swallowed */
 (()=>{const no=e=>{e.preventDefault();};
@@ -3403,6 +3403,22 @@ function perfLogCopy(){
   });
 }
 /* Bench (dev): BENCH renders the scene a few times with parts switched off, to show what the draw time is made of */
+function benchLive(){   // what is still drawn one block at a time, per block type and per grid
+  const cv=o=>{if(!o.visible)return 0;let n=o.isMesh?1:0;for(const c of o.children)n+=cv(c);return n;};
+  const by={},gl=[];
+  for(const g of grids){
+    let n=0;
+    for(const b of g.blocks.values()){
+      if(!b.node||b.node.parent!==g.group)continue;
+      const c=cv(b.node);if(!c)continue;
+      by[b.type]=(by[b.type]||0)+c;n+=c;
+    }
+    const hm=(g.hullMeshes?g.hullMeshes.length:0)+(g.wipMeshes?g.wipMeshes.length:0)+(g._bakeMeshes?g._bakeMeshes.length:0);
+    gl.push((g.name||'grid')+': '+g.blocks.size+' blocks, '+n+' live meshes + '+hm+' merged/hull');
+  }
+  const top=Object.entries(by).sort((a,b)=>b[1]-a[1]).slice(0,10).map(e=>e[0]+' '+e[1]).join(' · ');
+  return '\nlive meshes by block type: '+(top||'none')+'\n'+gl.join('\n');
+}
 function perfBench(){
   if(!running){toast('Start the game first','bad');return;}
   const gl=renderer.getContext(),px=new Uint8Array(4),sync=()=>gl.readPixels(0,0,1,1,gl.RGBA,gl.UNSIGNED_BYTE,px);
@@ -3441,7 +3457,8 @@ function perfBench(){
   let t0=performance.now();for(let i=0;i<N;i++)scene.updateMatrixWorld();
   res.mat=(performance.now()-t0)/N;
   const f=v=>v.toFixed(1);
-  const out='#'+(perfLog.length+1)+' v'+GAME_VER+' BENCH | '+perfCtx()+'\nobjects '+objs+' · meshes '+meshes+' · grids '+gr.length+' · rocks '+rocks.length+' · other '+other.length+' · calls '+res.calls+' · matrix walk '+f(res.mat)+' ms\nms per frame, GPU-synced: '+['all','submit only','no sky','no grids','no rocks','no other','sky only','empty','no auto-matrix','half res'].map(k=>k+' '+f(res[k])).join(' · ');
+  let out='#'+(perfLog.length+1)+' v'+GAME_VER+' BENCH | '+perfCtx()+'\nobjects '+objs+' · meshes '+meshes+' · grids '+gr.length+' · rocks '+rocks.length+' · other '+other.length+' · calls '+res.calls+' · matrix walk '+f(res.mat)+' ms\nms per frame, GPU-synced: '+['all','submit only','no sky','no grids','no rocks','no other','sky only','empty','no auto-matrix','half res'].map(k=>k+' '+f(res[k])).join(' · ');
+  out+=benchLive();
   perfLog.push(out);perfSave();perfLabel();toast('Bench logged. Tap COPY.','good');
 }
 (()=>{
