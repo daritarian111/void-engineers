@@ -416,6 +416,7 @@ body.devon #perfbtns{display:flex}
 #perfbtns button{font:700 12px var(--mono);height:30px;min-width:64px;padding:0 10px;border:0;background:var(--hazard);color:var(--hazard-ink);touch-action:manipulation}
 #perfbtns #perfcopy{background:var(--ice)}
 #perfbtns #perfbench{background:var(--good)}
+#perfbtns #perfbake{background:#c9a21a}
 #perfout{position:fixed;left:5%;top:12%;width:90%;height:50%;z-index:60;background:#000;color:#9fe8c8;font:11px var(--mono);-webkit-user-select:text;user-select:text;box-sizing:border-box}
 @media (max-width:460px){#aux{grid-template-rows:auto repeat(2,36px);grid-template-columns:56px repeat(5,38px);gap:4px}#aux #shot{height:30px}}
 
@@ -433,7 +434,7 @@ body.devon #perfbtns{display:flex}
 <div id="vignette"></div>
 <div id="gframe"></div>
 <div id="fps"></div>
-<div id="perfbtns"><button id="perflog" type="button">LOG</button><button id="perfbench" type="button">BENCH</button><button id="perfcopy" type="button">COPY</button></div>
+<div id="perfbtns"><button id="perflog" type="button">LOG</button><button id="perfbench" type="button">BENCH</button><button id="perfbake" type="button">BAKE</button><button id="perfcopy" type="button">COPY</button></div>
 <textarea id="perfout" hidden readonly></textarea>
 <div id="toast"></div>
 <div id="mpbadge" hidden></div>
@@ -556,7 +557,7 @@ body.devon #perfbtns{display:flex}
 'use strict';
 /* =====================  Void Engineers  =====================
    Part A: renderer, sky, procedural voxel asteroids, particles */
-const GAME_VER='161';
+const GAME_VER='162';
 /* no page zoom while playing: pinch, double-tap and ctrl+wheel are swallowed */
 (()=>{const no=e=>{e.preventDefault();};
   for(const n of['gesturestart','gesturechange','gestureend','dblclick'])document.addEventListener(n,no,{passive:false});
@@ -956,12 +957,9 @@ function nodeGeos(d,stage){
     if(g.computeBoundingSphere)g.computeBoundingSphere();return g;};
   return[mk(rp,rn,rc),mk(cp,cn,cc)];
 }
-function depBuild(d){
-  const g=nodeGeos(d,d.stage);
-  if(d.meshes){for(let i=0;i<2;i++){d.meshes[i].geometry.dispose();d.meshes[i].geometry=g[i];}return;}
-  const rock=new THREE.Mesh(g[0],rockMat),cry=new THREE.Mesh(g[1],CRYS_MAT[d.k]);
-  for(const m of[rock,cry]){m.position.set(d.x,d.y,d.z);m.updateMatrix();m.matrixAutoUpdate=false;scene.add(m);}
-  d.meshes=[rock,cry];
+function depBuild(d){   // the shape is made here; drawing it is done by depBatchBuild (one mesh per asteroid)
+  d.geo=nodeGeos(d,d.stage);
+  if(d.a)d.a.depDirty=true;
 }
 // Find the clumps of ore on an asteroid's surface and put a 3D node on each, then turn the ore voxels back into plain rock.
 function makeDeposits(a){
@@ -1028,15 +1026,16 @@ function makeDeposits(a){
   });
   for(let i=0;i<dt.length;i++)if(dt[i]>1)dt[i]=1;
   for(const d of deps)if(!d.buried)depBuild(d);
+  depBatchBuild(a,deps);
   return deps;
 }
 function killDep(d){
   d.dead=true;d.stock=0;
-  if(d.meshes){for(const m of d.meshes){scene.remove(m);m.geometry.dispose();}d.meshes=null;}
+  if(d.geo){d.geo=null;if(d.a)d.a.depDirty=true;}
 }
 function setDepStock(d,s){
   if(s<=0){killDep(d);return;}
-  d.stock=Math.min(d.max,s);if(d.meshes&&stageOf(d)!==d.stage){d.stage=stageOf(d);depBuild(d);}
+  d.stock=Math.min(d.max,s);if(d.geo&&stageOf(d)!==d.stage){d.stage=stageOf(d);depBuild(d);}
 }
 // mining opened a buried pocket: carve a small cave around it and show the node
 function revealBuried(a,quiet){
@@ -1448,7 +1447,7 @@ function wipBegin(g,b){   // a block is placed as a bare frame; it must be welde
   recalc(g);
 }
 function wipDone(g,b){
-  b.wt=0;b.wp=0;b.wi=null;b.rf=null;if(g.wip)g.wip.delete(b);g.wipDirty=true;
+  b.wt=0;b.wp=0;b.wi=null;b.rf=null;if(g.wip)g.wip.delete(b);g.wipDirty=true;bakeSoon(g);
   if(b.node)b.node.visible=true;
   if(b.type==='hull')g.hullDirty=true;
   recalc(g);applyTier(b);
@@ -1718,6 +1717,122 @@ function rebuildHull(g){
     const m=new THREE.Mesh(geo,mats[c]);g.group.add(m);g.hullMeshes.push(m);
   }
 }
+/* ---------- BAKING (v162): the static blocks of a grid are merged into one mesh per material, so a station costs a handful of draw calls ---------- */
+let BAKE_ON=true;try{BAKE_ON=localStorage.getItem('void-engineers-bake')!=='0';}catch(e){}
+const BAKE_IDLE=2500;   // ms of quiet after the last build change before a grid is merged again
+const BAKE_FULL=new Set(['slope','corner','icorner','window','glass','glassc','glassd','plate','platt','platd','gyro','lgyro','tank','bigtank']);
+const BAKE_PART=new Set(['light','lightbar']);   // the fixture is merged; its lens stays live so it can switch on and off
+const bakeSrcCache=new Map();
+function bakeSrc(geo){
+  let s=bakeSrcCache.get(geo);if(s)return s;
+  const g=geo.index?geo.toNonIndexed():geo,a=g.attributes;
+  s={p:a.position.array,n:a.normal.array,u:a.uv?a.uv.array:null,cnt:a.position.count};
+  bakeSrcCache.set(geo,s);return s;
+}
+function bakeMat(o,gg){   // the mesh's matrix in the grid's own frame (null when a scale is involved)
+  const st=[];let p=o;while(p&&p!==gg){st.push(p);p=p.parent;}
+  if(!p)return null;
+  const m=new THREE.Matrix4();
+  for(let i=st.length-1;i>=0;i--){
+    const q=st[i];q.updateMatrix();const s=q.scale;
+    if(Math.abs(s.x-1)>1e-4||Math.abs(s.y-1)>1e-4||Math.abs(s.z-1)>1e-4)return null;
+    m.multiply(q.matrix);
+  }
+  return m;
+}
+function bakeSoon(g,now){g.bakeAt=performance.now()+(now?0:BAKE_IDLE);}
+function unbakeGrid(g){   // put every merged block back as its own object
+  if(g._bakeMeshes){for(const m of g._bakeMeshes){g.group.remove(m);m.geometry.dispose();}g._bakeMeshes=null;}
+  for(const b of g.blocks.values()){
+    if(!b._baked)continue;
+    if(b._bakeParts){for(const e of b._bakeParts)e[1].add(e[0]);b._bakeParts=null;}
+    else if(b.node&&b.node.parent!==g.group)g.group.add(b.node);
+    b._baked=false;
+  }
+}
+function bakeGrid(g){
+  g.bakeAt=0;unbakeGrid(g);
+  if(!BAKE_ON)return;
+  const gg=g.group,buckets=new Map(),done=[];
+  for(const b of g.blocks.values()){
+    const full=BAKE_FULL.has(b.type),part=BAKE_PART.has(b.type);
+    if(!(full||part)||!b.node||b.node.parent!==gg||!b.node.visible)continue;
+    if(b.wt>0&&b.wp<b.wt)continue;
+    const ms=[];let ok=true;
+    b.node.traverse(o=>{
+      if(!o.isMesh)return;
+      if(part&&o===b.lamp)return;
+      if(!o.visible||Array.isArray(o.material)||!o.geometry||!o.geometry.attributes.position||!o.geometry.attributes.normal)ok=false;else ms.push(o);
+    });
+    if(!ok||!ms.length)continue;
+    const per=[];
+    for(const o of ms){const m=bakeMat(o,gg);if(!m){ok=false;break;}per.push([o,m]);}
+    if(!ok)continue;
+    for(const e of per){const o=e[0];let bk=buckets.get(o.material);if(!bk){bk={mat:o.material,ro:o.renderOrder,items:[]};buckets.set(o.material,bk);}bk.items.push([o.geometry,e[1]]);}
+    done.push([b,ms,part]);
+  }
+  g._bakeMeshes=[];
+  for(const bk of buckets.values()){
+    let n=0,hasU=false;
+    const srcs=bk.items.map(it=>{const s=bakeSrc(it[0]);n+=s.cnt;if(s.u)hasU=true;return[s,it[1].elements];});
+    const P=new Float32Array(n*3),Nm=new Float32Array(n*3),U=hasU?new Float32Array(n*2):null;let o=0;
+    for(const sr of srcs){
+      const s=sr[0],e=sr[1],p=s.p,nn=s.n;
+      for(let i=0;i<s.cnt;i++){
+        const x=p[i*3],y=p[i*3+1],z=p[i*3+2],nx=nn[i*3],ny=nn[i*3+1],nz=nn[i*3+2],k=(o+i)*3;
+        P[k]=e[0]*x+e[4]*y+e[8]*z+e[12];P[k+1]=e[1]*x+e[5]*y+e[9]*z+e[13];P[k+2]=e[2]*x+e[6]*y+e[10]*z+e[14];
+        Nm[k]=e[0]*nx+e[4]*ny+e[8]*nz;Nm[k+1]=e[1]*nx+e[5]*ny+e[9]*nz;Nm[k+2]=e[2]*nx+e[6]*ny+e[10]*nz;
+      }
+      if(U&&s.u)U.set(s.u,o*2);
+      o+=s.cnt;
+    }
+    const geo=new THREE.BufferGeometry();
+    geo.setAttribute('position',new THREE.BufferAttribute(P,3));
+    geo.setAttribute('normal',new THREE.BufferAttribute(Nm,3));
+    if(U)geo.setAttribute('uv',new THREE.BufferAttribute(U,2));
+    geo.computeBoundingSphere();
+    const mesh=new THREE.Mesh(geo,bk.mat);mesh.renderOrder=bk.ro;mesh.matrixAutoUpdate=false;mesh.updateMatrix();
+    gg.add(mesh);g._bakeMeshes.push(mesh);
+  }
+  for(const d of done){
+    const b=d[0];
+    if(d[2])b._bakeParts=d[1].map(o=>{const par=o.parent;par.remove(o);return[o,par];});
+    else gg.remove(b.node);
+    b._baked=true;
+  }
+  gg.updateMatrixWorld(true);
+}
+function bakeCount(){let b=0,m=0;for(const g of grids){if(g._bakeMeshes)m+=g._bakeMeshes.length;for(const x of g.blocks.values())if(x._baked)b++;}return b+' blocks in '+m+' meshes';}
+
+/* ---------- ore deposits: all the nodes of one asteroid are merged into one rock mesh plus one mesh per crystal type ---------- */
+function depBatchBuild(a,list){
+  a.depDirty=false;
+  if(a.depMeshes)for(const m of a.depMeshes){scene.remove(m);m.geometry.dispose();}
+  a.depMeshes=[];
+  const buckets=new Map();
+  for(const d of list||a.deps||[]){
+    if(!d.geo||d.dead||d.buried)continue;
+    const put=(mat,g)=>{let b=buckets.get(mat);if(!b){b=[];buckets.set(mat,b);}b.push([g,d.x,d.y,d.z]);};
+    put(rockMat,d.geo[0]);put(CRYS_MAT[d.k],d.geo[1]);
+  }
+  for(const e of buckets){
+    const mat=e[0],items=e[1];let n=0;
+    for(const it of items)n+=it[0].attributes.position.count;
+    if(!n)continue;
+    const P=new Float32Array(n*3),Nm=new Float32Array(n*3),C=new Float32Array(n*3);let o=0;
+    for(const it of items){
+      const g=it[0],p=g.attributes.position.array,c=p.length;
+      for(let i=0;i<c;i+=3){P[o+i]=p[i]+it[1];P[o+i+1]=p[i+1]+it[2];P[o+i+2]=p[i+2]+it[3];}
+      Nm.set(g.attributes.normal.array,o);C.set(g.attributes.color.array,o);o+=c;
+    }
+    const geo=new THREE.BufferGeometry();
+    geo.setAttribute('position',new THREE.BufferAttribute(P,3));
+    geo.setAttribute('normal',new THREE.BufferAttribute(Nm,3));
+    geo.setAttribute('color',new THREE.BufferAttribute(C,3));
+    geo.computeBoundingSphere();
+    const m=new THREE.Mesh(geo,mat);m.matrixAutoUpdate=false;scene.add(m);a.depMeshes.push(m);
+  }
+}
 const FROZEN_TYPES=new Set(['slope','corner','icorner','glass','glassc','glassd','plate','platd','platt','window','seat','tank','bigtank','gyro','lgyro','light']);
 function freezeNode(root){root.traverse(o=>{o.updateMatrix();o.matrixAutoUpdate=false;});}
 const cellsOf=(type,i,j,k,tier)=>{const n=heightOf(type,tier),a=[];for(let m=0;m<n;m++)a.push([i,j+m,k]);return a;};
@@ -1732,7 +1847,7 @@ function addBlock(g,i,j,k,type,f,spin,tier){
   if(type==='hull')g.hullDirty=true;   // drawn by the merged hull mesh
   else{m=buildBlock(type,f,null,spin,tier);m.group.position.set(i*2,j*2,k*2);g.group.add(m.group);m.group._f=f;if(FROZEN_TYPES.has(type))freezeNode(m.group);g._pk=null;}
   const b={type,i,j,k,f,s:spin,node:m.group,flame:m.flame,spin:m.spin,lamp:m.lamp,field:m.field,glow:m.glow,panel:m.panel,oa:0,t:0,uid:++UID,n:cells.length,tier:tier};
-  b.iq=blockQuat(b).invert();
+  b.iq=blockQuat(b).invert();b._bg=g;bakeSoon(g);
   if(BDEF[type].machine){b.queue=[];b.job=null;b.state=0;}
   if(type==='cargo')b.store={};
   let key=kf(i,j,k);for(let L=1;g.blocks.has(key);L++)key=kf(i,j,k)+L*LAYER;
@@ -1746,6 +1861,7 @@ function addBlock(g,i,j,k,type,f,spin,tier){
 }
 function platePaint(b){   // a hull plate has two faces that can wear different skins: pf[0] on the side it faces, pf[1] on the back
   if(b.type!=='plate'||!b.node)return;
+  if(b._baked&&b._bg){unbakeGrid(b._bg);bakeSoon(b._bg);}
   const m=b.node.children[0]&&b.node.children[0].children[0];if(!m)return;
   const L=[MAT.hull,MAT.floor,MAT.wall,MAT.roof],pf=b.pf||[0,0];
   m.material=[MAT.hull,MAT.hull,L[pf[0]|0]||MAT.hull,L[pf[1]|0]||MAT.hull,MAT.hull,MAT.hull];
@@ -1771,6 +1887,7 @@ function setTier(g,b,t){
   recalc(g);applyTier(b);return true;
 }
 function removeBlock(g,b){
+  if(b._baked)unbakeGrid(g);bakeSoon(g);
   const spill=b.store&&Object.keys(b.store).length?b.store:null;b.store=null;
   refundJob(b,g);
   g.blocks.delete(b.key!==undefined?b.key:kf(b.i,b.j,b.k));
@@ -3095,8 +3212,10 @@ function droneTick(dt){
 }
 function update(dt){
   const lap=ptLap();hitCool-=dt;boltsTick(dt);droneTick(dt);lap('shots+drones');
+  let bakedNow=false;
   for(const g of grids){
     let ch=false;if(g.hullDirty){rebuildHull(g);ch=true;}if(g.wipDirty){rebuildWip(g);ch=true;}
+    if(BAKE_ON&&g.bakeAt>0&&!bakedNow&&performance.now()>=g.bakeAt){bakeGrid(g);bakedNow=true;ch=true;}
     const gp=g.group.position,gq=g.group.quaternion,k=g._pk;
     if(ch||!k||k[0]!==gp.x||k[1]!==gp.y||k[2]!==gp.z||k[3]!==gq.x||k[4]!==gq.y||k[5]!==gq.z||k[6]!==gq.w){
       g.group.updateMatrixWorld(true);g._pk=[gp.x,gp.y,gp.z,gq.x,gq.y,gq.z,gq.w];
@@ -3111,6 +3230,7 @@ function update(dt){
   lap('player');detectorUpdate(dt);tdroneTick(dt);lap('detector');
   const now=performance.now();
   for(const a of asteroids)if(a.dirty&&now-a.lastBuild>110){rebuildAst(a);a.lastBuild=now;}
+  for(const a of asteroids)if(a.depDirty)depBatchBuild(a);
   lap('rockmesh');updateP(dt);lap('particles');
   sky.position.copy(camera.position);
   camera.updateMatrixWorld(true);
@@ -3261,7 +3381,7 @@ function perfSave(){try{localStorage.setItem('void-engineers-perflog',JSON.strin
 function perfLabel(){const b=document.getElementById('perfcopy');if(b)b.textContent='COPY '+perfLog.length;}
 function perfCtx(){
   const p=camera.position;
-  return 'pos '+Math.round(p.x)+', '+Math.round(p.y)+', '+Math.round(p.z)+' | '+(player.mode||'?')+(document.body.classList.contains('gravity')?' | in gravity field':'')+' | mining drones '+tdrones.length;
+  return 'pos '+Math.round(p.x)+', '+Math.round(p.y)+', '+Math.round(p.z)+' | '+(player.mode||'?')+(document.body.classList.contains('gravity')?' | in gravity field':'')+' | mining drones '+tdrones.length+' | bake '+(BAKE_ON?'on':'off')+' '+bakeCount();
 }
 function perfLogAdd(){
   if(!perfLast){toast('No reading yet, wait a second','bad');return;}
@@ -3286,7 +3406,7 @@ function perfBench(){
   const gl=renderer.getContext(),px=new Uint8Array(4),sync=()=>gl.readPixels(0,0,1,1,gl.RGBA,gl.UNSIGNED_BYTE,px);
   camera.updateMatrixWorld(true);
   const rocks=[];
-  for(const a of asteroids){if(a.mesh)rocks.push(a.mesh);if(a.deps)for(const d of a.deps)if(d.meshes)rocks.push(...d.meshes);}
+  for(const a of asteroids){if(a.mesh)rocks.push(a.mesh);if(a.depMeshes)rocks.push(...a.depMeshes);}
   const gr=grids.map(g=>g.group),known=new Set([sky,...gr,...rocks]),other=[];
   for(const c of scene.children)if(!known.has(c)&&!c.isLight&&!c.isCamera)other.push(c);
   let objs=0,meshes=0;scene.traverse(o=>{objs++;if(o.isMesh||o.isPoints)meshes++;});
@@ -3323,7 +3443,9 @@ function perfBench(){
   perfLog.push(out);perfSave();perfLabel();toast('Bench logged. Tap COPY.','good');
 }
 (()=>{
-  const a=document.getElementById('perflog'),b=document.getElementById('perfcopy'),o=document.getElementById('perfout'),bb=document.getElementById('perfbench');
+  const a=document.getElementById('perflog'),b=document.getElementById('perfcopy'),o=document.getElementById('perfout'),bb=document.getElementById('perfbench'),bk=document.getElementById('perfbake');
+  const bkLab=()=>{if(bk)bk.textContent='BAKE '+(BAKE_ON?'ON':'OFF');};bkLab();
+  if(bk)bk.addEventListener('click',()=>{BAKE_ON=!BAKE_ON;try{localStorage.setItem('void-engineers-bake',BAKE_ON?'1':'0');}catch(e){}for(const g of grids){if(BAKE_ON)bakeSoon(g,true);else unbakeGrid(g);}bkLab();toast('Baking '+(BAKE_ON?'on':'off'),'good');});
   if(bb)bb.addEventListener('click',()=>{toast('Benchmarking, hold still for about 5 seconds','good');setTimeout(()=>{try{perfBench();}catch(e){toast('Bench failed: '+e.message,'bad');}},80);});
   if(a)a.addEventListener('click',perfLogAdd);
   if(b)b.addEventListener('click',perfLogCopy);
