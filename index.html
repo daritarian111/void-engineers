@@ -415,6 +415,7 @@ body.devon #fps{display:block}
 body.devon #perfbtns{display:flex}
 #perfbtns button{font:700 12px var(--mono);height:30px;min-width:64px;padding:0 10px;border:0;background:var(--hazard);color:var(--hazard-ink);touch-action:manipulation}
 #perfbtns #perfcopy{background:var(--ice)}
+#perfbtns #perfbench{background:var(--good)}
 #perfout{position:fixed;left:5%;top:12%;width:90%;height:50%;z-index:60;background:#000;color:#9fe8c8;font:11px var(--mono);-webkit-user-select:text;user-select:text;box-sizing:border-box}
 @media (max-width:460px){#aux{grid-template-rows:auto repeat(2,36px);grid-template-columns:56px repeat(5,38px);gap:4px}#aux #shot{height:30px}}
 
@@ -432,7 +433,7 @@ body.devon #perfbtns{display:flex}
 <div id="vignette"></div>
 <div id="gframe"></div>
 <div id="fps"></div>
-<div id="perfbtns"><button id="perflog" type="button">LOG</button><button id="perfcopy" type="button">COPY</button></div>
+<div id="perfbtns"><button id="perflog" type="button">LOG</button><button id="perfbench" type="button">BENCH</button><button id="perfcopy" type="button">COPY</button></div>
 <textarea id="perfout" hidden readonly></textarea>
 <div id="toast"></div>
 <div id="mpbadge" hidden></div>
@@ -555,7 +556,7 @@ body.devon #perfbtns{display:flex}
 'use strict';
 /* =====================  Void Engineers  =====================
    Part A: renderer, sky, procedural voxel asteroids, particles */
-const GAME_VER='160';
+const GAME_VER='161';
 /* no page zoom while playing: pinch, double-tap and ctrl+wheel are swallowed */
 (()=>{const no=e=>{e.preventDefault();};
   for(const n of['gesturestart','gesturechange','gestureend','dblclick'])document.addEventListener(n,no,{passive:false});
@@ -3279,8 +3280,51 @@ function perfLogCopy(){
     else{const o=document.getElementById('perfout');o.value=txt;o.hidden=false;o.focus();o.select();toast('Select the text and copy it','good');}
   });
 }
+/* Bench (dev): BENCH renders the scene a few times with parts switched off, to show what the draw time is made of */
+function perfBench(){
+  if(!running){toast('Start the game first','bad');return;}
+  const gl=renderer.getContext(),px=new Uint8Array(4),sync=()=>gl.readPixels(0,0,1,1,gl.RGBA,gl.UNSIGNED_BYTE,px);
+  camera.updateMatrixWorld(true);
+  const rocks=[];
+  for(const a of asteroids){if(a.mesh)rocks.push(a.mesh);if(a.deps)for(const d of a.deps)if(d.meshes)rocks.push(...d.meshes);}
+  const gr=grids.map(g=>g.group),known=new Set([sky,...gr,...rocks]),other=[];
+  for(const c of scene.children)if(!known.has(c)&&!c.isLight&&!c.isCamera)other.push(c);
+  let objs=0,meshes=0;scene.traverse(o=>{objs++;if(o.isMesh||o.isPoints)meshes++;});
+  const N=8,res={};
+  const run=(name,hide,opt)=>{
+    opt=opt||{};
+    const was=hide.map(o=>o.visible);hide.forEach(o=>{o.visible=false;});
+    const au=scene.autoUpdate,pr=renderer.getPixelRatio();
+    if(opt.noauto)scene.autoUpdate=false;
+    if(opt.res){renderer.setPixelRatio(pr*opt.res);}
+    renderer.render(scene,camera);sync();
+    if(name==='all')res.calls=renderer.info.render.calls;
+    let t0=performance.now();
+    if(opt.nosync){for(let i=0;i<N;i++)renderer.render(scene,camera);const t=(performance.now()-t0)/N;sync();res[name]=t;}
+    else{for(let i=0;i<N;i++){renderer.render(scene,camera);sync();}res[name]=(performance.now()-t0)/N;}
+    scene.autoUpdate=au;
+    if(opt.res)renderer.setPixelRatio(pr);
+    hide.forEach((o,i)=>{o.visible=was[i];});
+  };
+  run('all',[]);
+  run('submit only',[],{nosync:true});
+  run('no sky',[sky]);
+  run('no grids',gr);
+  run('no rocks',rocks);
+  run('no other',other);
+  run('sky only',[...gr,...rocks,...other]);
+  run('empty',[sky,...gr,...rocks,...other]);
+  run('no auto-matrix',[],{noauto:true});
+  run('half res',[],{res:.5});
+  let t0=performance.now();for(let i=0;i<N;i++)scene.updateMatrixWorld();
+  res.mat=(performance.now()-t0)/N;
+  const f=v=>v.toFixed(1);
+  const out='#'+(perfLog.length+1)+' v'+GAME_VER+' BENCH | '+perfCtx()+'\nobjects '+objs+' · meshes '+meshes+' · grids '+gr.length+' · rocks '+rocks.length+' · other '+other.length+' · calls '+res.calls+' · matrix walk '+f(res.mat)+' ms\nms per frame, GPU-synced: '+['all','submit only','no sky','no grids','no rocks','no other','sky only','empty','no auto-matrix','half res'].map(k=>k+' '+f(res[k])).join(' · ');
+  perfLog.push(out);perfSave();perfLabel();toast('Bench logged. Tap COPY.','good');
+}
 (()=>{
-  const a=document.getElementById('perflog'),b=document.getElementById('perfcopy'),o=document.getElementById('perfout');
+  const a=document.getElementById('perflog'),b=document.getElementById('perfcopy'),o=document.getElementById('perfout'),bb=document.getElementById('perfbench');
+  if(bb)bb.addEventListener('click',()=>{toast('Benchmarking, hold still for about 5 seconds','good');setTimeout(()=>{try{perfBench();}catch(e){toast('Bench failed: '+e.message,'bad');}},80);});
   if(a)a.addEventListener('click',perfLogAdd);
   if(b)b.addEventListener('click',perfLogCopy);
   if(o)o.addEventListener('blur',()=>{o.hidden=true;});
