@@ -569,7 +569,7 @@ body.devon #perfbtns{display:flex}
 'use strict';
 /* =====================  Void Engineers  =====================
    Part A: renderer, sky, procedural voxel asteroids, particles */
-const GAME_VER='184';
+const GAME_VER='186';
 {const vl=document.getElementById('verlab');if(vl)vl.textContent='v'+GAME_VER;}
 /* no page zoom while playing: pinch, double-tap and ctrl+wheel are swallowed */
 (()=>{const no=e=>{e.preventDefault();};
@@ -2832,6 +2832,7 @@ function footUpdate(dt){
     else bodyMove(player.pos,player.vel,dt,player.lastUp,IDQ,false);
     player.grounded=false;
   }
+  if(!NOCLIP)pioBodyPush();
   if(!NOCLIP)rideStore();
   camera.position.copy(player.pos).addScaledVector(player.lastUp,player.eye);
   fcamPrev=fcamOn;fcamOn=false;selfE.root.visible=false;
@@ -3061,13 +3062,14 @@ function updateMarkers(){
 /* ---------- per-frame ---------- */
 const stEl={mode:$('st-mode'),spd:$('st-spd'),damp:$('st-damp'),fuel:$('st-fuel'),bar:$('st-bar'),fb:$('st-fuelbar'),mass:$('st-mass'),acc:$('st-acc'),prompt:$('prompt'),target:$('target')};
 function updateHUD(dt){
-  { const hg=player.ship,u=hg?gridUsed(hg):packUsed(),c=hg?gridCap(hg):PACK_CAP;setT($('r-cap'),u+'/'+c);$('r-cap').parentNode.classList.toggle('full',u>=c);setT($('r-cap').previousSibling,hg?'Hold':'Capacity'); }
-  { const hg=player.ship;setT($('res-ph'),hg?('Hold \u00b7 '+hg.name+'  '+gridUsed(hg)+'/'+gridCap(hg)):('Cargo  '+packUsed()+'/'+PACK_CAP)); }
+  const pT=(pioSeat&&pioSeat.T)||null;
+  { const hg=player.ship,u=pT?pioHoldUsed(pT):hg?gridUsed(hg):packUsed(),c=pT?pioHoldCap(pT):hg?gridCap(hg):PACK_CAP;setT($('r-cap'),u+'/'+c);$('r-cap').parentNode.classList.toggle('full',u>=c);setT($('r-cap').previousSibling,(hg||pT)?'Hold':'Capacity'); }
+  { const hg=player.ship;setT($('res-ph'),pT?('Hold \u00b7 PIONEER  '+pioHoldUsed(pT)+'/'+pioHoldCap(pT)):hg?('Hold \u00b7 '+hg.name+'  '+gridUsed(hg)+'/'+gridCap(hg)):('Cargo  '+packUsed()+'/'+PACK_CAP)); }
   { const re=$('res');re.classList.toggle('colp',cargoColp);
     if(mineT>0)mineT-=dt;
     const on=mineT>0&&mineK;const mr=$('r-mine');mr.classList.toggle('on',!!on);
-    if(on){const q=player.ship?gridHas(player.ship,mineK):inv[mineK];setT($('r-mine-n'),RNAME[mineK]);setT($('r-mine-q'),String(q));mr.style.setProperty('--c',getComputedStyle(re.querySelector('.rr[data-k="'+mineK+'"]')).getPropertyValue('--c'));mr.classList.toggle('gain',true);} }
-  for(const k of RES){setT($('r-'+k),String(player.ship?gridHas(player.ship,k):inv[k]));if(flash[k]>0){flash[k]-=dt;}$('r-'+k).parentNode.classList.toggle('gain',flash[k]>0);}
+    if(on){const q=pT?(pT.hold[mineK]|0):player.ship?gridHas(player.ship,mineK):inv[mineK];setT($('r-mine-n'),RNAME[mineK]);setT($('r-mine-q'),String(q));mr.style.setProperty('--c',getComputedStyle(re.querySelector('.rr[data-k="'+mineK+'"]')).getPropertyValue('--c'));mr.classList.toggle('gain',true);} }
+  for(const k of RES){setT($('r-'+k),String(pT?(pT.hold[k]|0):player.ship?gridHas(player.ship,k):inv[k]));if(flash[k]>0){flash[k]-=dt;}$('r-'+k).parentNode.classList.toggle('gain',flash[k]>0);}
   refreshBar();
   const g=player.ship,sp=(g?g.vel:player.vel).length();
   setT(stEl.spd,sp.toFixed(1));
@@ -3485,7 +3487,7 @@ function pioSpawn(quiet){
   const r=new V3().crossVectors(f,up).normalize();
   grp.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(f.clone().negate(),up,r.clone().negate()));   // local -z (the nose) points to the player's right
   grp.position.copy(camera.position).addScaledVector(f,26).addScaledVector(up,-3.4).addScaledVector(r,-2);
-  scene.add(grp);const T={group:grp,gm,gear:1,gearTgt:1,cp,can:0,hold:{},up:{thr:1,gyr:1,tank:1,hold:1},vel:new V3(),rate:[0,0,0],fuel:6000,lock:null,drillT:0,view:0,burn:0};tpShips.push(T);
+  scene.add(grp);const T={group:grp,gm,gear:1,gearTgt:1,cp,can:0,hold:{},up:{thr:1,gyr:1,tank:1,hold:1,rcs:1},vel:new V3(),rate:[0,0,0],fuel:6000,lock:null,drillT:0,view:0,burn:0};tpShips.push(T);
   if(!quiet)toast('Extra Pioneer placed (dev). Tap PIONEER again to scrap it.','good');return T;
 }
 function pioGear(down){   // landing gear: down while docked, up once you undock (the DOCK / UNDOCK buttons will call this when the ship flies)
@@ -3516,8 +3518,9 @@ function pioToggle(){
 }
 /* ---- the cockpit: sit in the Pioneer, look out through the canopy, open the Inventory and Upgrade panels ---- */
 const PIO_UP=[
-  {k:'thr',name:'Thrusters',cost:C_PWR,fx:t=>'thrust ×'+POW[t-1]},
-  {k:'gyr',name:'Gyros',cost:C_PWR,fx:t=>'turn rate ×'+SPIN[t-1]},
+  {k:'thr',name:'Engines',cost:C_PWR,fx:t=>'forward thrust ×'+POW[t-1]+', top speed '+Math.round(PIO_VMAX*POW[t-1])+' m/s'},
+  {k:'gyr',name:'Gyros',cost:C_PWR,fx:t=>'turning power ×'+SPIN[t-1]},
+  {k:'rcs',name:'Maneuvering thrusters',cost:C_PWR,fx:t=>'sideways, vertical and braking thrust ×'+RCSP[t-1]},
   {k:'tank',name:'Hydrogen tank',cost:C_TANK,fx:t=>'capacity ×'+STOR[t-1]},
   {k:'hold',name:'Cargo hold',cost:C_CARGO,fx:t=>CARGO_CAP[t-1]+' units'}];
 const tplMatPioIn=new THREE.MeshLambertMaterial({color:0x808080,side:THREE.FrontSide});   // the canopy seen from inside: its walls drop away, the glass stays
@@ -3562,10 +3565,31 @@ function pioSeatUpdate(dt){
 }
 /* ---- flight: the Pioneer flies like the old ships (swipe to turn, stick and UP/DOWN to move, DAMP, drill on the action button) ---- */
 const PIO_A=[5,5,7];   // full-thrust acceleration, m/s2: sideways, up, forward
+/* v186 handling: a utility craft lumbers. Everything is divided by total mass (hull + cargo carried + hydrogen). Tune these. */
+const PIO_HULL=60,PIO_CARGO_M=.03,PIO_FUEL_M=.003;   // mass: hull, per unit of cargo, per litre of hydrogen
+const PIO_BASE=.6,PIO_VMAX=45,RCSP=[1,1.4,1.9,2.5];   // base fraction of PIO_A at tier 1 (empty); top speed at tier 1; maneuvering-thruster power per tier
+const pioMass=T=>PIO_HULL+pioHoldUsed(T)*PIO_CARGO_M+T.fuel*PIO_FUEL_M;
+const pioLoad=T=>Math.min(1,PIO_HULL/pioMass(T));   // 1 = light, lower = heavy
 const PIO_COM=[0,3.1,-1.3],PIO_FEET=[[-2.2,.3,3.6],[2.2,.3,3.6],[0,.3,-6.4]];
 const PIO_PROBES=[[0,2.6,-11,1],[0,2.6,-9.2,1.5],[0,3.1,-5,2],[0,3.1,-1,2.4],[0,3.1,2,2.4],[0,6.4,-1,1.5],[-3.6,3,4.5,1.2],[3.6,3,4.5,1.2],[0,4.35,7,1.2],[0,1.2,-2,1.2],[0,1.2,3,1.2],[-3.4,2,-1.5,1],[3.4,2,-1.5,1],[0,1.5,6,1.2]];
 const pioFuelCap=T=>6000*STOR[T.up.tank-1];
 let pioHitCool=0;
+const _bpC=new V3(),_bpS=new V3(),_bpD=new V3();
+function pioBodyPush(){   // nobody walks through a Pioneer: push the body (feet and chest) out of its hull spheres
+  for(const T of tpShips){
+    if(T.group.position.distanceTo(player.pos)>30)continue;
+    T.group.updateMatrixWorld(true);
+    for(const off of[.45,1.35]){
+      _bpS.copy(player.pos).addScaledVector(player.lastUp,off);
+      for(const p of PIO_PROBES){
+        T.group.localToWorld(_bpC.set(p[0]*PIO_S,p[1]*PIO_S,p[2]*PIO_S));
+        _bpD.copy(_bpS).sub(_bpC);const L=_bpD.length(),R=p[3]*PIO_S*1.05+.35;
+        if(L<R&&L>1e-4){_bpD.multiplyScalar(1/L);const push=R-L;player.pos.addScaledVector(_bpD,push);_bpS.addScaledVector(_bpD,push);
+          const vn=player.vel.dot(_bpD);if(vn<0)player.vel.addScaledVector(_bpD,-vn);}
+      }
+    }
+  }
+}
 function pioHits(T){
   T.group.updateMatrixWorld(true);
   for(const p of PIO_PROBES)if(sphereSolid(T.group.localToWorld(_pe.set(p[0]*PIO_S,p[1]*PIO_S,p[2]*PIO_S)),p[3]*PIO_S))return true;
@@ -3602,21 +3626,28 @@ function pioFly(T,dt){
   const mv=T.lock?{x:0,y:0,z:0}:inputMove(),look=lookDelta(dt);
   if(HOLD.x||HOLD.y){look[0]+=HOLD.x*dt*520;look[1]+=HOLD.y*dt*520;}
   const prevPos=G.position.clone(),prevQ=q.clone();
+  let ld=1;
   if(!T.lock){
     // thrust, in the ship's own axes: right, up and forward (-z)
     const vL=T.vel.clone().applyQuaternion(q.clone().invert()),vl=[vL.x,vL.y,vL.z],cmd=[mv.x,mv.y,-mv.z],F=[0,0,0];let burn=0;
+    ld=pioLoad(T);const eng=POW[T.up.thr-1],rcs=RCSP[(T.up.rcs||1)-1];
     for(let k=0;k<3;k++){
-      const A=PIO_A[k]*POW[T.up.thr-1];let c=Math.abs(cmd[k])<.02?0:cmd[k];
-      if(c===0&&player.damp&&Math.abs(vl[k])>.03)c=clamp(-vl[k]/(.6*A),-1,1);
-      if(c!==0&&T.fuel>0){F[k]=c*A;burn+=Math.abs(c)*2.5;}else c=0;
+      let c=Math.abs(cmd[k])<.02?0:cmd[k];
+      const base=PIO_A[k]*PIO_BASE*ld;
+      if(c===0&&player.damp&&Math.abs(vl[k])>.03){   // braking is the maneuvering thrusters' job
+        const Ab=base*rcs;c=clamp(-vl[k]/(.6*Ab),-1,1);
+        if(T.fuel>0){F[k]=c*Ab;burn+=Math.abs(c)*2.5;}
+        continue;
+      }
+      if(c!==0&&T.fuel>0){F[k]=c*base*((k===2&&c>0)?eng:rcs);burn+=Math.abs(c)*2.5;}   // only the engines push forward
     }
     T.vel.addScaledVector(new V3(F[0],F[1],F[2]).applyQuaternion(q),dt);
-    if(T.vel.length()>90)T.vel.setLength(90);
+    const vmax=PIO_VMAX*eng;if(T.vel.length()>vmax)T.vel.setLength(Math.max(vmax,T.vel.length()-12*dt));
     T.fuel=Math.max(0,T.fuel-burn*dt);T.burn=burn;
     if(T.fuel<=0&&(mv.x||mv.y||mv.z)&&!T._warned){T._warned=true;toast('Out of hydrogen. '+(coarse?'Tap FUEL':'Press R')+' to melt ice from the hold or your pack.','bad');}
     if(T.fuel>0)T._warned=false;
     // turning
-    const sp=Math.sqrt(SPIN[T.up.gyr-1]),alpha=1.6*sp*sp,maxR=.9*sp,ks=coarse?.0034:.0024;
+    const sp=Math.sqrt(SPIN[T.up.gyr-1]),alpha=1.0*sp*sp*ld,maxR=.6*sp*(.5+.5*ld),ks=coarse?.0034:.0024;
     const tgt=[clamp(-look[1]*ks/dt,-maxR,maxR),clamp(-look[0]*ks/dt,-maxR,maxR),rollIn()*1.2];
     for(let i=0;i<3;i++){
       if(player.damp)T.rate[i]+=clamp(tgt[i]-T.rate[i],-alpha*dt,alpha*dt);
@@ -3718,7 +3749,7 @@ function pioPanel(tab){
       ITEMS.map(k=>'<div class="grow2" data-k="'+k+'"><span class="nm"><i style="'+ITEM_ICON(k)+'"></i>'+SHORT[k]+'</span><span class="cg"></span><span class="wh"></span><span class="bt"><button class="rb" data-pa="in" data-k="'+k+'" data-n="50">+50</button><button class="rb" data-pa="in" data-k="'+k+'" data-n="99999">All in</button><button class="rb" data-pa="out" data-k="'+k+'" data-n="99999">Take</button></span></div>').join('')+
       '</div><div class="qrow" id="p-none" hidden>Nothing in your pack or the hold yet.</div></div>'+pioXHTML();
   }else{
-    h+='<div class="mcard"><div class="mh"><b>Pioneer upgrades</b></div><div class="qrow">Upgrades: press and hold an item to see what its upgrade does.</div><div class="plist">'+
+    h+='<div class="mcard"><div class="mh"><b>Pioneer upgrades</b></div><div class="qrow" id="p-mass"></div><div class="qrow">Upgrades: press and hold an item to see what its upgrade does.</div><div class="plist">'+
       PIO_UP.map(u=>'<div class="urow" data-u="'+u.k+'"><span class="pi"></span><span><b>'+u.name+'</b><small class="ut"></small></span><span class="pc uc"></span><button class="rb up" data-pup="'+u.k+'">Upgrade</button><div class="ud" hidden></div></div>').join('')+'</div></div>';
   }
   openSheet('pio','Pioneer interface',h);
@@ -3736,6 +3767,7 @@ function pioRefresh(){
     }
     $('p-none').hidden=any;
   }else{
+    {const pm=$('p-mass');if(pm)setT(pm,'Mass '+Math.round(pioMass(T))+' (hull '+PIO_HULL+', cargo '+Math.round(pioHoldUsed(T)*PIO_CARGO_M)+', hydrogen '+Math.round(T.fuel*PIO_FUEL_M)+') · handling '+Math.round(pioLoad(T)*100)+'% of an empty hull');}
     for(const row of $('tbody').querySelectorAll('.urow')){
       const u=PIO_UP.find(x=>x.k===row.dataset.u),t=T.up[u.k],c=t<TIER_MAX?u.cost[t-1]:null;
       setT(row.querySelector('.ut'),'T'+t+(c?' → T'+(t+1):' · max tier'));
