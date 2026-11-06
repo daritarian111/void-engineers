@@ -50,7 +50,7 @@ button{font:inherit;color:inherit}
 .rr span{color:var(--dim);flex:1}
 .rr b{font-weight:500;font-variant-numeric:tabular-nums;min-width:3ch;text-align:right}
 .rr.gain b{color:var(--hazard)}
-#cargotg{flex:none;width:26px;height:20px;margin:-2px -4px -2px 2px;padding:0;background:transparent;border:1px solid var(--edge);border-radius:4px;color:var(--ink);font:600 12px var(--display);line-height:1;display:grid;place-items:center;touch-action:manipulation}
+#cargotg{pointer-events:auto;flex:none;width:26px;height:20px;margin:-2px -4px -2px 2px;padding:0;background:transparent;border:1px solid var(--edge);border-radius:4px;color:var(--ink);font:600 12px var(--display);line-height:1;display:grid;place-items:center;touch-action:manipulation}
 #cargotg::before{content:'';width:7px;height:7px;border:solid var(--ink);border-width:0 2px 2px 0;transform:translateY(-2px) rotate(45deg)}
 #res:not(.colp) #cargotg::before{transform:translateY(2px) rotate(225deg)}
 #res .rr.mine{display:none}
@@ -397,7 +397,7 @@ body.mpon #aux #chatbtn{visibility:visible}
 #aux [data-tap=lamp]{grid-column:3;grid-row:2}#aux [data-tap=refuel]{grid-column:3;grid-row:3}
 #aux [data-tap=menu]{grid-column:4;grid-row:2}#aux #termbtn{grid-column:4;grid-row:3}
 #aux #dockbtn{grid-column:5;grid-row:2}
-.pioseat #toolbtn{display:none}.pioseat #termbtn{display:block}.pioseat #aux #termbtn{visibility:visible}
+.pioseat #toolbtn{display:none}.rb.on{background:var(--good);color:#06120c}.pioseat #termbtn{display:block}.pioseat #aux #termbtn{visibility:visible}
 #aux #rotbtn{grid-column:6;grid-row:2}#aux #spinbtn{grid-column:6;grid-row:3}
 #aux [data-tap=shot]{grid-column:2;grid-row:1;height:34px}#aux [data-tap=noclip]{grid-column:3;grid-row:1;height:34px}#aux [data-tap=drone]{grid-column:4;grid-row:1;height:34px}
 #aux [data-tap=cam],#aux [data-tap=menu]{visibility:visible}
@@ -543,7 +543,7 @@ body.devon #perfbtns{display:flex}
 </div>
 <div id="tcover" hidden>Loading practice world</div>
 <script>try{var _v=localStorage.getItem('void-engineers-tutworld')||'',_q=_v.split('|');if(_q[0]&&Date.now()-(+_q[1]||0)<45000){document.getElementById('tcover').hidden=false;window._tcT=setTimeout(function(){document.getElementById('tcover').hidden=true;},15000);}}catch(e){}</script>
-<div id="start">
+<div id="start" class="cover" style="--cover:none">
   <div class="card">
     <div class="stripe"></div>
     <h1>Void Engineers</h1>
@@ -554,7 +554,7 @@ body.devon #perfbtns{display:flex}
       <div id="mpst">Not connected</div>
       <button id="mpleave">Leave room</button>
     </div>
-    <div class="btns"><button id="go">Launch</button><button id="newg" hidden>New game</button><button id="mpbtn">Multiplayer</button><button id="tutmenubtn">Tutorials</button><button id="setbtn">Settings</button><span id="verlab"></span></div>
+    <div class="btns"><button id="go" disabled>Loading…</button><button id="newg" hidden>New game</button><button id="mpbtn">Multiplayer</button><button id="tutmenubtn">Tutorials</button><button id="setbtn">Settings</button><span id="verlab"></span></div>
   </div>
 </div>
 <div id="tutwin" class="winwrap" hidden><div class="win"><div class="stripe"></div><h2>Tutorials</h2>
@@ -569,7 +569,7 @@ body.devon #perfbtns{display:flex}
 'use strict';
 /* =====================  Void Engineers  =====================
    Part A: renderer, sky, procedural voxel asteroids, particles */
-const GAME_VER='180';
+const GAME_VER='184';
 {const vl=document.getElementById('verlab');if(vl)vl.textContent='v'+GAME_VER;}
 /* no page zoom while playing: pinch, double-tap and ctrl+wheel are swallowed */
 (()=>{const no=e=>{e.preventDefault();};
@@ -1171,7 +1171,7 @@ const BDEF={
   seat:{name:'Pilot Seat',cost:{fe:15,si:12},mass:400,part:true,spin:true,spec:'sit to fly \u00b7 SPIN sets the ship\u2019s forward \u00b7 0.4 t'},
   tank:{name:'Hydrogen Tank',cost:{fe:12,ice:6},mass:2500,spec:'+1500 L · 2.5 t'},
   drill:{name:'Laser Drill',cost:{fe:14,si:8},mass:2500,spec:'laser \u00b7 9 m reach \u00b7 2.5 t'},
-  gravgen:{name:'Gravity Generator',cost:{fe:40,si:25,pt:8},mass:6000,spec:'10 m field \u00b7 upgradable \u00b7 6.0 t'},
+  gravgen:{name:'Gravity Generator',cost:{fe:40,si:25,pt:8},mass:6000,panel:true,spec:'10 m field \u00b7 upgradable \u00b7 6.0 t'},
   refinery:{name:'Refinery',cost:{fe:60,si:30},mass:5000,machine:true,spin:true,spec:'ore \u2192 ingots \u00b7 1\u00d72 (1\u00d73 at tier 2) \u00b7 5.0 t'},
   assembler:{name:'Assembler',cost:{fe:80,si:50,pt:4},mass:4000,machine:true,spin:true,spec:'ingots \u2192 components \u00b7 1\u00d72 (1\u00d73 at tier 2) \u00b7 4.0 t'},
   lgyro:{name:'Large Gyroscope',cost:{plate:6,motor:4,comp:4,ptI:2},mass:7000,spec:'5\u00d7 turn rate \u00b7 7.0 t'},
@@ -1308,7 +1308,7 @@ const G={
   ckBody:new THREE.BoxGeometry(1.98,1.3,1.98),dome:new THREE.SphereGeometry(.92,18,10,0,Math.PI*2,0,Math.PI/2),
   tank:new THREE.CylinderGeometry(.88,.88,1.9,16),band:new THREE.TorusGeometry(.9,.07,6,24),
   drBase:new THREE.BoxGeometry(1.9,.9,1.9),drCone:cone(.78,1.7,10),drRing:new THREE.TorusGeometry(.5,.06,6,14),
-  ggPad:new THREE.BoxGeometry(1.9,1.0,1.9),ggRing:new THREE.TorusGeometry(.8,.1,8,26),ggCore:new THREE.SphereGeometry(.36,14,10),field:new THREE.SphereGeometry(GRAV_R,22,14),
+  ggPad:new THREE.BoxGeometry(1.9,1.0,1.9),ggRing:new THREE.TorusGeometry(.8,.1,8,26),ggCore:new THREE.SphereGeometry(.36,14,10),field:new THREE.SphereGeometry(GRAV_R,22,14),fieldH:new THREE.SphereGeometry(GRAV_R,22,10,0,Math.PI*2,0,Math.PI/2),fieldB:new THREE.BoxGeometry(1,1,1),
   chim:new THREE.CylinderGeometry(.2,.26,.8,10),lampG:new THREE.BoxGeometry(.9,.12,.5),asArm:new THREE.CylinderGeometry(.14,.14,1.2,8),asHead:new THREE.BoxGeometry(.5,.3,.5),
   lgRing:new THREE.TorusGeometry(.95,.15,8,26),btank:new THREE.CylinderGeometry(.95,.95,1.96,18),btBand:new THREE.TorusGeometry(.97,.08,6,26),
   bdCone:cone(1.0,2.0,12),bdRing:new THREE.TorusGeometry(.62,.08,6,16),
@@ -1552,7 +1552,7 @@ function buildBlock(type,f,ghostMat,rot,tier){
       add(G.tank,MAT.tank,0,0,0);add(G.band,MAT.dark,0,.9,0).rotation.x=Math.PI/2;add(G.band,MAT.dark,0,-.9,0).rotation.x=Math.PI/2;break;
     case 'gravgen':
       add(G.ggPad,MAT.gyro,0,-.45,0);add(G.ggRing,MAT.ring,0,.2,0).rotation.x=Math.PI/2;add(G.ggCore,MAT.coreSolid,0,.2,0);
-      if(!ghostMat){field=new THREE.Mesh(G.field,MAT.field);field.renderOrder=3;root.add(field);}
+      if(!ghostMat){field=new THREE.Mesh(G.fieldH,MAT.field);field.position.set(0,-1,0);field.renderOrder=3;root.add(field);}
       break;
     case 'refinery':
       { const n=heightOf('refinery',tier),top=(n-1)*2;   // each refinery gets its own furnace material so it can glow only while working
@@ -1895,7 +1895,7 @@ function platePaint(b){   // a hull plate has two faces that can wear different 
   const L=[MAT.hull,MAT.floor,MAT.wall,MAT.roof],pf=b.pf||[0,0];
   m.material=[MAT.hull,MAT.hull,L[pf[0]|0]||MAT.hull,L[pf[1]|0]||MAT.hull,MAT.hull,MAT.hull];
 }
-function applyTier(b){if(b.field)b.field.scale.setScalar(gravR(b)/GRAV_R);}
+function applyTier(b){if(b.field)applyGravMode(b);}
 // raise a block's tier; machines grow a block taller at tier 2, which needs the cell above to be free
 function growCheck(g,b,t){
   const n=heightOf(b.type,t);
@@ -3674,15 +3674,49 @@ function pioBoot(restored){   // the starter Pioneer, set down on the platform (
   T.cp.rotation.x=0;if(T.gear===0)T.gm.position.y=1.15*PIO_S;
 }
 addEventListener('pagehide',pioSave);setInterval(pioSave,4000);
+/* ---- the Pioneer's hold is reached through the platform's cargo container (Inventory tab), not from the cockpit ---- */
+const pioXSel=()=>pioSeat?pioStation(pioSeat.T):selGrid();
+function pioXT(){if(pioSeat){const T=pioSeat.T;return T.lock&&pioStation(T)?T:null;}const sel=selGrid();if(!sel)return null;for(const T of tpShips)if(T.main&&T.lock&&T.group.position.distanceTo(sel.group.position)<sel.bs+40)return T;return null;}
+function pioXHTML(){
+  const T=pioXT();
+  if(!T)return '<div class="mcard"><div class="mh"><b>Pioneer hold</b></div><div class="qrow">Set the Pioneer down at the platform (DOCK) and its hold appears here, so you can move goods between it and the container.</div></div>';
+  return '<div class="mcard" id="px-card"><div class="mh"><b>Station storage</b><span id="px-cap"></span></div><div class="qrow">Pull goods from the platform\u2019s containers into the hold, or put them back.</div>'+
+    '<div class="mfoot"><button class="rb" data-px="allin">Move all to Pioneer</button><button class="rb" data-px="allout">Move all to storage</button></div>'+
+    '<div class="gtab"><div class="grow2 h"><span>Goods</span><span id="px-h1">Storage</span><span>Pioneer</span><span></span></div>'+
+    ITEMS.map(k=>'<div class="grow2" data-kx="'+k+'"><span class="nm"><i style="'+ITEM_ICON(k)+'"></i>'+SHORT[k]+'</span><span class="cg"></span><span class="wh"></span><span class="bt"><button class="rb" data-px="in" data-k="'+k+'" data-n="50">+50</button><button class="rb" data-px="in" data-k="'+k+'" data-n="99999">All in</button><button class="rb" data-px="out" data-k="'+k+'" data-n="99999">Take</button></span></div>').join('')+'</div></div>';
+}
+function pioXRefresh(){
+  const card=$('px-card');if(!card)return;
+  const T=pioXT(),sel=pioXSel();if(!T||!sel)return;
+  const used=pioHoldUsed(T),cap=pioHoldCap(T),w=whTotals(sel);
+  setT($('px-cap'),used+' / '+cap);setT($('px-h1'),sel.name);
+  for(const row of card.querySelectorAll('.grow2[data-kx]')){
+    const k=row.dataset.kx,a=gridHas(sel,k),b=T.hold[k]|0;row.style.display=(a||b)?'':'none';
+    setT(row.querySelector('.cg'),String(a));setT(row.querySelector('.wh'),String(b));
+    const bs=row.querySelectorAll('button');bs[0].disabled=bs[1].disabled=!a||used>=cap;bs[2].disabled=!b||w.u>=w.c;
+  }
+}
+function pioXClick(btn){
+  const T=pioXT(),sel=pioXSel();if(!T||!sel)return;
+  const toShip=(k,n)=>{const m=Math.min(n,gridHas(sel,k),pioHoldCap(T)-pioHoldUsed(T));if(m>0){const t=takeFromGrid(sel,k,m);T.hold[k]=(T.hold[k]|0)+t;return t;}return 0;};
+  const toStore=(k,n)=>{const m=Math.min(n,T.hold[k]|0,gridSpace(sel));if(m>0){const a=addToGrid(sel,k,m);T.hold[k]-=a;return a;}return 0;};
+  const p=btn.dataset.px;let moved=0;
+  if(p==='in')moved=toShip(btn.dataset.k,+btn.dataset.n);
+  else if(p==='out')moved=toStore(btn.dataset.k,+btn.dataset.n);
+  else if(p==='allin'){for(const k of ITEMS)moved+=toShip(k,99999);}
+  else if(p==='allout'){for(const k of ITEMS)moved+=toStore(k,99999);}
+  if(!moved)toast(p==='in'||p==='allin'?(pioHoldCap(T)-pioHoldUsed(T)<=0?'The Pioneer’s hold is full':'Nothing to move'):(gridSpace(sel)<=0?sel.name+' is full':'Nothing to move'),'bad');
+  tradeRefresh();pioXRefresh();
+}
 let pioPanelT=null,pioTab='inv';
 function pioPanel(tab){
   const T=pioSeat&&pioSeat.T;if(!T)return;
   pioTab=tab||pioTab;pioPanelT=T;
   let h='<div class="ttabs"><button class="ttab'+(pioTab==='inv'?' on':'')+'" data-ptab="inv">Inventory</button><button class="ttab'+(pioTab==='upg'?' on':'')+'" data-ptab="upg">Upgrades</button></div>';
   if(pioTab==='inv'){
-    h+='<div class="mcard"><div class="mh"><b>Pioneer hold</b><span id="p-cap"></span></div><div class="qrow" id="p-fuel"></div><div class="mfoot"><button class="rb" data-pa="unload" id="p-unl"></button></div><div class="qrow">Move goods between your pack and the ship’s hold. Your pack: <span id="p-pack"></span></div><div class="gtab"><div class="grow2 h"><span>Goods</span><span>Your pack</span><span>Hold</span><span></span></div>'+
+    h+='<div class="mcard"><div class="mh"><b>Pioneer hold</b><span id="p-cap"></span></div><div class="qrow" id="p-fuel"></div><div class="mfoot"><button class="rb" data-pa="unload" id="p-unl"></button><button class="rb" data-pa="fuel">Refuel from ice</button></div><div class="qrow">Move goods between your pack and the ship’s hold. Your pack: <span id="p-pack"></span></div><div class="gtab"><div class="grow2 h"><span>Goods</span><span>Your pack</span><span>Hold</span><span></span></div>'+
       ITEMS.map(k=>'<div class="grow2" data-k="'+k+'"><span class="nm"><i style="'+ITEM_ICON(k)+'"></i>'+SHORT[k]+'</span><span class="cg"></span><span class="wh"></span><span class="bt"><button class="rb" data-pa="in" data-k="'+k+'" data-n="50">+50</button><button class="rb" data-pa="in" data-k="'+k+'" data-n="99999">All in</button><button class="rb" data-pa="out" data-k="'+k+'" data-n="99999">Take</button></span></div>').join('')+
-      '</div><div class="qrow" id="p-none" hidden>Nothing in your pack or the hold yet.</div></div>';
+      '</div><div class="qrow" id="p-none" hidden>Nothing in your pack or the hold yet.</div></div>'+pioXHTML();
   }else{
     h+='<div class="mcard"><div class="mh"><b>Pioneer upgrades</b></div><div class="qrow">Upgrades: press and hold an item to see what its upgrade does.</div><div class="plist">'+
       PIO_UP.map(u=>'<div class="urow" data-u="'+u.k+'"><span class="pi"></span><span><b>'+u.name+'</b><small class="ut"></small></span><span class="pc uc"></span><button class="rb up" data-pup="'+u.k+'">Upgrade</button><div class="ud" hidden></div></div>').join('')+'</div></div>';
@@ -3691,6 +3725,7 @@ function pioPanel(tab){
 }
 function pioRefresh(){
   const T=pioPanelT;if(!T||$('tbody').dataset.mode!=='pio')return;
+  pioXRefresh();
   if(pioTab==='inv'){
     const used=pioHoldUsed(T),cap=pioHoldCap(T);let any=false;
     setT($('p-cap'),used+' / '+cap);setT($('p-fuel'),'Hydrogen '+Math.round(T.fuel)+' / '+pioFuelCap(T)+' L \u00b7 '+(coarse?'FUEL':'R')+' melts ice into fuel');{const st=T.lock?pioStation(T):null,u=$('p-unl');setT(u,st?'Unload hold to '+st.name:'Dock at a station to unload');u.disabled=!st||!used;}setT($('p-pack'),packUsed()+' / '+PACK_CAP);
@@ -3713,6 +3748,8 @@ function pioRefresh(){
 }
 function pioClick(btn){
   const T=pioPanelT;if(!T)return;
+  if(btn.dataset.px){pioXClick(btn);pioRefresh();return;}
+  if(btn.dataset.pa==='fuel'){pioRefuel();pioRefresh();return;}
   if(btn.dataset.ptab){pioPanel(btn.dataset.ptab);return;}
   if(btn.dataset.pa==='unload'){
     const st=T.lock?pioStation(T):null;if(!st)return;let moved=0;
@@ -3873,7 +3910,7 @@ const ACT={
     if(player.mode==='tseat'){pioLeave();return;}
     if(player.mode==='pilot'){exitShip();return;}
     {const pa=pioAimed();if(pa){pioEnter(pa);return;}}
-    const m=aimedMachine(USE_R);if(m){openTerminal(m.b.uid);return;}
+    const m=aimedMachine(USE_R);if(m){if(m.b.type==='gravgen'){openGravPanel(m.g,m.b);return;}openTerminal(m.b.uid);return;}
     const c=nearestSeat();if(c)enterShip(c);else toast('No pilot seat or machine within reach','bad');
   },
   next(){selectBlock(player.sel+1);},prev(){selectBlock(player.sel-1);},
@@ -3916,7 +3953,7 @@ function lockPointer(){
 function begin(){
   initAudio();if(AC&&AC.state==='suspended')AC.resume();
   running=true;paused=false;$('start').hidden=true;last=performance.now();
-  if(showScen){showScen=false;paused=true;$('scen').hidden=false;}
+  showScen=false;
   if(!coarse)lockPointer();else tryFull();
 }
 function tryFull(manual){
@@ -4079,6 +4116,35 @@ const _gw=new V3(),_wf=new V3(),_wr=new V3(),_wd=new V3(),_wv=new V3(),_wp=new V
 const _am=new THREE.Matrix4(),_aq=new Q(),_ar=new V3(),_au=new V3(),_af=new V3();
 const GRAV_LOAD=2;   // a powered interior costs the generator as much as two lights
 const _gl=new V3(),_rq=new Q(),_rq2=new Q(),_dw=new V3();
+/* ---- Gravity Generator modes: the generator is the control point of a field that stops at its base plane ---- */
+const GM_NAMES=['Center','Forward / Right','Forward / Left','Rear / Right','Rear / Left'];
+const _gup=new V3(),_gfw=new V3(),_grt=new V3();
+function gravHas(b,lx,ly,lz){   // is this point (in the grid's own frame) inside the generator's field?
+  const f=b.f||[0,1,0];_gup.set(f[0],f[1],f[2]);
+  _gfw.set(0,0,-1);_gfw.addScaledVector(_gup,-_gfw.dot(_gup));if(_gfw.lengthSq()<.01){_gfw.set(-1,0,0);_gfw.addScaledVector(_gup,-_gfw.dot(_gup));}
+  _gfw.normalize();_grt.crossVectors(_gfw,_gup);
+  const dx=lx-b.i*2,dy=ly-b.j*2,dz=lz-b.k*2,R=gravR(b),m=b.gm|0;
+  const h=dx*_gup.x+dy*_gup.y+dz*_gup.z+1;   // height above the generator's base plane
+  if(h<0)return false;                       // nothing below the plane
+  if(m===0)return dx*dx+dy*dy+dz*dz<R*R;
+  if(h>R)return false;
+  const u=dx*_gfw.x+dy*_gfw.y+dz*_gfw.z,w=dx*_grt.x+dy*_grt.y+dz*_grt.z,fwd=m===1||m===2,rgt=m===1||m===3;
+  return(fwd?(u>=-1&&u<=R):(u<=1&&u>=-R))&&(rgt?(w>=-1&&w<=R):(w<=1&&w>=-R));
+}
+function applyGravMode(b){   // the field mesh: a dome for Center, a box standing in the corner for the others
+  const f=b.field;if(!f)return;const R=gravR(b),m=b.gm|0;
+  if(m===0){f.geometry=G.fieldH;f.scale.setScalar(R/GRAV_R);f.position.set(0,-1,0);}
+  else{f.geometry=G.fieldB;f.scale.setScalar(R+1);const sx=(m===1||m===3)?1:-1,sz=(m===1||m===2)?-1:1;f.position.set(sx*(R-1)/2,(R-1)/2,sz*(R-1)/2);}
+}
+function gravCount(g,b){let n=0;for(const c of g.blocks.values())if(gravHas(b,c.i*2,c.j*2,c.k*2))n++;return n;}
+let gravSel=null;
+function openGravPanel(g,b){
+  gravSel={g,b};const m=b.gm|0;
+  openSheet('grv','Gravity Generator','<div class="mcard"><div class="mh"><b>Field position</b><span>T'+tierOf(b)+' · '+gravR(b)+' m · '+(b.pw?'powered':'no power')+'</span></div>'+
+    '<div class="qrow">Center puts the generator in the middle of the field, as a dome. The other four put the generator in a corner and reach forward or back, left or right. The field never goes below the generator’s base. The affected area lights up for a moment when you pick a mode.</div>'+
+    '<div class="bt" style="justify-content:flex-start;flex-wrap:wrap">'+GM_NAMES.map((n,i)=>'<button class="rb'+(i===m?' on':'')+'" data-gm="'+i+'">'+n+'</button>').join('')+'</div>'+
+    '<div class="qrow">Now: '+GM_NAMES[m]+' · '+gravCount(g,b)+' blocks in the field. Upgrade the generator from the Upgrades tab to grow it.</div></div>');
+}
 function updateGravity(dt){
   let best=null,bd=1e9;
   if(!player.ship){
@@ -4094,9 +4160,8 @@ function updateGravity(dt){
       if(!g.gravs.length)continue;
       for(const b of g.gravs){
         if(!b.pw)continue;   // a generator with no power makes no field
-        _gw.set(b.i*2,b.j*2,b.k*2);g.group.localToWorld(_gw);
-        const d=_gw.distanceTo(player.pos);
-        if(d<gravR(b)&&d<bd){bd=d;best={g,b};}
+        _gl.copy(player.pos);g.group.worldToLocal(_gl);
+        if(gravHas(b,_gl.x,_gl.y,_gl.z)){_gw.set(b.i*2,b.j*2,b.k*2);const d=_gl.distanceTo(_gw);if(d<bd){bd=d;best={g,b};}}
       }
     }
   }
@@ -4111,7 +4176,7 @@ function updateGravity(dt){
   if(now!==inGrav){inGrav=now;gravChanged();}
   if(now)player.eye+=(EYE_UP-player.eye)*(1-Math.exp(-6*dt));   // leaving a field keeps the eye where it was, so the view does not drop
   // show the field bubble while building or from outside
-  for(const g of grids)for(const b of g.gravs)if(b.field)b.field.visible=!!b.pw&&(!inGrav||player.tool===1);
+  for(const g of grids)for(const b of g.gravs)if(b.field){if(b.fieldT>0)b.fieldT-=dt;b.field.visible=!!b.pw&&(b.fieldT>0||((b.gm|0)===0?(!inGrav||player.tool===1):player.tool===1));}
 }
 /* ---- riding: while you stand in a grid's gravity you move with it (position, turning and velocity) ---- */
 function setRide(g){
@@ -4472,9 +4537,6 @@ function mktBuild(){
   const g=mkG();
   let h='<div class="mcard"><div class="fin-big"><div><small>Credits</small><b id="m-cr"></b></div><div><small>Station</small><b id="m-gn" style="font-size:15px"></b></div></div>'+
     '<div class="qrow" id="m-note"></div></div>';
-  h+='<div class="mcard"><div class="fin-big"><div><small>Debt</small><b id="t-debt"></b></div><div><small>Loan repaid</small><b id="t-pct"></b></div></div>'+
-    '<div class="dbar"><i id="t-dbar"></i></div><div class="bt"><small class="qrow" id="t-paid" style="flex:1;align-self:center"></small>'+
-    '<button class="rb" data-act="pay" data-n="1000000">Pay 1M</button><button class="rb" data-act="pay" data-n="10000000">Pay 10M</button><button class="rb" data-act="pay" data-n="1e12">Pay all I can</button></div></div>';
   h+='<div class="mcard"><div class="mh"><b>Settlements</b><span>next drone</span></div><div class="bt" style="justify-content:flex-start;flex-wrap:wrap">'+
     MKT.map(s=>'<button class="rb chip" data-mk="sel" data-s="'+s.id+'">'+s.name+' <small></small></button>').join('')+'</div>'+
     '<div class="qrow" id="m-info" style="white-space:pre-line"></div></div>';
@@ -4630,6 +4692,7 @@ function ecoTick(dt){
   setT($('f-cr'),fmtM(eco.cr)+' cr');setT($('f-debt'),fmtM(eco.debt)+' cr');
 }
 function panelSummary(g,b){
+  if(b.type==='gravgen')return GM_NAMES[b.gm|0]+' \u00b7 T'+tierOf(b)+' \u00b7 '+gravR(b)+' m \u00b7 '+(b.pw?'powered':'no power');
   if(b.type==='cargo')return 'this container '+usedOf(b)+' / '+capOf(b)+(g.cargos.length>1?' \u00b7 '+g.name+' total '+gridUsed(g)+' / '+gridCap(g):'')+' \u00b7 T'+tierOf(b);
   const tr=g.trade;return 'T'+tierOf(b)+' · '+(!tr||tr.state===0?'next trader '+fmtClock(tr?tr.timer:BEACON[tierOf(b)-1].every):'trader '+['','inbound','loading','departing'][tr.state]);
 }
@@ -5025,7 +5088,7 @@ function openTerminal(focusUid,mode){
   Object.keys(keys).forEach(k=>keys[k]=false);mFire=mGrind=false;tb.fire=tb.up=tb.down=0;audioLevels(0,false);
   termMap.clear();
   $('tbody').dataset.mode=m;
-  $('tbody').innerHTML=tabsHTML(m)+(m==='prod'?buildProd(prodList):m==='mkt'?mktBuild():buildTrade(sg));
+  $('tbody').innerHTML=tabsHTML(m)+(m==='prod'?buildProd(prodList):m==='mkt'?mktBuild():buildTrade(sg)+pioXHTML());
   if(m==='prod')for(const card of $('tbody').querySelectorAll('.mcard')){
     const uid=+card.dataset.m,e=prodList.find(x=>x.b.uid===uid);
     termMap.set(uid,{g:e.g,b:e.b,card,st:card.querySelector('.st'),tr:card.querySelector('.tr'),up:card.querySelector('.up'),pb:card.querySelector('.pb i'),q:card.querySelector('.qrow')});
@@ -5062,7 +5125,7 @@ function termRefresh(){
   if(sheet==='upg'){upgRefresh();return;}
   if(sheet)return;
   if(termMode==='mkt'){mktRefresh();return;}
-  if(termMode==='trade'){tradeRefresh();return;}
+  if(termMode==='trade'){tradeRefresh();pioXRefresh();return;}
   // material on hand at the top of each section: ore above the refineries, ingots above the assemblers
   for(const el of $('tbody').querySelectorAll('.sstrip')){
     const t=el.dataset.sk,ks=t==='refinery'?['fe','si','cu','al','ti','pt','carb','feI']:['feI','siI','cuI','alI','tiI','stI','wire','board'];
@@ -5162,6 +5225,8 @@ function termTick(dt){termAcc+=dt;if(termAcc>.25){termAcc=0;termRefresh();}}
 $('tbody').addEventListener('click',e=>{
   const btn=e.target.closest('button');if(!btn)return;
   if(sheet==='pio'){pioClick(btn);return;}
+  if(btn.dataset.gm!==undefined&&gravSel){const b=gravSel.b;b.gm=+btn.dataset.gm;applyGravMode(b);b.fieldT=3.5;const n=gravCount(gravSel.g,b);closeTerminal();toast(GM_NAMES[b.gm]+': '+n+' blocks in the field','good');return;}
+  if(btn.dataset.px){pioXClick(btn);return;}
   if(btn.dataset.cm){showCm(btn.dataset.cm);return;}
   if(btn.dataset.tab==='upg'){openUpg(grids.find(x=>x.name===btn.dataset.g));return;}
   if(btn.dataset.tab){openTerminal(0,btn.dataset.tab);return;}
@@ -5412,7 +5477,7 @@ const MENUS=[
     enter(){tut.m.b=tUsed(tStn());},d:'The Move all button below the chips moves everything from the selected container to the other one. Tap it.',
     done:()=>!!tut.m.xf||tUsed(tStn())!==tut.m.b},
   {next:true,panel:'trade',ui:'#t-dock',t:'Docked ships',d:'The PIONEER is listed because it is docked. A ship that is not docked is greyed out and cannot be loaded. The Docking tutorial shows how.'},
-  {next:true,panel:'mkt',ui:'[data-tab=mkt]',t:'Market tab',d:'The Market buys and sells goods. They pay is the price you get, You pay is the price to buy. Use the Sell and Buy buttons for quantities. Your loan’s Debt card with its Pay buttons is here too. This is a quick look; a full Market tutorial will follow.'},
+  {next:true,panel:'mkt',ui:'[data-tab=mkt]',t:'Market tab',d:'The Market buys and sells goods. They pay is the price you get, You pay is the price to buy. Use the Sell and Buy buttons for quantities.  This is a quick look; a full Market tutorial will follow.'},
   {next:true,panel:'upg',ui:'[data-tab=upg]',t:'Interface tab',d:'This tab is for the ship or station you are connected to, here the OUTPOST. You can reach it from a storage container or a pilot seat.'},
   {next:true,panel:'upg',ui:'#gname',t:'Name',d:'Rename the ship or station here.'},
   {next:true,panel:'upg',ui:'#pwbtn',t:'Power',d:'Shuts the generators down so an idle ship stops burning hydrogen and ice. Lights and gravity go off too.'},
@@ -5422,7 +5487,7 @@ const MENUS=[
 const TUTS={
   menus:{name:'Menus',steps:MENUS,end:'That is the control panel and the main menu. Next up: Docking. Tap Exit to go back to your game.'},
   ui:{name:'User interface',steps:UIT,end:'That is every button and window. Next up: Inventory and Docking. Tap Exit to go back to your game.'},
-  mine:{name:'First shift',steps:TUT,end:'Set the PIONEER down on the OUTPOST, then refine the ore in the machines aboard (TERM). Every ingot you sell pays down the loan.'},
+  mine:{name:'First shift',steps:TUT,end:'Set the PIONEER down on the OUTPOST, then refine the ore in the machines aboard (TERM). Every ingot you sell earns credits.'},
   move:{name:'Movement',steps:MOVE,end:'You can fly on foot and in a ship. Next up: User interface, Inventory and Docking. Tap Exit to go back to your game.'}
 };
 if(TUTW&&!TUTS[TUTW])TUTW=null;
@@ -5655,7 +5720,7 @@ function serialize(){
     grids:grids.filter(g=>g.kind!=='drone').map(g=>{
       const gq=g.group.quaternion;
       return{n:g.name,k:g.kind||0,s:g.station?1:0,p:r3(g.group.position),q:[gq.x,gq.y,gq.z,gq.w],v:r3(g.vel),f:Math.round(g.fuel),po:g.powerOff?1:0,
-        b:Array.from(g.blocks.values()).map(b=>[b.type,b.i,b.j,b.k,b.f||0,b.queue&&b.queue.length?b.queue.slice():0,b.job?[b.job.id,+b.job.t.toFixed(2)]:0,tierOf(b),b.store&&Object.keys(b.store).length?Object.assign({},b.store):0,b.s|0,b.pf?b.pf.join(''):0,wipOn(b)?Object.assign({},b.wi):0,b.dmg?+b.dmg.toFixed(1):0]),
+        b:Array.from(g.blocks.values()).map(b=>[b.type,b.i,b.j,b.k,b.f||0,b.queue&&b.queue.length?b.queue.slice():0,b.job?[b.job.id,+b.job.t.toFixed(2)]:0,tierOf(b),b.store&&Object.keys(b.store).length?Object.assign({},b.store):0,b.s|0,b.pf?b.pf.join(''):0,wipOn(b)?Object.assign({},b.wi):0,b.dmg?+b.dmg.toFixed(1):0,b.gm|0]),
         tr:g.trade?[Math.round(g.trade.timer),g.trade.state===3?g.trade.pay:0]:0};
     })
   };
@@ -5894,7 +5959,8 @@ function restoreSave(S){
       if(b&&e[11])wipRestore(g,b,e[11]);
       if(b&&e[12])b.dmg=e[12];
       if(b&&b.queue){if(e[5])b.queue=e[5].slice();if(e[6])b.job={id:e[6][0],t:e[6][1]};}
-      if(b&&b.tier>1)applyTier(b);
+      if(b&&e[13])b.gm=e[13]|0;
+      if(b&&(b.tier>1||b.gm))applyTier(b);
       if(b&&b.store&&e[8])for(const k in e[8])if(inv[k]!==undefined)b.store[k]=e[8][k];
     }
     g.bulk=false;recalc(g);g.hullDirty=true;g.wipDirty=true;
