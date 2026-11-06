@@ -25,9 +25,9 @@ body.flip{position:fixed;left:0;top:0;width:100vh;height:100vw;transform-origin:
 html,body{height:100%;margin:0;overflow:hidden;background:var(--space);color:var(--ink);font-family:var(--mono);font-size:12px;
   -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:none}
 button{font:inherit;color:inherit}
-#c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;background:var(--space)}
+#c{position:fixed;top:0;right:0;bottom:0;left:0;width:100%;height:100%;display:block;touch-action:none;background:var(--space)}
 
-#hud{position:fixed;inset:0;pointer-events:none;box-sizing:border-box;display:grid;
+#hud{position:fixed;top:0;right:0;bottom:0;left:0;pointer-events:none;box-sizing:border-box;display:grid;
   grid-template-columns:1fr auto;grid-template-rows:auto auto 1fr auto;gap:8px;
   padding-top:calc(10px + env(safe-area-inset-top,0px));
   padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));
@@ -101,7 +101,7 @@ body.uitut #res.colp .rr.mine{display:none!important}
 #target .t1{font:700 14px var(--display);letter-spacing:.14em;text-transform:uppercase}
 #target .t2{color:#fff}
 
-#markers{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+#markers{position:fixed;top:0;right:0;bottom:0;left:0;pointer-events:none;overflow:hidden}
 .mk{position:absolute;left:0;top:0;font-size:10px;line-height:1.3;white-space:nowrap;color:var(--ink);text-shadow:0 1px 3px #000;will-change:transform}
 .mk::before{content:"";display:block;width:10px;height:10px;margin:0 0 6px -5px;box-shadow:inset 0 0 0 1.5px var(--hazard);transform:rotate(45deg)}
 .mk span{display:block;transform:translateX(-50%);margin-left:0;text-align:center}
@@ -112,7 +112,7 @@ body.uitut #res.colp .rr.mine{display:none!important}
 .toast{background:var(--panel);box-shadow:inset 0 0 0 1px var(--edge);padding:5px 12px;font-size:12px;animation:tin .18s ease-out;text-align:center}
 .toast.bad{color:var(--bad)} .toast.good{color:var(--good)}
 @keyframes tin{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
-#vignette{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .35s;box-shadow:inset 0 0 120px 30px rgba(255,80,50,.55)}
+#vignette{position:fixed;top:0;right:0;bottom:0;left:0;pointer-events:none;opacity:0;transition:opacity .35s;box-shadow:inset 0 0 120px 30px rgba(255,80,50,.55)}
 #vignette.hit{opacity:1;transition:none}
 
 /* touch controls */
@@ -123,6 +123,7 @@ body.uitut #res.colp .rr.mine{display:none!important}
 #knob{position:absolute;left:50%;top:50%;width:48px;height:48px;margin:-24px 0 0 -24px;border-radius:50%;background:rgba(245,165,36,.35);box-shadow:inset 0 0 0 2px var(--hazard)}
 #rgt{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:flex-end;gap:8px;margin-left:auto;min-width:0;max-width:100%}
 #aux{display:grid;grid-template-rows:repeat(2,40px);grid-auto-flow:column;grid-template-columns:62px;grid-auto-columns:44px;gap:5px;pointer-events:auto}
+#usebtn.exit{font-size:9px;line-height:1.05;white-space:normal}
 #usebtn{grid-row:span 2;height:auto;width:62px;font-size:9px;letter-spacing:0}
 #upbtn{font-size:8px;letter-spacing:0}
 .tb.avail{background:var(--hazard);color:var(--hazard-ink);box-shadow:none}
@@ -148,7 +149,7 @@ body[data-tool="2"] #cross::before,body[data-tool="2"] #cross::after{background:
 .tb.on,.tb.lit{background:var(--hazard);color:var(--hazard-ink);box-shadow:none}
 
 /* start / pause overlay */
-#start{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(3,5,9,.82);overflow-y:auto;touch-action:pan-y;
+#start{position:fixed;top:0;right:0;bottom:0;left:0;display:flex;align-items:center;justify-content:center;background:rgba(3,5,9,.82);overflow-y:auto;touch-action:pan-y;
   padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));box-sizing:border-box}
 #start[hidden]{display:none}
 #scen[hidden]{display:none!important}
@@ -203,7 +204,7 @@ body.gravity #stn{display:grid}
 .scols{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
 .scol{display:grid;gap:3px;align-content:start}
 .ph2{font:600 10px var(--display);letter-spacing:.18em;color:var(--dim);text-transform:uppercase}
-#gframe{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .5s;box-shadow:inset 0 0 90px 4px rgba(143,227,245,.17)}
+#gframe{position:fixed;top:0;right:0;bottom:0;left:0;pointer-events:none;opacity:0;transition:opacity .5s;box-shadow:inset 0 0 90px 4px rgba(143,227,245,.17)}
 body.gravity #gframe{opacity:1}
 body.gravity .panel{box-shadow:inset 0 0 0 1px rgba(143,227,245,.42)}
 body.gravity .mode{color:var(--ice)}
@@ -244,7 +245,7 @@ body[data-tool="3"] #cross::before,body[data-tool="3"] #cross::after{background:
 .dm span{display:block;transform:translateX(-50%);color:var(--ink);text-align:center}
 
 /* control panel */
-#term{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(3,5,9,.8);box-sizing:border-box;
+#term{position:fixed;top:0;right:0;bottom:0;left:0;display:flex;align-items:center;justify-content:center;background:rgba(3,5,9,.8);box-sizing:border-box;
   padding:max(14px,env(safe-area-inset-top,0px)) max(14px,env(safe-area-inset-right,0px)) max(14px,env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px))}
 #term[hidden]{display:none}
 .tcard{width:min(700px,100%);max-height:100%;display:flex;flex-direction:column;background:#0b121d;box-shadow:inset 0 0 0 1px var(--edge);min-height:0}
@@ -292,15 +293,16 @@ body[data-tool="3"] #cross::before,body[data-tool="3"] #cross::after{background:
 .mfoot{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
 .rb:disabled{opacity:.45;cursor:default}.rb.up{color:var(--good)}.rb.up:disabled{color:var(--dim)}
 .mh i.tr{font-style:normal;font-weight:500;letter-spacing:.04em;text-transform:none;color:var(--ice);font-size:12px;margin-left:6px}
-#newg{border:0;background:transparent;box-shadow:inset 0 0 0 1px var(--edge);color:var(--dim);font:600 15px var(--display);letter-spacing:.16em;text-transform:uppercase;padding:10px 20px;cursor:pointer}
-#newg[hidden]{display:none}
+#newg,#mpbtn,#tutmenubtn,#setbtn,#exitapp{border:0;background:transparent;box-shadow:inset 0 0 0 1px var(--edge);color:var(--dim);font:600 15px var(--display);letter-spacing:.16em;text-transform:uppercase;padding:10px 20px;cursor:pointer}
+#newg[hidden],#exitapp[hidden],#exitapp2[hidden]{display:none}
+#wvlab{padding:8px 16px 14px;color:var(--dim);font:11px var(--mono);letter-spacing:.04em}
 #dev,#orient,#saver{border:0;background:transparent;box-shadow:inset 0 0 0 1px var(--edge);color:var(--dim);font:600 15px var(--display);letter-spacing:.16em;text-transform:uppercase;padding:10px 20px;cursor:pointer}
 #tnote{position:fixed;left:50%;top:27%;transform:translateX(-50%);z-index:40;display:flex;gap:12px;align-items:center;max-width:min(520px,90vw);background:rgba(8,13,22,.92);box-shadow:inset 0 0 0 1px var(--hazard);padding:10px 14px;font:500 13px var(--mono);color:var(--ink)}
 #tnote[hidden]{display:none}#tnote b{color:var(--hazard)}#tnote button{border:0;background:var(--hazard);color:var(--hazard-ink);font:700 13px var(--display);letter-spacing:.12em;padding:8px 14px;cursor:pointer}
 .tutrow{align-items:center;flex-wrap:wrap}.tutrow .tl{font:600 12px var(--display);letter-spacing:.22em;color:var(--hazard);text-transform:uppercase;margin-right:4px}
 .tutrow button{border:0;background:transparent;box-shadow:inset 0 0 0 1px var(--edge);color:var(--ink);font:600 13px var(--display);letter-spacing:.12em;text-transform:uppercase;padding:9px 14px;cursor:pointer}
 #tutbtn{border:0;background:transparent;box-shadow:inset 0 0 0 1px var(--edge);color:var(--dim);font:600 15px var(--display);letter-spacing:.16em;text-transform:uppercase;padding:10px 20px;cursor:pointer}#tutbtn[hidden]{display:none}
-#tcover{position:fixed;inset:0;z-index:999;background:#000;display:flex;align-items:center;justify-content:center;color:var(--dim);font:600 14px var(--display);letter-spacing:.24em;text-transform:uppercase}#tcover[hidden]{display:none}
+#tcover{position:fixed;top:0;right:0;bottom:0;left:0;z-index:999;background:#000;display:flex;align-items:center;justify-content:center;color:var(--dim);font:600 14px var(--display);letter-spacing:.24em;text-transform:uppercase}#tcover[hidden]{display:none}
 #rrow{display:flex;gap:6px;align-items:flex-start;justify-content:flex-end}
 #radbtn{pointer-events:auto;width:52px;height:36px;font-size:10px;letter-spacing:.06em;color:var(--ice);box-shadow:inset 0 0 0 1px var(--ice)}
 .rad{position:absolute;left:0;top:0;width:18px;height:18px;pointer-events:none;will-change:transform;z-index:3}
@@ -329,9 +331,10 @@ body.termopen.menutut #tut{display:block}
 .smb{display:block;height:100%;width:0;background:var(--good)}.smb.dn{width:100%}.smb.run{animation:smelt 2s linear forwards}
 @keyframes smelt{from{width:0}to{width:100%}}
 .sc.cm{border:0;background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px var(--edge);padding:4px 8px;color:var(--ink);font:inherit;cursor:pointer;touch-action:manipulation}
+.cgh{display:flex;align-items:center;justify-content:space-between;width:100%;margin:8px 0 4px;padding:6px 8px;border:0;background:rgba(255,255,255,.04);box-shadow:inset 0 0 0 1px var(--edge);color:var(--ink);font:600 12px var(--mono);letter-spacing:.1em;text-transform:uppercase;cursor:pointer;touch-action:manipulation}.cgh i{font-style:normal;color:var(--dim);font-size:10px}
 .cmr{display:flex;justify-content:space-between;gap:12px;padding:7px 4px;border-bottom:1px solid var(--edge);font-size:13px}.cmr.z{color:var(--dim)}
-#uidim{position:fixed;inset:0;background:rgba(0,0,0,.64);display:none;pointer-events:none}
-#uiblock{position:fixed;inset:0;z-index:5;display:none;touch-action:none}
+#uidim{position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(0,0,0,.64);display:none;pointer-events:none}
+#uiblock{position:fixed;top:0;right:0;bottom:0;left:0;z-index:5;display:none;touch-action:none}
 body.uitut #uidim,body.uitut #uiblock{display:block}
 body.uitut #aux .tb{visibility:visible!important;display:block!important}
 body.uitut #aux #dockbtn[hidden],body.uitut #aux #spinbtn{display:block!important}
@@ -348,7 +351,7 @@ body.uitut #aux [data-tap=shot],body.uitut #aux [data-tap=noclip],body.uitut #au
 #tut .tn{display:flex;flex-wrap:wrap;gap:3px 10px;margin-top:5px}#tut .tn .ok{color:var(--good)}
 body.termopen #tut{display:none}
 #tut .tb2{display:flex;gap:6px;margin-top:6px}#tut .tb2 button{flex:1;border:0;background:transparent;box-shadow:inset 0 0 0 1px var(--edge);color:var(--ink);font:600 11px var(--display);letter-spacing:.12em;text-transform:uppercase;padding:6px 4px;cursor:pointer}#tut .tb2 button.nx{background:var(--hazard);color:var(--hazard-ink);box-shadow:none}
-.winwrap{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:rgba(3,5,9,.74);padding:16px;box-sizing:border-box;touch-action:pan-y}
+.winwrap{position:fixed;top:0;right:0;bottom:0;left:0;z-index:50;display:flex;align-items:center;justify-content:center;background:rgba(3,5,9,.74);padding:16px;box-sizing:border-box;touch-action:pan-y}
 .winwrap[hidden]{display:none!important}
 .win{width:min(380px,100%);max-height:100%;overflow-y:auto;background:#0b121d;box-shadow:inset 0 0 0 1px var(--edge);padding:0 0 14px;touch-action:pan-y}
 .win .stripe{height:10px}
@@ -557,7 +560,7 @@ body.uitut #camrow .tb,body.uitut #edge .tb,body.uitut #rbar .tb{visibility:visi
           <button class="tb" id="usebtn" data-tap="use">INTERACT</button>
         </div>
           <div id="main">
-            <button class="tb" id="toolbtn" data-tap="tool"><b>Drill</b><small>Next: Torch</small></button>
+            <button class="tb" id="toolbtn" data-tap="tool"><b>Drill</b><small>Next: Welder</small></button>
             <button class="tb big" id="act" data-hold="fire">MINE</button>
           </div>
           </div>
@@ -576,12 +579,12 @@ body.uitut #camrow .tb,body.uitut #edge .tb,body.uitut #rbar .tb{visibility:visi
   </div>
 </div>
 
-<div id="shotv" hidden style="position:fixed;inset:0;z-index:60;background:rgba(3,5,9,.94);display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px;box-sizing:border-box">
+<div id="shotv" hidden style="position:fixed;top:0;right:0;bottom:0;left:0;z-index:60;background:rgba(3,5,9,.94);display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px;box-sizing:border-box">
   <div style="font:600 12px var(--mono);color:var(--dim);text-align:center">Press and hold the picture to save it, or tap Share. Then send it to Claude.</div>
   <img id="shotimg" alt="screenshot" style="flex:1;min-height:0;max-width:100%;object-fit:contain;-webkit-user-select:auto;user-select:auto;-webkit-touch-callout:default;touch-action:manipulation">
   <div style="display:flex;gap:10px"><button class="tb" id="shotshare" style="width:96px">SHARE</button><button class="tb" id="shotclose" style="width:96px">CLOSE</button></div>
 </div>
-<div id="scen" hidden style="position:fixed;inset:0;z-index:55;display:flex;align-items:center;justify-content:center;background:rgba(3,5,9,.86);padding:16px;box-sizing:border-box;overflow-y:auto">
+<div id="scen" hidden style="position:fixed;top:0;right:0;bottom:0;left:0;z-index:55;display:flex;align-items:center;justify-content:center;background:rgba(3,5,9,.86);padding:16px;box-sizing:border-box;overflow-y:auto">
   <div class="card" style="padding-bottom:18px"><div class="stripe"></div>
     <h2 style="margin-top:16px">Scenario</h2>
     <h1 style="font-size:clamp(24px,6vw,36px);margin-top:0">The Claimed Field</h1>
@@ -602,7 +605,7 @@ body.uitut #camrow .tb,body.uitut #edge .tb,body.uitut #rbar .tb{visibility:visi
       <div id="mpst">Not connected</div>
       <button id="mpleave">Leave room</button>
     </div>
-    <div class="btns"><button id="go" disabled>Loading…</button><button id="newg" hidden>New game</button><button id="mpbtn">Multiplayer</button><button id="tutmenubtn">Tutorials</button><button id="setbtn">Settings</button><span id="verlab"></span></div>
+    <div class="btns"><button id="go" disabled>Loading…</button><button id="newg" hidden>New game</button><button id="mpbtn">Multiplayer</button><button id="tutmenubtn">Tutorials</button><button id="exitapp" hidden>Exit</button><button id="setbtn">Settings</button><span id="verlab"></span></div>
   </div>
 </div>
 <div id="tutwin" class="winwrap" hidden><div class="win"><div class="stripe"></div><h2>Tutorials</h2>
@@ -610,14 +613,14 @@ body.uitut #camrow .tb,body.uitut #edge .tb,body.uitut #rbar .tb{visibility:visi
   <div class="wb"><button data-tw="ui">1 &middot; User interface</button><button data-tw="move">2 &middot; Movement</button><button data-tw="menus">3 &middot; Menus</button><button disabled>4 &middot; Docking (soon)</button><button disabled>5 &middot; Tools (soon)</button>
   <button data-tut="mine">First shift (in your own game)</button><button id="tutbtn" hidden>Hide tutorial</button><button id="twexit" hidden>Leave the practice world</button><button id="tutclose">Close</button></div></div></div>
 <div id="setwin" class="winwrap" hidden><div class="win"><div class="stripe"></div><h2>Settings</h2>
-  <div class="wb"><button id="fs">Full screen</button><button id="orient">Switch to Landscape</button><button id="saver">Battery saver: off</button><button id="dev">Dev: off</button><button id="setclose">Close</button></div></div></div>
+  <div class="wb"><button id="fs">Full screen</button><button id="orient">Switch to Landscape</button><button id="saver">Battery saver: off</button><button id="dev">Dev: off</button><button id="exitapp2" hidden>Exit game</button><button id="setclose">Close</button></div><div id="wvlab"></div></div></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 (function(){
 'use strict';
 /* =====================  Void Engineers  =====================
    Part A: renderer, sky, procedural voxel asteroids, particles */
-const GAME_VER='188';
+const GAME_VER='191';
 {const vl=document.getElementById('verlab');if(vl)vl.textContent='v'+GAME_VER;}
 /* no page zoom while playing: pinch, double-tap and ctrl+wheel are swallowed */
 (()=>{const no=e=>{e.preventDefault();};
@@ -3180,6 +3183,7 @@ function updateHUD(dt){
   {let av=!!player.ship||player.mode==='tseat';
    if(!av&&player.mode==='foot'&&!player.build&&player.tool!==1){av=!!nearestSeat();if(!av){const am=aimedMachine(USE_R);av=!!am;}if(!av)av=!!pioAimed();}
    updateAct();const ub=$('usebtn'),db=$('dampbtn');if(ub&&ub._a!==av){ub._a=av;ub.classList.toggle('avail',av);}
+   if(ub){const ex=!!player.ship||!!pioSeat;if(ub._x!==ex){ub._x=ex;ub.textContent=ex?'EXIT COCKPIT':'INTERACT';ub.classList.toggle('exit',ex);}}
    if(db&&db._a!==player.damp){db._a=player.damp;db.classList.toggle('lit',player.damp);}}
   // prompt + target
   let pr='',t1='',t2='';
@@ -3193,16 +3197,16 @@ function updateHUD(dt){
       // names only for what you can use right now; the ship's own name once you have looked at it for two seconds
       const bd=BDEF[pk.h.b.type],pb=pk.h.b;
       if(aimG!==pk.g){aimG=pk.g;aimT=0;}else aimT+=dt;
-      if(wipOn(pb)&&pk.t<=9){t1=bd.name+' \u00b7 '+Math.round(100*pb.wp/pb.wt)+'% built';t2=player.tool===1?'Hold the Torch to weld it':'Needs welding with the Torch';}
+      if(wipOn(pb)&&pk.t<=9){t1=bd.name+' \u00b7 '+Math.round(100*pb.wp/pb.wt)+'% built';t2=player.tool===1?'Hold BUILD to weld it':'Needs welding: take out the Welder';}
       else if((bd.machine||bd.panel||pb.type==='seat')&&pk.t<=USE_R+1.2&&!player.build){
         t1=bd.name;
         if(bd.machine)t2=['Idle','Working','Waiting for material'][pb.state||0];else if(bd.panel)t2=panelSummary(pk.g,pb);
       }else if(aimT>=2)t1=pk.g.name;
     }
-    if(pk&&pk.kind==='blk'&&pk.t<=9&&pk.h.b.dmg>0&&!wipOn(pk.h.b)){const pb2=pk.h.b;t1=BDEF[pb2.type].name;t2=Math.round(100*pb2.dmg/hpOf(pb2))+'% damaged'+(player.tool===1?' \u00b7 hold the Torch to repair':'');}
+    if(pk&&pk.kind==='blk'&&pk.t<=9&&pk.h.b.dmg>0&&!wipOn(pk.h.b)){const pb2=pk.h.b;t1=BDEF[pb2.type].name;t2=Math.round(100*pb2.dmg/hpOf(pb2))+'% damaged'+(player.tool===1?' \u00b7 hold BUILD with the Welder to repair':'');}
     if(!(pk&&pk.kind==='blk')){aimG=null;aimT=0;}
     {const pA=pioSeat?null:pioAimed();if(pA){t1='Pioneer \u00b7 cockpit';t2='Canopy open';pr=(coarse?'INTERACT':'F')+' \u2014 climb in and pilot';}}
-    if(pioSeat){t1='Pioneer \u00b7 cockpit';t2='Fuel '+Math.round(100*pioSeat.T.fuel/pioFuelCap(pioSeat.T))+'% \u00b7 Hold '+Math.round(pioHoldUsed(pioSeat.T))+' / '+pioHoldCap(pioSeat.T);pr=pioSeat.T.fuel<pioFuelCap(pioSeat.T)*.15?(coarse?'FUEL':'R')+' \u2014 melt ice into hydrogen':(coarse?'INTERACT':'F')+' \u2014 climb out';}
+    if(pioSeat){t1='Pioneer \u00b7 cockpit';t2='Fuel '+Math.round(100*pioSeat.T.fuel/pioFuelCap(pioSeat.T))+'% \u00b7 Hold '+Math.round(pioHoldUsed(pioSeat.T))+' / '+pioHoldCap(pioSeat.T);pr=pioSeat.T.fuel<pioFuelCap(pioSeat.T)*.15?(coarse?'FUEL':'R')+' \u2014 melt ice into hydrogen':'';}
   }else if(g.fuel<g.fuelCap*.15&&inv.ice>0)pr=(coarse?'FUEL':'R')+' — melt ice into hydrogen';
   if(!g&&player.tool===4&&!termOpen){t1='PAINT \u00b7 '+PAINT_NAMES[paintSel].toUpperCase();t2='ROT changes the look';}
   if(!g&&player.tool===3&&!termOpen){t1='ORE DETECTOR · '+detRange+' m';t2=detSummary;}
@@ -3548,12 +3552,16 @@ function pioGeo(){   // body (lit), glow (engines, windows, lens) and glass, eac
   if(tplCache.pio)return tplCache.pio;
   const u8=s=>{const b=atob(s),a=new Uint8Array(b.length);for(let i=0;i<b.length;i++)a[i]=b.charCodeAt(i);return a;};
   const v=new Int16Array(u8(PIO.v).buffer),f=new Uint16Array(u8(PIO.f).buffer),c=u8(PIO.c),g=u8(PIO.g),tu=new Uint16Array(u8(PIO.t).buffer),K=PIO_S/1000;
+  // v189: the cockpit consoles and joystick are left out (raw-mesh boxes)
+  const cut=t=>{const a=f[t*3]*3,b=f[t*3+1]*3,c2=f[t*3+2]*3,x=Math.abs(v[a]+v[b]+v[c2])/3,y=(v[a+1]+v[b+1]+v[c2+1])/3,z=(v[a+2]+v[b+2]+v[c2+2])/3;
+    if(y<5500||y>6440)return false;
+    return(x>=1190&&x<=1510&&z>=-2210&&z<=210)||(x<=1210&&z>=-3210&&z<=-2290)||(x<=130&&z>=-1830&&z<=-1570);};
   const mk=grp=>{
     const ex=(grp===1||grp===7)?1:PIO_X,cn=grp>=5?PIO_PIV:[0,0,0];
-    let n=0;for(let t=0;t<g.length;t++)if(g[t]===grp)n++;
+    let n=0;for(let t=0;t<g.length;t++)if(g[t]===grp&&!cut(t))n++;
     const P=new Float32Array(n*9),N=new Float32Array(n*9),C=new Float32Array(n*9),UV=new Float32Array(n*6);let o=0,q=0;
     for(let t=0;t<g.length;t++){
-      if(g[t]!==grp)continue;
+      if(g[t]!==grp||cut(t))continue;
       const ia=[f[t*3],f[t*3+1],f[t*3+2]],p=ia.map(i=>[v[i*3]*K-cn[0],v[i*3+1]*K-cn[1],v[i*3+2]*K-cn[2]]);
       const ux=p[1][0]-p[0][0],uy=p[1][1]-p[0][1],uz=p[1][2]-p[0][2],wx=p[2][0]-p[0][0],wy=p[2][1]-p[0][1],wz=p[2][2]-p[0][2];
       let nx=uy*wz-uz*wy,ny=uz*wx-ux*wz,nz=ux*wy-uy*wx;const l=Math.hypot(nx,ny,nz)||1;nx/=l;ny/=l;nz/=l;
@@ -3645,7 +3653,7 @@ function pioEnter(T){
   player.mode='tseat';player.ship=null;player.tool=0;player.build=false;player.third=false;tool.visible=false;setBuildUI();
   pioSeat={T};T.view=0;T.cp.children[0].material=tplMatPioIn;
   document.body.classList.add('pioseat');player.vel.set(0,0,0);
-  toast('In the cockpit. '+(coarse?'INTERACT':'F')+' climbs out.','good');
+  toast('In the cockpit. '+(coarse?'EXIT COCKPIT':'F')+' climbs out.','good');
 }
 function pioLeave(){
   const S=pioSeat;if(!S)return;
@@ -5337,11 +5345,11 @@ function tradeRefresh(){
   // all commodities, one block per container or docked craft, then the pack
   const tot=$('t-tot');
   if(tot){
-    const GR=[['Ore',['fe','si','ice','pt','carb','cu','al','ti']],['Ingots',['feI','siI','ptI','cuI','stI','alI','tiI']],['Components',['plate','constr','stP','tAl','thP','wire','board','motor','comp']]];
+    const GR=[['Ores',['fe','si','ice','pt','carb','cu','al','ti']],['Ingots',['feI','siI','ptI','cuI','stI','alI','tiI']],['Components',['plate','constr','stP','tAl','thP','wire','board','motor','comp']],['Live Items',['algae','phage'].filter(k=>ITEMS.includes(k))]];
     const rest=ITEMS.filter(k=>!GR.some(x=>x[1].includes(k)));if(rest.length)GR.push(['Other',rest]);
     const tg=[];if(chips)for(const c of chips.querySelectorAll('.chip')){const g=grids.find(x=>x.name===c.dataset.g);if(g)tg.push(g);}
     const tgw=tg.map(g=>whTotals(g));
-    const html='<div class="mh"><b>All commodities</b><span>tap one to see where it is stored</span></div>'+GR.map(x=>'<div class="srow">'+x[1].map(k=>{let n=inv[k]|0;for(const w of tgw)n+=w.t[k]||0;return '<button class="sc cm" data-cm="'+k+'"><i style="'+ITEM_ICON(k)+'"></i>'+SHORT[k]+' <b>'+n+'</b></button>';}).join('')+'</div>').join('');
+    const html='<div class="mh"><b>All commodities</b><span>tap one to see where it is stored</span></div>'+GR.filter(x=>x[1].length).map(x=>{const op=!cmClosed[x[0]];return '<button class="cgh" data-cg="'+x[0]+'" aria-expanded="'+op+'"><span>'+x[0]+'</span><i>'+(op?'\u25B2':'\u25BC')+'</i></button>'+(op?'<div class="srow">'+x[1].map(k=>{let n=inv[k]|0;for(const w of tgw)n+=w.t[k]||0;return '<button class="sc cm" data-cm="'+k+'"><i style="'+ITEM_ICON(k)+'"></i>'+SHORT[k]+' <b>'+n+'</b></button>';}).join('')+'</div>':'');}).join('');
     if(tot._h!==html){tot._h=html;tot.innerHTML=html;}
   }
 }
@@ -5360,12 +5368,14 @@ function closeTerminal(){
   sheet='';termOpen=false;$('term').hidden=true;document.body.classList.remove('termopen');
   if(!coarse&&running&&!paused)lockPointer();
 }
+let cmClosed={};try{cmClosed=JSON.parse(localStorage.getItem('void-engineers-cmclosed')||'{}')||{};}catch(e){cmClosed={};}   // which Inventory groups are folded (per device)
 function termTick(dt){termAcc+=dt;if(termAcc>.25){termAcc=0;termRefresh();}}
 $('tbody').addEventListener('click',e=>{
   const btn=e.target.closest('button');if(!btn)return;
   if(sheet==='pio'){pioClick(btn);return;}
   if(btn.dataset.gm!==undefined&&gravSel){const b=gravSel.b;b.gm=+btn.dataset.gm;applyGravMode(b);b.fieldT=3.5;const n=gravCount(gravSel.g,b);closeTerminal();toast(GM_NAMES[b.gm]+': '+n+' blocks in the field','good');return;}
   if(btn.dataset.px){pioXClick(btn);return;}
+  if(btn.dataset.cg){cmClosed[btn.dataset.cg]=!cmClosed[btn.dataset.cg];try{localStorage.setItem('void-engineers-cmclosed',JSON.stringify(cmClosed));}catch(e){}const t=$('t-tot');if(t)t._h=null;termRefresh();return;}
   if(btn.dataset.cm){showCm(btn.dataset.cm);return;}
   if(btn.dataset.tab==='upg'){openUpg(grids.find(x=>x.name===btn.dataset.g));return;}
   if(btn.dataset.tab){openTerminal(0,btn.dataset.tab);return;}
@@ -6168,7 +6178,7 @@ function boot(){
     }else{try{begin();}catch(e){console.error(e);}if(tcv)tcv.hidden=true;}
   }
   try{if(window.claude&&window.claude.hot&&window.claude.hot.snapshot)window.claude.hot.snapshot(()=>({save:(wiping||TUTW)?null:serialize()}));}catch(e){}
-  window.__VE={grindStep,gridOn,powerTick,spawnDrone,spawnPlayerDrone,droneTick,damageBlock,repairBlock,hpOf,dmgEff,fireBolt,boltsTick,bolts,wipOn,wipUnit,wipBegin,wipDone,mk,mktClick,mktTick,mktBuild,mktRefresh,MKT,mkFee,mkTier,player,grids,asteroids,update,begin,ACT,keys,tb,camera,inv,mineAt,rayAst,pickAll,aim,serialize,restoreSave,saveGame,
+  window.__VE={shipAmmo,tpShips,pioEnter,grindStep,gridOn,powerTick,spawnDrone,spawnPlayerDrone,droneTick,damageBlock,repairBlock,hpOf,dmgEff,fireBolt,boltsTick,bolts,wipOn,wipUnit,wipBegin,wipDone,mk,mktClick,mktTick,mktBuild,mktRefresh,MKT,mkFee,mkTier,player,grids,asteroids,update,begin,ACT,keys,tb,camera,inv,mineAt,rayAst,pickAll,aim,serialize,restoreSave,saveGame,
     addToGrid,gridHas,gridSpace,takeFromGrid,packUsed,packSpace,PACK_CAP,PACKIO,shipIO,spawnShip,interiorOf,bodyHit,bodyMove,cellAt,setTier,growCheck,doorTick,rideSync,seatWorld,nearestSeat,spawnStation,haveK,spend,upgradeBlock,gravR,qMax,tierOf,upCost,recalc,eco,price,PRICE0,ITEMS,loadItem,takeItem,whTotals,payDebt,tradeTick,BEACON,CARGO_CAP,panelSummary,openTerminal,closeTerminal,scanOre,setTool,setPage,addBlock,makeGrid,removeBlock,RECIPES,BDEF,BORDER,
     setDev:v=>{DEV=!!v;},platePaint,openPicker,openUpg,connGrid,surveyAst,revealBuried,tutState:()=>tut,startTut,renameGrid,dockPlan,toggleDock,pointSolid,shipHitsAst,enterShip,exitShip,inReach,gridsTouch,isCraft,dockCheck,dockTick,startXfer,moveTarget,PAD_RATE,BASE_RATE,xferState:()=>xfer,
     state:()=>({inGrav,page,termOpen,detRange,detSummary,paused,running}),
@@ -6185,6 +6195,16 @@ window.addEventListener('pagehide',saveGame);
   $('tutclose').addEventListener('click',()=>{tw.hidden=true;});
   $('tutbtn').addEventListener('click',()=>{tw.hidden=true;});
   $('setbtn').addEventListener('click',()=>{sw.hidden=false;});
+  // Android app only: Exit buttons, the WebView version, and Back opening the in-game menu
+  {const app=!!(window.VEApp&&window.VEApp.exit),wv=/; wv\)/.test(navigator.userAgent||'');
+   const m=/Chrome\/(\d+)/.exec(navigator.userAgent||'');const wl=$('wvlab');if(wl)wl.textContent=(wv||app?'App WebView: ':'Browser: ')+(m?'Chrome '+m[1]:'unknown');
+   for(const id of ['exitapp','exitapp2']){const b=$(id);if(!b)continue;b.hidden=!app;b.addEventListener('click',()=>{try{saveGame();}catch(e){}try{window.VEApp.exit();}catch(e){}});}
+   const back=()=>{   // closes what is open first, then opens the menu
+     const w=[...document.querySelectorAll('.winwrap')].filter(x=>!x.hidden&&x.id!=='tcover');if(w.length){w[w.length-1].hidden=true;return;}
+     if(termOpen){closeTerminal();return;}
+     if(running&&!paused)openMenu();};
+   window.VEBack=back;
+   if(app||wv){try{history.replaceState({ve:0},'');history.pushState({ve:1},'');window.addEventListener('popstate',()=>{try{history.pushState({ve:1},'');}catch(e){}back();});}catch(e){}}}
   $('setclose').addEventListener('click',()=>{sw.hidden=true;});
   for(const w of [tw,sw])w.addEventListener('pointerdown',e=>{if(e.target===w)w.hidden=true;});   // tap outside the window to close it
   for(const b of document.querySelectorAll('[data-tw]'))b.addEventListener('click',()=>{
