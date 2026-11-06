@@ -436,6 +436,50 @@ body.devon #perfbtns{display:flex}
 .mkr .nm{display:flex;align-items:center;gap:5px;min-width:0}.mkr .nm small{color:var(--dim)}
 .mkr .mq{display:flex;gap:3px;justify-content:flex-end}.mkr .mq .rb{min-width:30px;padding:6px 6px}.mkr .mq .mn{min-width:38px;box-shadow:inset 0 0 0 1px var(--edge)}
 .mkr .rb:disabled{opacity:.35}
+
+/* v187 layout (from the player's drawing): Radar + Status top right, FUEL / LAMP / DAMP under it,
+   MENU / TERM / INTERACT down the right edge, UP DOWN / rolls / CAM bottom, TOOL over DRILL bottom right */
+#rcol{gap:5px}
+#rbar{display:flex;gap:5px;justify-content:flex-end;pointer-events:none}
+#rbar .tb,#rcol #dampbtn{width:60px;height:34px;font:600 11px var(--mono);letter-spacing:.04em;pointer-events:auto}
+.tb{pointer-events:auto}
+#rgt{display:flex;flex-direction:column;flex-wrap:nowrap;align-items:flex-end;justify-content:flex-end;gap:6px;margin-left:auto;pointer-events:none}
+#edge{display:flex;flex-direction:column;align-items:flex-end;gap:4px;pointer-events:none}
+#edge .tb{width:66px;height:28px}
+#edge #usebtn{height:46px;font-size:11px;letter-spacing:.04em;grid-row:auto}
+#brow{display:flex;align-items:flex-end;justify-content:flex-end;gap:8px;pointer-events:none}
+#lowL{display:grid;gap:5px;justify-items:start;pointer-events:none}
+#vert,#main{pointer-events:none}
+#camrow{display:flex;gap:5px;align-items:flex-end;pointer-events:none}
+#aux{display:flex;gap:5px;min-width:44px;min-height:36px;pointer-events:none}
+#aux .tb{display:none!important;visibility:visible;width:44px;grid-column:auto;grid-row:auto}
+#aux #dockbtn:not([hidden]){display:block!important}
+body[data-tool="1"] #aux #rotbtn,body[data-tool="4"] #aux #rotbtn{display:block!important}
+body.shaped #aux #spinbtn{display:block!important}
+#chatbtn{display:none!important}body.mpon #chatbtn{display:block!important}
+body.uitut #chatbtn{display:none!important}
+#termbtn{visibility:hidden}body.gravity #termbtn,.piloting #termbtn,.pioseat #termbtn{visibility:visible}
+#camrow .tb,#edge .tb,#rbar .tb{display:block}
+#main{display:grid;gap:6px;justify-items:end}
+#main #toolbtn{width:104px;height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;line-height:1;white-space:nowrap;overflow:hidden;font:inherit;letter-spacing:0}
+#toolbtn b{font:700 14px var(--display);letter-spacing:.12em;text-transform:uppercase;color:var(--ink)}
+#toolbtn b.lg{font-size:11px;letter-spacing:.06em}
+#toolbtn small{font:600 8.5px var(--mono);letter-spacing:0;color:var(--dim)}
+.status-hide,#st-mode:empty{display:none}
+#devrow{position:fixed;left:50%;top:calc(30px + env(safe-area-inset-top,0px));transform:translateX(-50%);display:none;gap:5px;pointer-events:none;z-index:6}
+body.devon #devrow{display:flex}
+#devrow .tb{width:auto;height:30px;padding:0 8px}
+body.uitut #camrow .tb,body.uitut #edge .tb,body.uitut #rbar .tb{visibility:visible!important}
+@media (max-height:480px){#edge .tb{height:25px}#edge #usebtn{height:40px}#rbar .tb,#rcol #dampbtn{height:30px}#main #toolbtn{height:40px}#aux{min-height:36px}}
+
+#rstack{display:flex;flex-direction:column;align-items:flex-end;gap:6px;pointer-events:none}
+#hotbar:empty{display:none}
+#vert .tb,#camrow>.tb,#aux .tb{height:32px}
+@media (max-height:480px){#vert .tb,#camrow>.tb,#aux .tb{height:32px}#aux{min-height:32px}}
+#topslot{height:0;min-height:0;overflow:visible;position:relative}
+.touch #topslot{align-self:start}
+.piloting #main #toolbtn,.pioseat #main #toolbtn{display:none}
+.touch #hotbar{margin-right:76px}
 </style>
 
 <canvas id="c"></canvas>
@@ -453,6 +497,7 @@ body.devon #perfbtns{display:flex}
 <form id="chatbar" hidden><input id="chatin" maxlength="160" autocomplete="off" autocapitalize="sentences" enterkeyhint="send" placeholder="Message the team"><button type="submit" id="chatsend">Send</button><button type="button" id="chatx" aria-label="Close chat">X</button></form>
 
 <div id="hud">
+  <div id="devrow"><button class="tb" data-tap="shot">SHOT</button><button class="tb" data-tap="noclip">CLIP</button><button class="tb" data-tap="mship">MINER</button><button class="tb" data-tap="mpio">PIONEER</button><button class="tb" data-tap="mgear">GEAR</button></div>
   <div id="left">
   <div id="res" class="panel">
     <div class="ph" id="res-ph">Cargo</div>
@@ -479,7 +524,7 @@ body.devon #perfbtns{display:flex}
     <div class="row ship-only"><span>MASS</span><b id="st-mass">0 t</b></div>
     <div class="row ship-only"><span>ACCEL</span><b id="st-acc">0.0 m/s&#178;</b></div>
   </div></div>
-  <button class="tb big" id="dampbtn" data-tap="damp">DAMP</button></div>
+  <div id="rbar"><button class="tb" id="fuelbtn" data-tap="refuel">FUEL</button><button class="tb" id="lampbtn" data-tap="lamp">LAMP</button><button class="tb" id="dampbtn" data-tap="damp">DAMP</button></div></div>
   <div id="topslot"></div>
   <div></div>
   <div id="bottom">
@@ -487,32 +532,35 @@ body.devon #perfbtns{display:flex}
     <div id="touch">
       <div id="stick"><div id="knob"></div></div>
       <div id="rgt">
-        <div id="aux">
-          <button class="tb" id="usebtn" data-tap="use">INTERACT</button>
-          <button class="tb" data-tap="cam">CAM</button>
-          <button class="tb" data-tap="lamp">LAMP</button>
-          <button class="tb" id="fuelbtn" data-tap="refuel">FUEL</button>
+        <div id="brow">
+          <div id="lowL">
+            <div id="vert">
+              <button class="tb" data-hold="up">UP</button>
+              <button class="tb" data-hold="down">DOWN</button>
+              <button class="tb" data-hold="rl">&#8630;</button>
+              <button class="tb" data-hold="rr">&#8631;</button>
+            </div>
+            <div id="camrow">
+              <button class="tb" data-tap="cam">CAM</button>
+              <div id="aux">
+                <button class="tb" id="dockbtn" data-tap="dock" hidden>DOCK</button>
+                <button class="tb" id="rotbtn" data-tap="orient">ROT</button>
+                <button class="tb" id="spinbtn" data-tap="spin">SPIN</button>
+                <button class="tb" id="chatbtn" data-tap="chat">CHAT</button>
+              </div>
+            </div>
+          </div>
+          <div id="rstack">
+          <div id="edge">
           <button class="tb" data-tap="menu">MENU</button>
           <button class="tb" id="termbtn" data-tap="term">TERM</button>
-          <button class="tb" id="dockbtn" data-tap="dock" hidden>DOCK</button>
-          <button class="tb" id="rotbtn" data-tap="orient">ROT</button>
-          <button class="tb" id="spinbtn" data-tap="spin">SPIN</button>
-          <button class="tb" id="chatbtn" data-tap="chat">CHAT</button>
-          <button class="tb" data-tap="shot">SHOT</button>
-          <button class="tb" data-tap="noclip">CLIP</button>
-          <button class="tb" data-tap="mship">MINER</button>
-          <button class="tb" data-tap="mpio">PIONEER</button>
-          <button class="tb" data-tap="mgear">GEAR</button>
+          <button class="tb" id="usebtn" data-tap="use">INTERACT</button>
         </div>
-        <div id="vert">
-          <button class="tb" data-hold="up">UP</button>
-          <button class="tb" data-hold="down">DOWN</button>
-          <button class="tb" data-hold="rl">&#8630;</button>
-          <button class="tb" data-hold="rr">&#8631;</button>
-        </div>
-        <div id="main">
-          <button class="tb big" id="toolbtn" data-tap="tool">TOOL</button>
-          <button class="tb big" id="act" data-hold="fire">DRILL</button>
+          <div id="main">
+            <button class="tb" id="toolbtn" data-tap="tool"><b>Drill</b><small>Next: Torch</small></button>
+            <button class="tb big" id="act" data-hold="fire">MINE</button>
+          </div>
+          </div>
         </div>
       </div>
     </div>
@@ -569,7 +617,7 @@ body.devon #perfbtns{display:flex}
 'use strict';
 /* =====================  Void Engineers  =====================
    Part A: renderer, sky, procedural voxel asteroids, particles */
-const GAME_VER='186';
+const GAME_VER='188';
 {const vl=document.getElementById('verlab');if(vl)vl.textContent='v'+GAME_VER;}
 /* no page zoom while playing: pinch, double-tap and ctrl+wheel are swallowed */
 (()=>{const no=e=>{e.preventDefault();};
@@ -2262,6 +2310,34 @@ const keys={},tb={up:0,down:0,fire:0,grind:0,rl:0,rr:0},stick={x:0,y:0};
 let mdx=0,mdy=0,mFire=false,mGrind=false,gridSeq=1,hitCool=0,placeCD=0,drillOn=false;
 const _o=new V3(),_d=new V3(),_q1=new Q(),_bd=new V3();
 const AXY=new V3(0,1,0),AXX=new V3(1,0,0),AXZ=new V3(0,0,1);
+// Visible drift: in cockpit and chase views (dampers on) a swipe moves the aim at once; the ship and the view
+// swing after it and catch up in about a second. Heavier ships and weaker gyros take longer.
+const DRIFT_K=2.6,DRIFT_MAX=.5;let driftS=null,driftT=0;
+const _dA=new Q(),_dB=new Q(),_dE=new Q(),_dV=new V3();
+function driftStep(S,Qb,look,ks){
+  if(!S._A)S._A=Qb.clone();
+  if(look[0]||look[1])S._A.multiply(_dA.setFromAxisAngle(AXY,-look[0]*ks)).multiply(_dA.setFromAxisAngle(AXX,-look[1]*ks)).normalize();
+  _dE.copy(Qb).invert().multiply(S._A);if(_dE.w<0){_dE.x=-_dE.x;_dE.y=-_dE.y;_dE.z=-_dE.z;_dE.w=-_dE.w;}
+  let ang=2*Math.acos(Math.min(1,_dE.w));const sn=Math.sqrt(Math.max(0,1-_dE.w*_dE.w));
+  let ex=0,ey=0;
+  if(sn>1e-4&&ang>1e-4){
+    const ax=_dE.x/sn,ay=_dE.y/sn,az=_dE.z/sn;
+    if(ang>DRIFT_MAX){ang=DRIFT_MAX;S._A.copy(Qb).multiply(_dA.setFromAxisAngle(_dV.set(ax,ay,az),ang));}   // the aim never strays far from the nose
+    ex=ax*ang;ey=ay*ang;
+  }
+  driftS=S;driftT=performance.now();
+  return [ex,ey];
+}
+function driftOff(S){S._A=null;if(driftS===S)driftS=null;}
+const aimQ=()=>(driftS&&driftS._A&&performance.now()-driftT<250)?driftS._A:camera.quaternion;
+function driftReticle(S){
+  const c=$('cross');if(!c)return;
+  if(!(S&&S._A)){if(c._d){c.style.transform='';c._d=0;}return;}
+  _dV.set(0,0,-1).applyQuaternion(S._A).applyQuaternion(_dB.copy(camera.quaternion).invert());
+  if(_dV.z>-.05){c.style.opacity='0';c._d=1;return;}
+  const th=Math.tan(camera.fov*Math.PI/360),nx=_dV.x/-_dV.z/(th*camera.aspect),ny=_dV.y/-_dV.z/th;
+  c.style.opacity='';c.style.transform='translate('+(nx*innerWidth/2).toFixed(1)+'px,'+(-ny*innerHeight/2).toFixed(1)+'px)';c._d=1;
+}
 
 /* ---------- HUD helpers ---------- */
 const setT=(el,s)=>{if(el._t!==s){el.textContent=s;el._t=s;}};
@@ -2297,10 +2373,10 @@ function refreshBar(){
   if(isStn(type)&&!inGrav)h+='<span class="cost no">needs gravity field</span>';
   $('binfo').innerHTML=h;
 }
-const TOOLS=['Drill','Torch','Cutter','Detector','Paint','None'];
+const TOOLS=['Drill','Welder','Grinder','Ore Detector','Spraycan','None'];
 const PAINT_NAMES=['Plating','Floor','Wall','Roof'];let paintSel=1;
 const paintOK=()=>{const g=connGrid();return !!g&&(DEV||g.station||!!g.lock);};   // only at a station or a docked ship
-const TOOL_HINT=['Drill: mine ore','Torch: weld blocks','Cutter: remove blocks, 70% back','Detector: ore within 40 m. PING sweeps 80 m','Paint: ROT picks Plating, Floor, Wall or Roof. Aim at a hull face and tap PAINT','No tool: hands free. USE still works'];
+const TOOL_HINT=['Drill: mine ore','Welder: build and repair blocks','Grinder: remove blocks, 70% back','Ore Detector: ore within 40 m. PING sweeps 80 m','Spraycan: ROT picks Plating, Floor, Wall or Roof. Aim at a hull face and tap PAINT','No tool: hands free. USE still works'];
 // the hand drill only works near ore: a deposit or an asteroid surface within 5 m
 let nodeNear=false,nodeT=0;
 function nodeCheck(){
@@ -2320,9 +2396,17 @@ function toolGate(dt){   // runs on foot: keeps the tool valid and tracks ore ra
   tool.visible=player.tool!==5&&!fcamOn;
 }
 let actDemo=false;
+function updateToolBtn(){
+  const tb=$('toolbtn');if(!tb)return;
+  const cur=TOOLS[player.tool]||'None',nx=TOOLS[nextTool(1)]||'None';
+  const key=cur+'|'+nx;if(tb._k===key)return;tb._k=key;
+  tb.innerHTML='<b'+(cur.length>8?' class="lg"':'')+'>'+cur+'</b><small>Next: '+nx+'</small>';
+}
 function updateAct(){
+  updateToolBtn();
+  {const c=$('cross');if(c&&c._d&&performance.now()-driftT>250){c.style.transform='';c.style.opacity='';c._d=0;}}
   const a=$('act');if(!a||actDemo)return;const s=player.ship;
-  const t=s?(s.guns&&s.guns.length?'FIRE':s.drills&&s.drills.length?'DRILL':''):player.mode==='tseat'?'DRILL':['DRILL','WELD','CUT','PING','PAINT',''][player.tool];   // a ship fires its guns, else works its drills
+  const t=s?(s.guns&&s.guns.length?'FIRE':s.drills&&s.drills.length?'MINE':''):player.mode==='tseat'?'MINE':['MINE','BUILD','CUT','PING','PAINT',''][player.tool];   // a ship fires its guns, else works its drills
   if(a._t!==t){a._t=t;a.textContent=t;a.style.visibility=t?'':'hidden';}
 }
 function setBuildUI(){
@@ -2700,11 +2784,16 @@ function shipUpdate(g,dt){
   // rotation
   const alpha=clamp(((g.gyros>0?.2:.02)+.6*g.gyros)*20000/g.mass,.05,5),maxR=clamp(.3+.3*g.gyros,.3,1.6);   // a lone gyroscope turns a ship slowly; more (and bigger) ones swing it round
   const ks=coarse?.0034:.0024;
-  const tgt=[clamp(-look[1]*ks/dt,-maxR,maxR),clamp(-look[0]*ks/dt,-maxR,maxR),rollIn()*1.2];
+  let tgt;
+  if(camMode<=2&&player.damp){
+    const e=driftStep(g,_dB.copy(q).multiply(g.cq),look,ks);
+    tgt=[clamp(e[0]*DRIFT_K,-maxR,maxR),clamp(e[1]*DRIFT_K,-maxR,maxR),rollIn()*1.2];
+  }else{driftOff(g);tgt=[clamp(-look[1]*ks/dt,-maxR,maxR),clamp(-look[0]*ks/dt,-maxR,maxR),rollIn()*1.2];}
   for(let i=0;i<3;i++){
     if(player.damp)g.rate[i]+=clamp(tgt[i]-g.rate[i],-alpha*dt,alpha*dt);   // dampers on: the turn settles to what you are asking for
     else if(tgt[i])g.rate[i]=clamp(g.rate[i]+alpha*dt*clamp(tgt[i]/maxR,-1,1),-maxR,maxR);   // dampers off: you push the spin, and it keeps going when you let go
   }
+  if(g._A)g._A.multiply(_dA.setFromAxisAngle(AXZ,-g.rate[2]*dt));   // rolling carries the aim round with the ship
   const w=new V3().addScaledVector(g.right,g.rate[0]).addScaledVector(g.up,g.rate[1]).addScaledVector(g.fwd,g.rate[2]),wl=w.length();
   const comW=g.com.clone().applyQuaternion(q).add(g.group.position);
   if(wl>1e-5){_q1.setFromAxisAngle(w.clone().multiplyScalar(1/wl),wl*dt);q.multiply(_q1).normalize();}
@@ -2737,7 +2826,7 @@ function shipUpdate(g,dt){
     const dir=new V3(b.f[0],b.f[1],b.f[2]).applyQuaternion(q).normalize();
     let aimD=1e9;
     if(fireNow&&player.ship===g){   // the beam goes to the reticle whenever the drill points roughly that way
-      const cf=new V3(0,0,-1).applyQuaternion(camera.quaternion),ro=camera.position;
+      const cf=new V3(0,0,-1).applyQuaternion(aimQ()),ro=camera.position;
       let tt=1e9;
       for(const a of asteroids){const h=rayAst(a,ro,cf,120);if(h){const t2=astSurfT(a,ro,cf,h.t);if(t2<tt)tt=t2;}}
       const dh0=rayDep(ro,cf,120);if(dh0&&dh0.t<tt)tt=dh0.t;
@@ -2761,13 +2850,16 @@ function shipUpdate(g,dt){
   }
   for(const b of g.guns){   // guns fire along their barrels while the action button is held
     b.cd=(b.cd||0)-dt;
-    if(fireNow&&player.ship===g&&b.cd<=0){b.cd=.25/dmgEff(b);fireBolt(g,b,q);}
+    if(fireNow&&player.ship===g&&b.cd<=0){
+      if(shipAmmo(g)){b.cd=.25/dmgEff(b);fireBolt(g,b,q);}
+      else{b.cd=.5;if(!g._dry||g._dry<performance.now()-2500){g._dry=performance.now();toast('Out of ammo. Load iron into the ship\'s cargo.','bad');}}
+    }
   }
   drillOn=drilling;
   if(g.fuel<=0&&burn===0&&(mv.x||mv.y||mv.z)&&!g._warned){g._warned=true;toast('Out of hydrogen. '+(coarse?'Tap FUEL':'Press R')+' to melt ice from the hold or your pack.','bad');}
   if(g.fuel>0)g._warned=false;
   audioLevels(burn/Math.max(1,(g.T[0][1]+g.T[0][0]+g.T[1][0]+g.T[1][1]+g.T[2][0]+g.T[2][1])*1000)*2.4,drilling);
-  pilotCamera(g);
+  pilotCamera(g);driftReticle(g);
 }
 const IDQ=new Q(),_fu=new V3();
 const CAM_NAMES=['Cockpit view','Chase view','Over the nose','Overhead','Ship from port','Ship from starboard','Ship from below','Free look'];
@@ -3073,7 +3165,7 @@ function updateHUD(dt){
   refreshBar();
   const g=player.ship,sp=(g?g.vel:player.vel).length();
   setT(stEl.spd,sp.toFixed(1));
-  setT(stEl.mode,g?'Piloting '+g.name:'Tool: '+TOOLS[player.tool]);
+  setT(stEl.mode,g?'Piloting '+g.name:'');
   setT(stEl.damp,player.damp?'ON':'OFF');stEl.damp.className=player.damp?'on':'off';
   if(g){
     setT(stEl.fuel,Math.round(g.fuel)+' L');
@@ -3096,7 +3188,7 @@ function updateHUD(dt){
     aim();const pk=pickAll(14);
     aim();const dp=rayDep(_o,_d,14);
     if(dp&&(!pk||dp.t<pk.t+dp.d.sz*.6)){t1=(dp.d.a.surveyed?dp.d.a.name:'Unknown asteroid')+' · '+RNAME[RES[dp.d.k]]+' deposit';t2=Math.round(dp.d.stock)+' / '+dp.d.max+' · '+Math.round(dp.t)+' m';}
-    else if(pk&&pk.kind==='ast'){t1=astLabel(pk.a);if(!pk.a.surveyed)pr='Scan it with the Detector (TOOL) to survey it';t2=ORE_NAME[pk.a.data[pk.h.ix+pk.a.dims[0]*(pk.h.iy+pk.a.dims[1]*pk.h.iz)]]+' · '+Math.round(pk.t)+' m';}
+    else if(pk&&pk.kind==='ast'){t1=astLabel(pk.a);if(!pk.a.surveyed)pr='Scan it with the Ore Detector (TOOL) to survey it';t2=ORE_NAME[pk.a.data[pk.h.ix+pk.a.dims[0]*(pk.h.iy+pk.a.dims[1]*pk.h.iz)]]+' · '+Math.round(pk.t)+' m';}
     else if(pk&&pk.kind==='blk'){
       // names only for what you can use right now; the ship's own name once you have looked at it for two seconds
       const bd=BDEF[pk.h.b.type],pb=pk.h.b;
@@ -3134,11 +3226,21 @@ let last=0;
 /* ---- gun bolts: a short glowing streak that carries the ship's own speed and damages the first block it meets ---- */
 const BOLT_V=260,BOLT_LIFE=1.8,BOLT_DMG=1,bolts=[],_bp=new V3();
 const boltGeo=new THREE.BoxGeometry(.14,.14,1.8),boltMat=new THREE.MeshBasicMaterial({color:0xffd24a});
+const SHOTS_PER_IRON=20;   // one iron in the hold is 20 shots; the cargo panel shows the iron left
+function shipAmmo(g){
+  if(DEV)return true;
+  if(!(g._ammo>0)){
+    if(takeFromGrid(g,'fe',1)>=1)g._ammo=SHOTS_PER_IRON;else return false;
+  }
+  g._ammo--;
+  if(g._ammo===0&&gridHas(g,'fe')<=0)toast('Last of the iron loaded. Resupply soon.','bad');
+  return true;
+}
 function fireBolt(g,b,q){
   const f=new V3(b.f[0],b.f[1],b.f[2]),dir=f.clone().applyQuaternion(q).normalize();
   const muzzle=g.group.localToWorld(new V3(b.i*2+f.x*2.1,b.j*2+f.y*2.1,b.k*2+f.z*2.1));
   if(player.ship===g){   // the shot converges on whatever the reticle is on (or 250 m out), so guns mounted off to the side still land
-    const ro=camera.position,cf=new V3(0,0,-1).applyQuaternion(camera.quaternion);
+    const ro=camera.position,cf=new V3(0,0,-1).applyQuaternion(aimQ());
     let tt=250;
     for(const a of asteroids){const h=rayAst(a,ro,cf,400);if(h){const t2=astSurfT(a,ro,cf,h.t);if(t2<tt)tt=t2;}}
     const stepP=new V3();
@@ -3152,7 +3254,7 @@ function fireBolt(g,b,q){
       }
     }
     const v=ro.clone().addScaledVector(cf,tt).sub(muzzle).normalize();
-    if(v.dot(dir)>.9)dir.copy(v);
+    if(v.dot(dir)>.85)dir.copy(v);
   }
   const m=new THREE.Mesh(boltGeo,boltMat);scene.add(m);
   bolts.push({p:muzzle.clone(),v:dir.clone().multiplyScalar(BOLT_V).add(g.vel),life:BOLT_LIFE,src:g,mesh:m});
@@ -3648,11 +3750,16 @@ function pioFly(T,dt){
     if(T.fuel>0)T._warned=false;
     // turning
     const sp=Math.sqrt(SPIN[T.up.gyr-1]),alpha=1.0*sp*sp*ld,maxR=.6*sp*(.5+.5*ld),ks=coarse?.0034:.0024;
-    const tgt=[clamp(-look[1]*ks/dt,-maxR,maxR),clamp(-look[0]*ks/dt,-maxR,maxR),rollIn()*1.2];
+    let tgt;
+    if(player.damp){
+      const e=driftStep(T,_dB.copy(q).multiply(_dE.setFromAxisAngle(AXX,T.view===1?-.2:-.12)),look,ks);
+      tgt=[clamp(e[0]*DRIFT_K,-maxR,maxR),clamp(e[1]*DRIFT_K,-maxR,maxR),rollIn()*1.2];
+    }else{driftOff(T);tgt=[clamp(-look[1]*ks/dt,-maxR,maxR),clamp(-look[0]*ks/dt,-maxR,maxR),rollIn()*1.2];}
     for(let i=0;i<3;i++){
       if(player.damp)T.rate[i]+=clamp(tgt[i]-T.rate[i],-alpha*dt,alpha*dt);
       else if(tgt[i])T.rate[i]=clamp(T.rate[i]+alpha*dt*clamp(tgt[i]/maxR,-1,1),-maxR,maxR);
     }
+    if(T._A)T._A.multiply(_dA.setFromAxisAngle(AXZ,-T.rate[2]*dt));
     const w=_pf.set(T.rate[0],T.rate[1],-T.rate[2]),wl=w.length(),com=new V3(PIO_COM[0]*PIO_S,PIO_COM[1]*PIO_S,PIO_COM[2]*PIO_S);
     const comW=com.clone().applyQuaternion(q).add(G.position);
     if(wl>1e-5){_q1.setFromAxisAngle(w.multiplyScalar(1/wl),wl*dt);q.multiply(_q1).normalize();}
@@ -3671,7 +3778,7 @@ function pioFly(T,dt){
   let drilling=false;const fireNow=mFire||tb.fire;
   if(fireNow&&T.fuel>=0){
     const tip=G.localToWorld(new V3(0,2.6*PIO_S,-11.7*PIO_S)),dir=new V3(0,0,-1).applyQuaternion(q).normalize(),reach=11;
-    const cf=new V3(0,0,-1).applyQuaternion(camera.quaternion),ro=camera.position;let tt=1e9;
+    const cf=new V3(0,0,-1).applyQuaternion(aimQ()),ro=camera.position;let tt=1e9;
     for(const a of asteroids){const h=rayAst(a,ro,cf,120);if(h){const t2=astSurfT(a,ro,cf,h.t);if(t2<tt)tt=t2;}}
     const dh0=rayDep(ro,cf,120);if(dh0&&dh0.t<tt)tt=dh0.t;
     if(tt>=1e9)tt=Math.hypot(tip.x-ro.x,tip.y-ro.y,tip.z-ro.z)+reach;
@@ -3688,7 +3795,7 @@ function pioFly(T,dt){
   // the camera: the pilot's eye, or behind and above
   if(T.view===1){camera.position.copy(G.localToWorld(_pe.set(0,9*PIO_S,22*PIO_S)));camera.quaternion.copy(q).multiply(_q1.setFromAxisAngle(AXX,-.2));}
   else{camera.position.copy(G.localToWorld(_pe.set(0,6.75*PIO_S,-.55*PIO_S)));camera.quaternion.copy(q).multiply(_q1.setFromAxisAngle(AXX,-.12));}
-  player.pos.copy(G.localToWorld(_pe.set(0,6.75*PIO_S,-.55*PIO_S)));player.vel.copy(T.vel);
+  player.pos.copy(G.localToWorld(_pe.set(0,6.75*PIO_S,-.55*PIO_S)));player.vel.copy(T.vel);driftReticle(T);
 }
 function pioSave(){
   const T=tpShips.find(x=>x.main);if(!T)return;
@@ -5406,7 +5513,7 @@ const astLabel=a=>a.surveyed?a.name+' · '+a.comp:'Unknown asteroid';
 
 /* ---------- tutorial: a small checklist for a new game ---------- */
 const TUT=[
-  {t:'Scan an asteroid',d:'Take out the Detector (TOOL) and fly close to an asteroid to survey it.',done:()=>asteroids.some(a=>a.surveyed)},
+  {t:'Scan an asteroid',d:'Take out the Ore Detector (TOOL) and fly close to an asteroid to survey it.',done:()=>asteroids.some(a=>a.surveyed)},
   {t:'Drill ore by hand',d:'Switch to the hand Drill and mine ore deposits until you have:',need:{fe:10,si:10,pt:10,ice:10},src:'pack'},
   {t:'Board the PIONEER',d:'Walk back to the OUTPOST, climb the steps on the PIONEER’s port side, go in through the door and tap INTERACT at the pilot seat.',done:()=>!!(player.ship&&player.ship.kind==='pioneer')},
   {t:'Mine with the PIONEER',d:'Tap UNDOCK, fly to an asteroid and drill with the ship until its hold has mined:',need:{fe:50,si:50,pt:50,ice:50},src:'ship'},
@@ -5456,8 +5563,8 @@ const UIT=[
   {next:true,ui:'[data-hold=rl],[data-hold=rr]',t:'Roll arrows',d:'Hold either arrow to roll your view left or right, like tipping your head. Useful in space where there is no up.'},
   {next:true,demo:true,t:'Looking around',d:'Drag a finger across any area free of buttons to turn your view and aim. There is no button for it.'},
   {next:true,ui:'#dampbtn',t:'DAMP',d:'Dampers ON: you slow to a stop when you let go. OFF: you keep drifting. The Status window shows which one is active.'},
-  {next:true,cycle:true,ui:'#toolbtn,#act',t:'TOOL',d:'Each tap switches to the next tool. The big button beside it shows the tool you hold: DRILL, WELD (torch), CUT, PING (detector) and PAINT. Watch it change.'},
-  {next:true,show:true,ui:'#act',t:'Tool button',d:'Uses the current tool on whatever the crosshair points at. Hold it down to drill, weld or cut. Its name changes with the tool.'},
+  {next:true,cycle:true,ui:'#toolbtn,#act',t:'TOOL',d:'Each tap switches to the next tool. The TOOL button shows the tool you hold, with the next one in small letters below. The big button under it does the work: Drill / MINE, Welder / BUILD, Grinder / CUT, Ore Detector / PING or Spraycan / PAINT. Watch both change.'},
+  {next:true,show:true,ui:'#act',t:'Tool button',d:'Uses the current tool on whatever the crosshair points at. Hold it down to mine, build or cut. Its name changes with the tool.'},
   {next:true,ui:'#usebtn',t:'INTERACT',d:'Lights up when something is within about 3 m: tap it to sit in the pilot seat, leave it, or open a machine or storage.'},
   {next:true,ui:'[data-tap=cam]',t:'CAM',d:'Changes the camera view, such as flying your ship from behind.'},
   {next:true,ui:'[data-tap=lamp]',t:'LAMP',d:'Switches your lamp on and off.'},
@@ -5591,8 +5698,8 @@ function tutUI(st){   // User interface tour: dim the world, force every button 
   uiMock=!!(st&&st.mock);document.body.classList.toggle('mockship',uiMock);
   clearInterval(tutCyc);tutCyc=0;
   if(actDemo){actDemo=false;const a=$('act');if(a)a._t=null;updateAct();}
-  if(st&&st.show){const a=$('act');actDemo=true;if(a){if(!a.textContent||a.style.visibility==='hidden'){a.textContent='DRILL';a._t='DRILL';}a.style.visibility='';}}
-  if(st&&st.cycle){const a=$('act'),L=['DRILL','WELD','CUT','PING','PAINT'];let i=0;actDemo=true;
+  if(st&&st.show){const a=$('act');actDemo=true;if(a){if(!a.textContent||a.style.visibility==='hidden'){a.textContent='MINE';a._t='MINE';}a.style.visibility='';}}
+  if(st&&st.cycle){const a=$('act'),L=['MINE','BUILD','CUT','PING','PAINT'];let i=0;actDemo=true;
     const f=()=>{if(a){a.textContent=L[i%L.length];a.style.visibility='';a._t=L[i%L.length];}i++;};f();tutCyc=setInterval(f,2000);}
   for(const e of tutHL)e.classList.remove('uihl');tutHL=[];tutSel='';
   }
@@ -6065,7 +6172,7 @@ function boot(){
     addToGrid,gridHas,gridSpace,takeFromGrid,packUsed,packSpace,PACK_CAP,PACKIO,shipIO,spawnShip,interiorOf,bodyHit,bodyMove,cellAt,setTier,growCheck,doorTick,rideSync,seatWorld,nearestSeat,spawnStation,haveK,spend,upgradeBlock,gravR,qMax,tierOf,upCost,recalc,eco,price,PRICE0,ITEMS,loadItem,takeItem,whTotals,payDebt,tradeTick,BEACON,CARGO_CAP,panelSummary,openTerminal,closeTerminal,scanOre,setTool,setPage,addBlock,makeGrid,removeBlock,RECIPES,BDEF,BORDER,
     setDev:v=>{DEV=!!v;},platePaint,openPicker,openUpg,connGrid,surveyAst,revealBuried,tutState:()=>tut,startTut,renameGrid,dockPlan,toggleDock,pointSolid,shipHitsAst,enterShip,exitShip,inReach,gridsTouch,isCraft,dockCheck,dockTick,startXfer,moveTarget,PAD_RATE,BASE_RATE,xferState:()=>xfer,
     state:()=>({inGrav,page,termOpen,detRange,detSummary,paused,running}),
-    setFire:v=>{mFire=v;},setGrind:v=>{mGrind=v;},MP,mpHandle};
+    shipAmmo,tpShips,pioEnter,setFire:v=>{mFire=v;},setGrind:v=>{mGrind=v;},MP,mpHandle};
 }
 setInterval(()=>{if(running&&!paused)saveGame();},15000);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)saveGame();});
