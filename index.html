@@ -621,7 +621,7 @@ body.uitut #camrow .tb,body.uitut #edge .tb,body.uitut #rbar .tb{visibility:visi
 'use strict';
 /* =====================  Void Engineers  =====================
    Part A: renderer, sky, procedural voxel asteroids, particles */
-const GAME_VER='198';
+const GAME_VER='200';
 {const vl=document.getElementById('verlab');if(vl)vl.textContent='v'+GAME_VER;}
 /* no page zoom while playing: pinch, double-tap and ctrl+wheel are swallowed */
 (()=>{const no=e=>{e.preventDefault();};
@@ -1172,7 +1172,8 @@ const UPV=new V3(0,1,0);
 const GRAV_R=10;                       // field mesh reference radius (tier 1)
 /* ---- upgrade tiers: every upgradable block starts at tier 1 and can be raised in place ---- */
 const TIER_MAX=4;
-const GRAV_RT=[10,16,24,45];           // gravity field radius (m)
+const GRAV_RT=[10,20,50,100];          // gravity reach (m, straight line from the generator): 5, 10, 25, 50 blocks
+const GRAV_H=5;                        // gravity runs this many blocks up from any floor in reach
 const QTIER=[10,20,40,80],SPD=[1,1.5,2,3];   // refinery / assembler queue length and speed
 const STOR=[1,1.6,2.4,3.5],POW=[1,1.3,1.7,2.2],SPIN=[1,1.4,1.9,2.5];
 const C_GRAV=[{plate:5,motor:2,comp:2},{plate:10,motor:5,comp:5,ptI:3},{plate:16,motor:8,comp:8,ptI:6}];
@@ -1191,7 +1192,7 @@ const TIER_DEF={
   pad:{cost:C_PAD,fx:t=>'transfers '+PAD_RATE[t-1]+' units/s'},
   cargo:{cost:C_CARGO,fx:t=>'holds '+CARGO_CAP[t-1]+' units'},
   beacon:{cost:C_BCN,fx:t=>BEACON[t-1].cap+' units per trader \u00b7 every '+(BEACON[t-1].every/60).toFixed(1).replace('.0','')+' min \u00b7 '+Math.round(BEACON[t-1].fee*100)+'% fee'},
-  gravgen:{cost:C_GRAV,fx:t=>GRAV_RT[t-1]+' m field'},
+  gravgen:{cost:C_GRAV,fx:t=>'floor gravity within '+GRAV_RT[t-1]/2+' blocks'},
   refinery:{cost:C_MACH,fx:t=>'queue '+QTIER[t-1]+' \u00b7 '+SPD[t-1]+'\u00d7 speed'},
   assembler:{cost:C_MACH,fx:t=>'queue '+QTIER[t-1]+' \u00b7 '+SPD[t-1]+'\u00d7 speed'},
   tank:{cost:C_TANK,fx:t=>'+'+Math.round(1500*STOR[t-1])+' L'},
@@ -1233,7 +1234,7 @@ const BDEF={
   seat:{name:'Pilot Seat',cost:{fe:15,si:12},mass:400,part:true,spin:true,spec:'sit to fly \u00b7 SPIN sets the ship\u2019s forward \u00b7 0.4 t'},
   tank:{name:'Hydrogen Tank',cost:{fe:12,ice:6},mass:2500,spec:'+1500 L · 2.5 t'},
   drill:{name:'Laser Drill',cost:{fe:14,si:8},mass:2500,spec:'laser \u00b7 9 m reach \u00b7 2.5 t'},
-  gravgen:{name:'Gravity Generator',cost:{fe:40,si:25,pt:8},mass:6000,panel:true,spec:'10 m field \u00b7 upgradable \u00b7 6.0 t'},
+  gravgen:{name:'Gravity Generator',cost:{fe:40,si:25,pt:8},mass:6000,panel:true,spec:'gravity over floors within 5 blocks \u00b7 upgradable \u00b7 6.0 t'},
   refinery:{name:'Refinery',cost:{fe:60,si:30},mass:5000,machine:true,spin:true,spec:'ore \u2192 ingots \u00b7 1\u00d72 (1\u00d73 at tier 2) \u00b7 5.0 t'},
   assembler:{name:'Assembler',cost:{fe:60,board:3,comp:1},mass:4000,machine:true,spin:true,spec:'ingots \u2192 components \u00b7 1\u00d72 (1\u00d73 at tier 2) \u00b7 4.0 t'},
   lgyro:{name:'Large Gyroscope',cost:{plate:6,motor:4,comp:4,ptI:2},mass:7000,spec:'5\u00d7 turn rate \u00b7 7.0 t'},
@@ -2399,10 +2400,10 @@ function refreshBar(){
   const sig=type+'|'+orient+'|'+spin+'|'+inGrav+'|'+DEV+'|'+Object.keys(d.cost).map(haveK).join(',')+'|'+player.build;
   if(sig===lastSig)return;lastSig=sig;
   document.body.classList.toggle('shaped',!!(d.shape||d.spin));
-  const pk=$('pick');pk.innerHTML=icon(type);pk.classList.toggle('na',!canStart(type)||(isStn(type)&&!inGrav));
+  const pk=$('pick');pk.innerHTML=icon(type);pk.classList.toggle('na',!canStart(type)||(false));
   let h='<span class="nm">'+d.name+'</span>';
   for(const k in d.cost)h+='<span class="cost'+(DEV||haveK(k)>=d.cost[k]?'':' no')+'" style="--c:'+RCOL[k]+'"><i></i>'+d.cost[k]+' <u>'+SHORT[k]+'</u></span>';
-  if(isStn(type)&&!inGrav)h+='<span class="cost no">needs gravity field</span>';
+  if(false)h+='<span class="cost no">needs gravity field</span>';
   $('binfo').innerHTML=h;
 }
 const TOOLS=['Drill','Welder','Grinder','Ore Detector','Spraycan','None'];
@@ -2665,7 +2666,7 @@ function buildUpdate(dt){
         if(astAt(a,x,y,z)||astAt(a,x+.9,y,z)||astAt(a,x-.9,y,z)||astAt(a,x,y+.9,z)||astAt(a,x,y-.9,z)||astAt(a,x,y,z+.9)||astAt(a,x,y,z-.9))valid=false;}
     }
   }
-  if(isStn(type)&&!inGrav)valid=false;
+  if(false)valid=false;
   if(type==='repair'){let nearPad=false;if(parent&&cell)for(let di=-1;di<=1&&!nearPad;di++)for(let dk=-1;dk<=1;dk++){if(!di&&!dk)continue;const o=cellAt(parent,kf(cell[0]+di,cell[1],cell[2]+dk));if(o&&(o.type==='pad'||(o.b&&o.b.type==='pad'))){nearPad=true;break;}}if(!nearPad)valid=false;}
   if(type==='lightbar'&&!(parent&&parent.station))valid=false;   // Light Bar: stations only
   if(type==='light'&&parent&&parent.station)valid=false;   // Light: ships only
@@ -2677,7 +2678,7 @@ function buildUpdate(dt){
   if(fire&&placeCD<=0){
     placeCD=.28;
     if(!afford)toast('Need '+SHORT[Object.keys(def.cost)[0]]+' to start a '+def.name,'bad');
-    else if(!valid)toast(isStn(type)&&!inGrav?'Station blocks need a gravity field':type==='repair'?'The Repair Arm mounts right beside a Landing Pad':type==='lightbar'?'Light Bars go on stations. Use a Light on ships':type==='light'&&parent&&parent.station?'Lights are for ships. Use a Light Bar on stations':'Blocked','bad');
+    else if(!valid)toast(false?'Station blocks need a gravity field':type==='repair'?'The Repair Arm mounts right beside a Landing Pad':type==='lightbar'?'Light Bars go on stations. Use a Light on ships':type==='light'&&parent&&parent.station?'Lights are for ships. Use a Light Bar on stations':'Blocked','bad');
     else{
       let nb=null,ng=parent;
       if(newGrid){
@@ -3014,41 +3015,11 @@ function spawnStation(){
     if(TUTW==='menus'){for(const e of [['refinery',-5,1,-5],['assembler',-5,1,-2],['beacon',-4,1,-1]])try{addBlock(g,e[1],e[2],e[3],e[0],[0,1,0]);}catch(err){console.error(err);}}
     g.fuel=g.fuelCap;return;
   }
-  /* A cramped mining base. The top is one clear landing deck (pad at 1,0,0) with a stair well going down.
-     Below: a manufacturing floor (machine hall 6 x 4 with six slots and the Terminal, and a utility bay with generator and storage)
-     and a farming floor (6 x 4, the Algae Farms come later). Floors are 3 blocks high. Cells are 2 m; y 0 is the deck. */
-  const H=(i,j,k,t,f,sp,tier)=>{try{return addBlock(g,i,j,k,t||'hull',f||null,sp||0,tier);}catch(err){console.error(err);return null;}};
-  const box=(i0,i1,j0,j1,k0,k1,fn)=>{for(let i=i0;i<=i1;i++)for(let j=j0;j<=j1;j++)for(let k=k0;k<=k1;k++)fn(i,j,k);};
-  // landing deck, 13 x 13, with the stair well left open (3 cells at i=2, k=-1..0)
-  box(-5,7,0,0,-5,7,(i,j,k)=>{if(i===2&&(k===-1||k===0||k===1))return;H(i,j,k,i===1&&k===0?'pad':'hull',i===1&&k===0?[0,1,0]:null);});
-  const skip=new Set();const sk=(i,j,k)=>skip.add(i+','+j+','+k);
-  sk(3,-3,0);sk(3,-2,0);sk(-4,-3,0);sk(-4,-2,0);   // door openings (door block is 2 tall)
-  sk(-3,-4,-1);sk(-3,-4,0);sk(-3,-4,1);   // the opening in the hall floor above the second stair
-  const W=(i,j,k)=>{if(!skip.has(i+','+j+','+k))H(i,j,k);};
-  // machine hall: interior i -3..2, k -2..1 on j -3..-1 (floor slab j -4); utility bay interior i 4..6
-  box(-4,7,-4,-4,-3,2,W);
-  box(-4,7,-3,-1,-3,2,(i,j,k)=>{const inHall=i>=-3&&i<=2&&k>=-2&&k<=1,inBay=i>=4&&i<=6&&k>=-2&&k<=1;if(inHall||inBay)return;W(i,j,k);});
-  // farm floor: interior i -3..2, k -2..1 on j -7..-5 (floor slab j -8; its ceiling is the hall floor)
-  box(-4,3,-8,-8,-3,2,W);
-  box(-4,3,-7,-5,-3,2,(i,j,k)=>{if(i>=-3&&i<=2&&k>=-2&&k<=1)return;W(i,j,k);});
-  // stair 1: deck down into the hall along i=2, rising toward +k: steps at k -2..1 with j -3..0 (the last one sits in the deck row)
-  for(let n=0;n<4;n++)H(2,-3+n,-2+n,'steps',[0,1,0],STEP_SPIN);
-  // stair 2: hall floor down to the farm floor along i=-3
-  for(let n=0;n<4;n++)H(-3,-7+n,-2+n,'steps',[0,1,0],STEP_SPIN);
-  // fit-out of the hall: Terminal at the end wall, a Refinery in one slot, a slot marker plate in the other five
-  H(0,-3,1,'terminal',[0,1,0],2);
-  H(-3,-3,-2,'refinery',[0,1,0]);
-  for(const e of [[-2,-3,-2],[-1,-3,-2],[-3,-3,1],[-2,-3,1],[-1,-3,1]])H(e[0],e[1],e[2],'plate',[0,1,0]);
-  // utility bay: generator, storage container, and the gravity generator low on the farm floor so its field reaches the whole base
-  H(4,-3,-2,'powergen',[0,1,0]);H(6,-3,-2,'cargo');
-  H(0,-7,-2,'gravgen',[0,1,0],0,3);
-  // a door between hall and bay, a door out onto the beacon platform, lamps
-  H(3,-3,0,'door',[1,0,0]);
-  H(-4,-3,0,'door',[-1,0,0]);
-  // the lower outside platform on the west side with the Trade Beacon
-  box(-7,-5,-4,-4,-1,1,(i,j,k)=>H(i,j,k));
-  H(-6,-3,0,'beacon',[0,1,0]);
-  for(const e of [[-1,-1,-1],[1,-1,0],[5,-1,-1],[-1,-5,-1],[1,-5,0]])H(e[0],e[1],e[2],'lightbar',[0,1,0]);
+  /* Mike's cramped mining base, as laid out in the game's own export: a clear deck on top with the pad at (4,1,-3), airlocks, the stairs outside
+     so the rooms always keep their air, the manufacturing hall (Terminal, Refinery, slot markers), a utility bay and the farm floor.
+     Each row: type, i, j, k, face, spin, tier. Cells are 2 m; the deck row is j 0. */
+  const PLAN=[["hull",-5,0,-5,0,0,1],["hull",-5,0,-4,0,0,1],["hull",-5,0,-3,0,0,1],["hull",-5,0,-2,0,0,1],["hull",-5,0,-1,0,0,1],["hull",-5,0,0,0,0,1],["hull",-5,0,1,0,0,1],["hull",-5,0,2,0,0,1],["hull",-5,0,3,0,0,1],["hull",-5,0,4,0,0,1],["hull",-5,0,5,0,0,1],["hull",-5,0,6,0,0,1],["hull",-5,0,7,0,0,1],["hull",-4,0,-5,0,0,1],["hull",-4,0,-4,0,0,1],["hull",-4,0,-3,0,0,1],["hull",-4,0,-2,0,0,1],["hull",-4,0,-1,0,0,1],["hull",-4,0,0,0,0,1],["hull",-4,0,1,0,0,1],["hull",-4,0,2,0,0,1],["hull",-4,0,3,0,0,1],["hull",-4,0,4,0,0,1],["hull",-4,0,5,0,0,1],["hull",-4,0,6,0,0,1],["hull",-4,0,7,0,0,1],["hull",-3,0,-5,0,0,1],["hull",-3,0,-4,0,0,1],["hull",-3,0,-3,0,0,1],["hull",-3,0,-2,0,0,1],["hull",-3,0,-1,0,0,1],["hull",-3,0,0,0,0,1],["hull",-3,0,1,0,0,1],["hull",-3,0,2,0,0,1],["hull",-3,0,3,0,0,1],["hull",-3,0,4,0,0,1],["hull",-3,0,5,0,0,1],["hull",-3,0,6,0,0,1],["hull",-3,0,7,0,0,1],["hull",-2,0,-5,0,0,1],["hull",-2,0,-4,0,0,1],["hull",-2,0,-3,0,0,1],["hull",-2,0,-2,0,0,1],["hull",-2,0,-1,0,0,1],["hull",-2,0,0,0,0,1],["hull",-2,0,1,0,0,1],["hull",-2,0,2,0,0,1],["hull",-2,0,3,0,0,1],["hull",-2,0,4,0,0,1],["hull",-2,0,5,0,0,1],["hull",-2,0,6,0,0,1],["hull",-2,0,7,0,0,1],["hull",-1,0,-5,0,0,1],["hull",-1,0,-4,0,0,1],["hull",-1,0,-3,0,0,1],["hull",-1,0,-2,0,0,1],["hull",-1,0,-1,0,0,1],["hull",-1,0,0,0,0,1],["hull",-1,0,1,0,0,1],["hull",-1,0,2,0,0,1],["hull",-1,0,3,0,0,1],["hull",-1,0,4,0,0,1],["hull",-1,0,5,0,0,1],["hull",-1,0,6,0,0,1],["hull",-1,0,7,0,0,1],["hull",0,0,-5,0,0,1],["hull",0,0,-4,0,0,1],["hull",0,0,-3,0,0,1],["hull",0,0,-2,0,0,1],["hull",0,0,2,0,0,1],["hull",0,0,3,0,0,1],["hull",0,0,4,0,0,1],["hull",0,0,5,0,0,1],["hull",0,0,6,0,0,1],["hull",0,0,7,0,0,1],["hull",1,0,-5,0,0,1],["hull",1,0,-4,0,0,1],["hull",1,0,-3,0,0,1],["hull",1,0,-2,0,0,1],["hull",1,0,2,0,0,1],["hull",1,0,3,0,0,1],["hull",1,0,4,0,0,1],["hull",1,0,5,0,0,1],["hull",1,0,6,0,0,1],["hull",1,0,7,0,0,1],["hull",2,0,-5,0,0,1],["hull",2,0,-4,0,0,1],["hull",2,0,-3,0,0,1],["hull",2,0,-2,0,0,1],["hull",2,0,2,0,0,1],["hull",2,0,3,0,0,1],["hull",2,0,4,0,0,1],["hull",2,0,5,0,0,1],["hull",2,0,7,0,0,1],["hull",3,0,-5,0,0,1],["hull",3,0,-4,0,0,1],["hull",3,0,-3,0,0,1],["hull",3,0,-2,0,0,1],["hull",3,0,-1,0,0,1],["hull",3,0,0,0,0,1],["hull",3,0,1,0,0,1],["hull",3,0,2,0,0,1],["hull",3,0,3,0,0,1],["hull",3,0,4,0,0,1],["hull",3,0,5,0,0,1],["hull",3,0,7,0,0,1],["hull",4,0,-5,0,0,1],["hull",4,0,-4,0,0,1],["hull",4,0,-3,0,0,1],["hull",4,0,-2,0,0,1],["hull",4,0,-1,0,0,1],["hull",4,0,0,0,0,1],["hull",4,0,1,0,0,1],["hull",4,0,2,0,0,1],["hull",4,0,3,0,0,1],["hull",4,0,4,0,0,1],["hull",4,0,5,0,0,1],["hull",4,0,7,0,0,1],["hull",5,0,-5,0,0,1],["hull",5,0,-4,0,0,1],["hull",5,0,-3,0,0,1],["hull",5,0,-2,0,0,1],["hull",5,0,-1,0,0,1],["hull",5,0,0,0,0,1],["hull",5,0,1,0,0,1],["hull",5,0,2,0,0,1],["hull",5,0,3,0,0,1],["hull",5,0,4,0,0,1],["hull",5,0,5,0,0,1],["hull",5,0,7,0,0,1],["hull",6,0,-5,0,0,1],["hull",6,0,-4,0,0,1],["hull",6,0,-3,0,0,1],["hull",6,0,-2,0,0,1],["hull",6,0,-1,0,0,1],["hull",6,0,0,0,0,1],["hull",6,0,1,0,0,1],["hull",6,0,2,0,0,1],["hull",6,0,3,0,0,1],["hull",6,0,4,0,0,1],["hull",6,0,5,0,0,1],["hull",6,0,6,0,0,1],["hull",6,0,7,0,0,1],["hull",7,0,-5,0,0,1],["hull",7,0,-4,0,0,1],["hull",7,0,-3,0,0,1],["hull",7,0,-2,0,0,1],["hull",7,0,-1,0,0,1],["hull",7,0,0,0,0,1],["hull",7,0,1,0,0,1],["hull",7,0,2,0,0,1],["hull",7,0,3,0,0,1],["hull",7,0,4,0,0,1],["hull",7,0,5,0,0,1],["hull",7,0,6,0,0,1],["hull",7,0,7,0,0,1],["hull",-4,-4,-3,0,0,1],["hull",-4,-4,-2,0,0,1],["hull",-4,-4,-1,0,0,1],["hull",-4,-4,0,0,0,1],["hull",-4,-4,1,0,0,1],["hull",-4,-4,2,0,0,1],["hull",-3,-4,-3,0,0,1],["hull",-3,-4,-2,0,0,1],["hull",-2,-4,-3,0,0,1],["hull",-2,-4,-2,0,0,1],["hull",-2,-4,-1,0,0,1],["hull",-2,-4,0,0,0,1],["hull",-2,-4,1,0,0,1],["hull",-2,-4,2,0,0,1],["hull",-1,-4,-3,0,0,1],["hull",-1,-4,-1,0,0,1],["hull",-1,-4,0,0,0,1],["hull",-1,-4,1,0,0,1],["hull",-1,-4,2,0,0,1],["hull",0,-4,-3,0,0,1],["hull",0,-4,-1,0,0,1],["hull",0,-4,0,0,0,1],["hull",0,-4,1,0,0,1],["hull",0,-4,2,0,0,1],["hull",1,-4,-3,0,0,1],["hull",1,-4,-1,0,0,1],["hull",1,-4,0,0,0,1],["hull",1,-4,1,0,0,1],["hull",1,-4,2,0,0,1],["hull",2,-4,-3,0,0,1],["hull",2,-4,-1,0,0,1],["hull",2,-4,0,0,0,1],["hull",2,-4,1,0,0,1],["hull",2,-4,2,0,0,1],["hull",3,-4,-3,0,0,1],["hull",3,-4,-2,0,0,1],["hull",3,-4,-1,0,0,1],["hull",3,-4,0,0,0,1],["hull",3,-4,1,0,0,1],["hull",3,-4,2,0,0,1],["hull",4,-4,-3,0,0,1],["hull",4,-4,-2,0,0,1],["hull",4,-4,-1,0,0,1],["hull",4,-4,0,0,0,1],["hull",4,-4,1,0,0,1],["hull",4,-4,2,0,0,1],["hull",5,-4,-3,0,0,1],["hull",5,-4,-2,0,0,1],["hull",5,-4,-1,0,0,1],["hull",5,-4,0,0,0,1],["hull",5,-4,1,0,0,1],["hull",5,-4,2,0,0,1],["hull",6,-4,-3,0,0,1],["hull",6,-4,-2,0,0,1],["hull",6,-4,-1,0,0,1],["hull",6,-4,0,0,0,1],["hull",6,-4,1,0,0,1],["hull",6,-4,2,0,0,1],["hull",7,-4,-3,0,0,1],["hull",7,-4,-2,0,0,1],["hull",7,-4,-1,0,0,1],["hull",7,-4,0,0,0,1],["hull",7,-4,1,0,0,1],["hull",7,-4,2,0,0,1],["hull",-4,-3,-3,0,0,1],["hull",-4,-3,-2,0,0,1],["hull",-4,-3,-1,0,0,1],["hull",-4,-3,1,0,0,1],["hull",-4,-3,2,0,0,1],["hull",-4,-2,-3,0,0,1],["hull",-4,-2,-2,0,0,1],["hull",-4,-2,-1,0,0,1],["hull",-4,-2,1,0,0,1],["hull",-4,-2,2,0,0,1],["hull",-4,-1,-3,0,0,1],["hull",-4,-1,-2,0,0,1],["hull",-4,-1,-1,0,0,1],["hull",-4,-1,1,0,0,1],["hull",-4,-1,2,0,0,1],["hull",-3,-3,-3,0,0,1],["hull",-3,-3,2,0,0,1],["hull",-3,-2,-3,0,0,1],["hull",-3,-2,2,0,0,1],["hull",-3,-1,-3,0,0,1],["hull",-3,-1,2,0,0,1],["hull",-2,-3,-3,0,0,1],["hull",-2,-3,2,0,0,1],["hull",-2,-2,-3,0,0,1],["hull",-2,-2,2,0,0,1],["hull",-2,-1,-3,0,0,1],["hull",-2,-1,2,0,0,1],["hull",-1,-3,-3,0,0,1],["hull",-1,-3,2,0,0,1],["hull",-1,-2,-3,0,0,1],["hull",-1,-2,2,0,0,1],["hull",-1,-1,-3,0,0,1],["hull",-1,-1,2,0,0,1],["hull",0,-3,-3,0,0,1],["hull",0,-3,2,0,0,1],["hull",0,-2,-3,0,0,1],["hull",0,-2,2,0,0,1],["hull",0,-1,-3,0,0,1],["hull",0,-1,2,0,0,1],["hull",1,-3,-3,0,0,1],["hull",1,-3,2,0,0,1],["hull",1,-2,-3,0,0,1],["hull",1,-2,2,0,0,1],["hull",1,-1,-3,0,0,1],["hull",1,-1,2,0,0,1],["hull",2,-3,-3,0,0,1],["hull",2,-3,2,0,0,1],["hull",2,-2,-3,0,0,1],["hull",2,-2,2,0,0,1],["hull",2,-1,-3,0,0,1],["hull",2,-1,2,0,0,1],["hull",3,-3,-3,0,0,1],["hull",3,-3,-2,0,0,1],["hull",3,-3,1,0,0,1],["hull",3,-3,2,0,0,1],["hull",3,-2,-3,0,0,1],["hull",3,-2,-2,0,0,1],["hull",3,-2,-1,0,0,1],["hull",3,-2,1,0,0,1],["hull",3,-2,2,0,0,1],["hull",3,-1,-3,0,0,1],["hull",3,-1,-2,0,0,1],["hull",3,-1,-1,0,0,1],["hull",3,-1,0,0,0,1],["hull",3,-1,1,0,0,1],["hull",3,-1,2,0,0,1],["hull",4,-3,-3,0,0,1],["hull",4,-3,2,0,0,1],["hull",4,-2,-3,0,0,1],["hull",4,-2,2,0,0,1],["hull",4,-1,-3,0,0,1],["hull",4,-1,2,0,0,1],["hull",5,-3,-3,0,0,1],["hull",5,-3,2,0,0,1],["hull",5,-2,-3,0,0,1],["hull",5,-2,2,0,0,1],["hull",5,-1,-3,0,0,1],["hull",5,-1,2,0,0,1],["hull",6,-3,-3,0,0,1],["hull",6,-2,-3,0,0,1],["hull",6,-1,-3,0,0,1],["hull",6,-1,2,0,0,1],["hull",7,-3,-3,0,0,1],["hull",7,-3,-2,0,0,1],["hull",7,-3,-1,0,0,1],["hull",7,-3,0,0,0,1],["hull",7,-3,1,0,0,1],["hull",7,-3,2,0,0,1],["hull",7,-2,-3,0,0,1],["hull",7,-2,-2,0,0,1],["hull",7,-2,-1,0,0,1],["hull",7,-2,0,0,0,1],["hull",7,-2,1,0,0,1],["hull",7,-2,2,0,0,1],["hull",7,-1,-3,0,0,1],["hull",7,-1,-2,0,0,1],["hull",7,-1,-1,0,0,1],["hull",7,-1,0,0,0,1],["hull",7,-1,1,0,0,1],["hull",7,-1,2,0,0,1],["hull",-4,-8,-3,0,0,1],["hull",-4,-8,-2,0,0,1],["hull",-4,-8,-1,0,0,1],["hull",-4,-8,0,0,0,1],["hull",-4,-8,1,0,0,1],["hull",-4,-8,2,0,0,1],["hull",-3,-8,-3,0,0,1],["hull",-3,-8,-2,0,0,1],["hull",-3,-8,-1,0,0,1],["hull",-3,-8,0,0,0,1],["hull",-3,-8,1,0,0,1],["hull",-3,-8,2,0,0,1],["hull",-2,-8,-3,0,0,1],["hull",-2,-8,-2,0,0,1],["hull",-2,-8,-1,0,0,1],["hull",-2,-8,0,0,0,1],["hull",-2,-8,1,0,0,1],["hull",-2,-8,2,0,0,1],["hull",-1,-8,-3,0,0,1],["hull",-1,-8,-2,0,0,1],["hull",-1,-8,-1,0,0,1],["hull",-1,-8,0,0,0,1],["hull",-1,-8,1,0,0,1],["hull",-1,-8,2,0,0,1],["hull",0,-8,-3,0,0,1],["hull",0,-8,-2,0,0,1],["hull",0,-8,-1,0,0,1],["hull",0,-8,0,0,0,1],["hull",0,-8,1,0,0,1],["hull",0,-8,2,0,0,1],["hull",1,-8,-3,0,0,1],["hull",1,-8,-2,0,0,1],["hull",1,-8,-1,0,0,1],["hull",1,-8,0,0,0,1],["hull",1,-8,1,0,0,1],["hull",1,-8,2,0,0,1],["hull",2,-8,-3,0,0,1],["hull",2,-8,-2,0,0,1],["hull",2,-8,-1,0,0,1],["hull",2,-8,0,0,0,1],["hull",2,-8,1,0,0,1],["hull",2,-8,2,0,0,1],["hull",3,-8,-3,0,0,1],["hull",3,-8,-2,0,0,1],["hull",3,-8,-1,0,0,1],["hull",3,-8,0,0,0,1],["hull",3,-8,1,0,0,1],["hull",3,-8,2,0,0,1],["hull",-4,-7,-3,0,0,1],["hull",-4,-7,-2,0,0,1],["hull",-4,-7,-1,0,0,1],["hull",-4,-7,0,0,0,1],["hull",-4,-7,1,0,0,1],["hull",-4,-7,2,0,0,1],["hull",-4,-6,-3,0,0,1],["hull",-4,-6,-2,0,0,1],["hull",-4,-6,-1,0,0,1],["hull",-4,-6,0,0,0,1],["hull",-4,-6,1,0,0,1],["hull",-4,-6,2,0,0,1],["hull",-4,-5,-3,0,0,1],["hull",-4,-5,-2,0,0,1],["hull",-4,-5,-1,0,0,1],["hull",-4,-5,0,0,0,1],["hull",-4,-5,1,0,0,1],["hull",-4,-5,2,0,0,1],["hull",-3,-7,-3,0,0,1],["hull",-3,-7,2,0,0,1],["hull",-3,-6,-3,0,0,1],["hull",-3,-6,2,0,0,1],["hull",-3,-5,-3,0,0,1],["hull",-3,-5,2,0,0,1],["hull",-2,-7,-3,0,0,1],["hull",-2,-7,2,0,0,1],["hull",-2,-6,-3,0,0,1],["hull",-2,-6,2,0,0,1],["hull",-2,-5,-3,0,0,1],["hull",-2,-5,2,0,0,1],["hull",-1,-7,-3,0,0,1],["hull",-1,-7,2,0,0,1],["hull",-1,-6,-3,0,0,1],["hull",-1,-6,2,0,0,1],["hull",-1,-5,-3,0,0,1],["hull",-1,-5,2,0,0,1],["hull",0,-7,-3,0,0,1],["hull",0,-7,2,0,0,1],["hull",0,-6,-3,0,0,1],["hull",0,-6,2,0,0,1],["hull",0,-5,-3,0,0,1],["hull",0,-5,2,0,0,1],["hull",1,-7,-3,0,0,1],["hull",1,-7,2,0,0,1],["hull",1,-6,-3,0,0,1],["hull",1,-6,2,0,0,1],["hull",1,-5,-3,0,0,1],["hull",1,-5,2,0,0,1],["hull",2,-7,-3,0,0,1],["hull",2,-7,2,0,0,1],["hull",2,-6,-3,0,0,1],["hull",2,-6,2,0,0,1],["hull",2,-5,-3,0,0,1],["hull",2,-5,2,0,0,1],["hull",3,-7,-3,0,0,1],["hull",3,-7,2,0,0,1],["hull",3,-6,-3,0,0,1],["hull",3,-6,2,0,0,1],["hull",3,-5,-3,0,0,1],["hull",3,-5,2,0,0,1],["terminal",0,-3,1,[0,1,0],2,1],["refinery",-3,-3,-2,[0,1,0],0,1],["plate",-2,-3,-2,[0,1,0],0,1],["plate",-2,-3,1,[0,1,0],0,1],["plate",-1,-3,1,[0,1,0],0,1],["powergen",4,-3,-2,[0,1,0],0,2],["cargo",6,-3,-2,0,0,1],["hull",-7,-4,-1,0,0,1],["hull",-7,-4,0,0,0,1],["hull",-7,-4,1,0,0,1],["hull",-6,-4,-1,0,0,1],["hull",-6,-4,0,0,0,1],["hull",-6,-4,1,0,0,1],["hull",-5,-4,-1,0,0,1],["hull",-5,-4,0,0,0,1],["hull",-5,-4,1,0,0,1],["lightbar",-2,-1,-1,[0,-1,0],0,1],["lightbar",1,-1,1,[0,-1,0],0,1],["hull",3,-3,-1,[0,1,0],0,1],["door",3,-3,0,[0,1,0],1,1],["door",-4,-3,0,[0,1,0],1,1],["lightbar",0,-5,0,[0,-1,0],0,1],["lightbar",-2,-5,0,[0,-1,0],0,1],["steps",1,-6,-2,[0,1,0],2,1],["steps",0,-5,-2,[0,1,0],2,1],["steps",-1,-4,-2,[0,1,0],2,1],["plate",-3,-4,0,[0,1,0],0,1],["plate",-3,-4,-1,[0,1,0],0,1],["hull",-3,-4,2,[0,1,0],0,1],["plate",-3,-4,1,[0,1,0],0,1],["plate",-3,-3,1,[0,1,0],0,1],["hull",-1,-5,-2,[0,1,0],0,1],["hull",0,-6,-2,[0,1,0],0,1],["steps",2,-7,-2,[0,1,0],2,1],["hull",1,-7,-2,[0,1,0],0,1],["hull",0,-7,-2,[0,1,0],0,1],["gravgen",-3,-7,-2,[0,1,0],0,3],["hull",4,-5,2,[0,1,0],0,1],["hull",4,-6,2,[0,1,0],0,1],["hull",4,-7,2,[0,1,0],0,1],["hull",4,-8,2,[0,1,0],0,1],["hull",4,-8,1,[0,1,0],0,1],["hull",4,-5,-3,[0,1,0],0,1],["hull",4,-6,-3,[0,1,0],0,1],["hull",4,-7,-3,[0,1,0],0,1],["hull",4,-8,-3,[0,1,0],0,1],["hull",4,-8,-2,[0,1,0],0,1],["hull",4,-8,-1,[0,1,0],0,1],["hull",4,-8,0,[0,1,0],0,1],["hull",4,-7,-2,[0,1,0],0,1],["hull",4,-6,-2,[0,1,0],0,1],["hull",4,-5,-2,[0,1,0],0,1],["hull",4,-7,-1,[0,1,0],0,1],["hull",4,-6,-1,[0,1,0],0,1],["hull",4,-7,0,[0,-1,0],0,1],["hull",4,-7,1,[0,-1,0],0,1],["hull",4,-6,1,[0,-1,0],0,1],["hull",4,-5,1,[0,-1,0],0,1],["hull",4,-5,-1,[0,-1,0],0,1],["hull",4,-5,0,[0,-1,0],0,1],["hull",4,-6,0,[0,-1,0],0,1],["hull",2,0,1,[0,-1,0],0,1],["hull",2,0,0,[0,-1,0],0,1],["hull",2,0,-1,[0,-1,0],0,1],["hull",1,0,-1,[0,-1,0],0,1],["hull",0,0,-1,[0,-1,0],0,1],["hull",1,0,0,[0,-1,0],0,1],["hull",1,0,1,[0,-1,0],0,1],["hull",0,0,0,[0,-1,0],0,1],["hull",0,0,1,[0,-1,0],0,1],["hull",6,-4,3,[0,-1,0],0,1],["hull",5,-4,3,[0,-1,0],0,1],["hull",7,-4,3,[0,-1,0],0,1],["hull",2,-1,6,[0,-1,0],0,1],["hull",2,-2,6,[0,-1,0],0,1],["hull",3,-2,6,[0,-1,0],0,1],["hull",3,-3,6,[0,-1,0],0,1],["hull",4,-3,6,[0,-1,0],0,1],["hull",4,-4,6,[0,-1,0],0,1],["hull",5,-4,6,[0,-1,0],0,1],["steps",5,-3,6,[1,0,0],0,1],["steps",4,-2,6,[1,0,0],0,1],["steps",3,-1,6,[1,0,0],0,1],["steps",2,0,6,[1,0,0],0,1],["hull",5,-4,4,[0,0,1],0,1],["hull",6,-4,4,[0,0,1],0,1],["hull",7,-4,4,[1,0,0],0,1],["hull",5,-4,5,[0,0,1],0,1],["hull",6,-4,5,[0,0,1],0,1],["hull",7,-4,5,[0,0,1],0,1],["hull",6,-4,6,[0,0,1],0,1],["hull",7,-4,6,[1,0,0],0,1],["plate",5,-3,5,[-1,0,0],0,1],["plate",5,-3,4,[-1,0,0],0,1],["plate",5,-3,3,[-1,0,0],0,1],["plate",6,-3,6,[0,0,1],0,1],["plate",7,-3,6,[0,0,1],0,1],["plate",7,-3,5,[1,0,0],0,1],["plate",7,-3,4,[1,0,0],0,1],["plate",7,-3,3,[1,0,0],0,1],["plate",7,-3,6,[1,0,0],0,1],["plate",5,-3,7,[0,0,-1],0,1],["plate",4,-2,7,[0,0,-1],0,1],["plate",3,-1,7,[0,0,-1],0,1],["plate",4,-1,6,[0,0,1],0,1],["plate",5,-2,6,[0,0,1],0,1],["door",6,-3,2,[0,1,0],0,1],["door",-6,-3,0,[0,1,0],1,1],["hull",-5,-3,-1,[0,0,-1],0,1],["hull",-5,-2,-1,[0,0,-1],0,1],["hull",-6,-3,-1,[0,0,-1],0,1],["hull",-6,-2,-1,[0,0,-1],0,1],["hull",-5,-1,-1,[0,0,-1],0,1],["hull",-6,-1,-1,[0,0,-1],0,1],["hull",-4,-1,0,[0,0,-1],0,1],["hull",-5,-1,0,[0,0,-1],0,1],["hull",-5,-1,1,[0,0,-1],0,1],["hull",-5,-2,1,[0,0,-1],0,1],["hull",-5,-3,1,[0,0,-1],0,1],["hull",-6,-3,1,[0,0,-1],0,1],["hull",-6,-2,1,[0,0,-1],0,1],["hull",-6,-1,0,[0,0,-1],0,1],["hull",-6,-1,1,[0,0,-1],0,1],["hull",-7,-4,2,[0,0,-1],0,1],["hull",-8,-4,2,[0,0,-1],0,1],["hull",-8,-4,1,[0,0,-1],0,1],["hull",-8,-4,0,[0,0,-1],0,1],["hull",-9,-4,2,[0,0,-1],0,1],["hull",-9,-4,1,[0,0,-1],0,1],["hull",-8,-4,-1,[0,0,-1],0,1],["hull",-9,-4,0,[0,0,-1],0,1],["hull",-9,-4,-1,[0,0,-1],0,1],["lightbar",-5,-2,0,[0,-1,0],0,1],["beacon",-8,-3,0,[0,1,0],0,1],["lightbar",-7,-1,0,[-1,0,0],0,1],["plate",-7,-3,-1,[0,0,-1],0,1],["plate",-8,-3,-1,[0,0,-1],0,1],["plate",-9,-3,-1,[0,0,-1],0,1],["plate",-9,-3,0,[-1,0,0],0,1],["plate",-9,-3,1,[-1,0,0],0,1],["plate",-8,-3,2,[0,0,1],0,1],["plate",-7,-3,2,[0,0,1],0,1],["plate",-7,-3,1,[1,0,0],0,1],["plate",-9,-3,3,[0,0,-1],0,1],["plate",-9,-3,2,[-1,0,0],0,1],["plate",-9,-3,-1,[-1,0,0],0,1],["plate",-6,-3,2,[-1,0,0],0,1],["lightbar",4,-1,0,[0,-1,0],0,1],["lightbar",6,-1,3,[0,0,1],0,1],["hull",5,-3,1,[0,-1,0],0,1],["hull",5,-2,1,[0,-1,0],0,1],["hull",5,-1,1,[0,-1,0],0,1],["hull",6,-1,1,[0,-1,0],0,1],["hull",6,-1,0,[0,-1,0],0,1],["hull",5,-1,0,[0,-1,0],0,1],["hull",5,-2,0,[0,-1,0],0,1],["hull",5,-3,0,[0,-1,0],0,1],["door",6,-3,0,[0,1,0],0,1],["lightbar",5,-1,-2,[0,-1,0],0,1],["lightbar",6,-2,1,[0,-1,0],0,1],["lightbar",6,-1,4,[0,-1,0],0,1],["pad",4,1,-3,[0,1,0],0,1]];
+  for(const r of PLAN){try{addBlock(g,r[1],r[2],r[3],r[0],r[4]||null,r[5]||0,r[6]||1);}catch(err){console.error(err);}}
   g.fuel=g.fuelCap;
 }
 const STEP_SPIN=0;
@@ -3925,10 +3896,11 @@ function pioSave(){
   const T=tpShips.find(x=>x.main);if(!T)return;
   try{localStorage.setItem('void-engineers-pio-v1',JSON.stringify({p:T.group.position.toArray(),q:T.group.quaternion.toArray(),v:T.vel.toArray(),hold:T.hold,up:T.up,plate:T.plate,hp:T.hp,fuel:T.fuel,lock:!!T.lock}));}catch(e){}
 }
+const OUT_PIO={x:8,y:3,z:-6},OUT_SPAWN=[8,2.85,2];   // the new Outpost: the Pioneer on the pad at cell (4,1,-3), you on the deck facing it
 function pioBoot(restored){   // the starter Pioneer, set down on the platform (or wherever the last save left it)
   for(const T of tpShips)scene.remove(T.group);tpShips.length=0;
   const T=pioSpawn(true);T.main=true;
-  T.group.position.set(2,1,0);T.group.quaternion.identity();
+  T.group.position.set(OUT_PIO.x,OUT_PIO.y,OUT_PIO.z);T.group.quaternion.identity();
   let S=null;if(restored){try{S=JSON.parse(localStorage.getItem('void-engineers-pio-v1')||'null');}catch(e){S=null;}}else{try{localStorage.removeItem('void-engineers-pio-v1');}catch(e){}}
   if(S){T.group.position.fromArray(S.p);T.group.quaternion.fromArray(S.q);T.vel.fromArray(S.v);T.hold=S.hold||{};T.up=Object.assign(T.up,S.up||{});T.plate=Object.assign({st:0,ti:0,te:0},S.plate||{});T.hp=(typeof S.hp==='number')?Math.min(S.hp,pioMaxHP(T)):pioMaxHP(T);T.fuel=S.fuel;T.lock=S.lock?{pos:T.group.position.clone(),q:T.group.quaternion.clone()}:null;}
   else T.fuel=pioFuelCap(T);
@@ -4398,24 +4370,42 @@ const _gl=new V3(),_rq=new Q(),_rq2=new Q(),_dw=new V3();
 /* ---- Gravity Generator modes: the generator is the control point of a field that stops at its base plane ---- */
 const GM_NAMES=['Center','Forward / Right','Forward / Left','Rear / Right','Rear / Left'];
 const _gup=new V3(),_gfw=new V3(),_grt=new V3();
-function gravHas(b,lx,ly,lz){   // is this point (in the grid's own frame) inside the generator's field?
-  const f=b.f||[0,1,0];_gup.set(f[0],f[1],f[2]);
-  _gfw.set(0,0,-1);_gfw.addScaledVector(_gup,-_gfw.dot(_gup));if(_gfw.lengthSq()<.01){_gfw.set(-1,0,0);_gfw.addScaledVector(_gup,-_gfw.dot(_gup));}
-  _gfw.normalize();_grt.crossVectors(_gfw,_gup);
-  const dx=lx-b.i*2,dy=ly-b.j*2,dz=lz-b.k*2,R=gravR(b),m=b.gm|0;
-  const h=dx*_gup.x+dy*_gup.y+dz*_gup.z+1;   // height above the generator's base plane
-  if(h<0)return false;                       // nothing below the plane
-  if(m===0)return dx*dx+dy*dy+dz*dz<R*R;
-  if(h>R)return false;
-  const u=dx*_gfw.x+dy*_gfw.y+dz*_gfw.z,w=dx*_grt.x+dy*_grt.y+dz*_grt.z,fwd=m===1||m===2,rgt=m===1||m===3;
-  return(fwd?(u>=-1&&u<=R):(u<=1&&u>=-R))&&(rgt?(w>=-1&&w<=R):(w<=1&&w>=-R));
+const NOFLR=new Set(['light','lightbar','door','glass','glassc','glassd','beacon']);
+const isFloorBlk=o=>!!o&&!NOFLR.has(o.type);
+function gravUp(b){const f=b.f||[0,1,0];let ux=Math.round(f[0]),uy=Math.round(f[1]),uz=Math.round(f[2]);if(!ux&&!uy&&!uz)uy=1;return[ux,uy,uz];}
+/* Floor gravity: a powered generator pulls "down" (against its up face) over every floor block within its reach, and up to GRAV_H blocks above it.
+   Is this point (in the grid's own frame) over a floor the generator reaches? */
+function gravHas(g,b,lx,ly,lz){
+  const[ux,uy,uz]=gravUp(b),R=gravR(b),R2=R*R;
+  const ci=Math.floor((lx+1)/2),cj=Math.floor((ly+1)/2),ck=Math.floor((lz+1)/2);
+  for(let d=0;d<=GRAV_H;d++){
+    const i=ci-ux*d,j=cj-uy*d,k=ck-uz*d;
+    if(isFloorBlk(cellAt(g,kf(i,j,k)))){
+      const dx=(i-b.i)*2,dy=(j-b.j)*2,dz=(k-b.k)*2;return dx*dx+dy*dy+dz*dz<=R2;
+    }
+  }
+  return false;
 }
-function applyGravMode(b){   // the field mesh: a dome for Center, a box standing in the corner for the others
-  const f=b.field;if(!f)return;const R=gravR(b),m=b.gm|0;
-  if(m===0){f.geometry=G.fieldH;f.scale.setScalar(R/GRAV_R);f.position.set(0,-1,0);}
-  else{f.geometry=G.fieldB;f.scale.setScalar(R+1);const sx=(m===1||m===3)?1:-1,sz=(m===1||m===2)?-1:1;f.position.set(sx*(R-1)/2,(R-1)/2,sz*(R-1)/2);}
+function gravFloors(g,b){   // the top faces of every floor block in reach (for the overlay and the count)
+  const[ux,uy,uz]=gravUp(b),R=gravR(b),R2=R*R,out=[];
+  for(const c of g.blocks.values()){
+    if(!isFloorBlk(c))continue;
+    const dx=(c.i-b.i)*2,dy=(c.j-b.j)*2,dz=(c.k-b.k)*2;if(dx*dx+dy*dy+dz*dz>R2)continue;
+    if(isFloorBlk(cellAt(g,kf(c.i+ux,c.j+uy,c.k+uz))))continue;
+    out.push(c);
+  }
+  return out;
 }
-function gravCount(g,b){let n=0;for(const c of g.blocks.values())if(gravHas(b,c.i*2,c.j*2,c.k*2))n++;return n;}
+function applyGravMode(b){if(b.field)b.field.visible=false;}   // floor gravity has no bubble; the panel flashes the floors it covers
+function gravCount(g,b){return gravFloors(g,b).length;}
+const GOVER_MAT=new THREE.MeshBasicMaterial({color:0x58d6ff,transparent:true,opacity:.35,depthWrite:false,side:THREE.DoubleSide});
+function gravFlash(g,b){   // a cyan film on every floor top the generator pulls toward, for a few seconds
+  if(b.over){g.group.remove(b.over);b.over.geometry.dispose();b.over=null;}
+  const fl=gravFloors(g,b);if(!fl.length)return;
+  const[ux,uy,uz]=gravUp(b),geo=new THREE.PlaneGeometry(1.9,1.9),im=new THREE.InstancedMesh(geo,GOVER_MAT,fl.length),m=new THREE.Matrix4(),q=new THREE.Quaternion().setFromUnitVectors(new V3(0,0,1),new V3(ux,uy,uz));
+  fl.forEach((c,n)=>{m.compose(new V3(c.i*2+ux*1.03,c.j*2+uy*1.03,c.k*2+uz*1.03),q,new V3(1,1,1));im.setMatrixAt(n,m);});
+  im.instanceMatrix.needsUpdate=true;im.renderOrder=4;im.frustumCulled=false;g.group.add(im);b.over=im;b.overT=5;
+}
 let gravSel=null;
 /* ---------- Repair Arm and Welder repair (a Pioneer's missing HP is paid in parts; the job then heals 1 HP a second) ---------- */
 const REPAIR_SET=['plate','constr','motor','comp','thP','board','tAl','wire'],REPAIR_REACH=60,REPAIR_HPS=1;
@@ -4491,10 +4481,9 @@ function repairTick(dt){
 }
 function openGravPanel(g,b){
   gravSel={g,b};const m=b.gm|0;
-  openSheet('grv','Gravity Generator','<div class="mcard"><div class="mh"><b>Field position</b><span>T'+tierOf(b)+' · '+gravR(b)+' m · '+(b.pw?'powered':'no power')+'</span></div>'+
-    '<div class="qrow">Center puts the generator in the middle of the field, as a dome. The other four put the generator in a corner and reach forward or back, left or right. The field never goes below the generator’s base. The affected area lights up for a moment when you pick a mode.</div>'+
-    '<div class="bt" style="justify-content:flex-start;flex-wrap:wrap">'+GM_NAMES.map((n,i)=>'<button class="rb'+(i===m?' on':'')+'" data-gm="'+i+'">'+n+'</button>').join('')+'</div>'+
-    '<div class="qrow">Now: '+GM_NAMES[m]+' · '+gravCount(g,b)+' blocks in the field. Upgrade the generator from the Upgrades tab to grow it.</div></div>');
+  gravFlash(g,b);
+  openSheet('grv','Gravity Generator','<div class="mcard"><div class="mh"><b>Floor gravity</b><span>T'+tierOf(b)+' \u00b7 '+(gravR(b)/2)+' block reach \u00b7 '+(b.pw?'powered':'no power')+'</span></div>'+
+    '<div class="qrow">Pulls down over '+gravCount(g,b)+' floor blocks within '+(gravR(b)/2)+' blocks of the generator, '+GRAV_H+' blocks up from each. Walls, stairs and doors do not block it. One generator per floor; upgrade it from the Upgrades tab to reach further.</div></div>');
 }
 function updateGravity(dt){
   let best=null,bd=1e9;
@@ -4512,7 +4501,7 @@ function updateGravity(dt){
       for(const b of g.gravs){
         if(!b.pw)continue;   // a generator with no power makes no field
         _gl.copy(player.pos);g.group.worldToLocal(_gl);
-        if(gravHas(b,_gl.x,_gl.y,_gl.z)){_gw.set(b.i*2,b.j*2,b.k*2);const d=_gl.distanceTo(_gw);if(d<bd){bd=d;best={g,b};}}
+        if(gravHas(g,b,_gl.x,_gl.y,_gl.z)){_gw.set(b.i*2,b.j*2,b.k*2);const d=_gl.distanceTo(_gw);if(d<bd){bd=d;best={g,b};}}
       }
     }
   }
@@ -4527,7 +4516,7 @@ function updateGravity(dt){
   if(now!==inGrav){inGrav=now;gravChanged();}
   if(now)player.eye+=(EYE_UP-player.eye)*(1-Math.exp(-6*dt));   // leaving a field keeps the eye where it was, so the view does not drop
   // show the field bubble while building or from outside
-  for(const g of grids)for(const b of g.gravs)if(b.field){if(b.fieldT>0)b.fieldT-=dt;b.field.visible=!!b.pw&&(b.fieldT>0||((b.gm|0)===0?(!inGrav||player.tool===1):player.tool===1));}
+  for(const g of grids)for(const b of g.gravs){if(b.field)b.field.visible=false;if(b.over){b.overT-=dt;if(b.overT<=0||!b.pw){g.group.remove(b.over);b.over.geometry.dispose();b.over=null;}}}
 }
 /* ---- riding: while you stand in a grid's gravity you move with it (position, turning and velocity) ---- */
 function setRide(g){
@@ -5340,13 +5329,13 @@ function openSheet(mode,title,html){
 }
 const costHTML=c=>Object.keys(c).map(k=>'<span class="'+(DEV||haveK(k)>=c[k]?'':'no')+'">'+c[k]+' '+SHORT[k]+'</span>').join('');
 function pickRow(t){
-  const d=BDEF[t],off=isStn(t)&&!inGrav;
+  const d=BDEF[t],off=false;
   return '<button class="prow'+(BORDER[player.sel]===t?' on':'')+(off?' off':'')+'" data-pick="'+t+'"><span class="pi">'+icon(t)+'</span><span><b>'+d.name+'</b><small>'+d.spec+'</small></span><span class="pc">'+costHTML(d.cost)+'</span></button>';
 }
 function openPicker(){
   if(player.mode!=='foot'||termOpen)return;
   const h='<div class="mcard"><div class="mh"><b>Ship &amp; structure</b></div><div class="plist">'+PAGE_BASIC.filter(t=>DEV||!DEVONLY.includes(t)).map(pickRow).join('')+'</div></div>'+
-    '<div class="mcard"><div class="mh"><b>Station</b><span>'+(inGrav?'inside a gravity field':'needs a gravity field')+'</span></div><div class="plist">'+PAGE_STN.map(pickRow).join('')+'</div></div>';
+    '<div class="mcard"><div class="mh"><b>Station</b><span>'+(inGrav?'gravity here':'no gravity here')+'</span></div><div class="plist">'+PAGE_STN.map(pickRow).join('')+'</div></div>';
   openSheet('pick','Choose block',h);
   const on=$('tbody').querySelector('.prow.on');if(on&&on.scrollIntoView)on.scrollIntoView({block:'center'});
 }
@@ -5582,7 +5571,7 @@ $('tbody').addEventListener('click',e=>{
   const btn=e.target.closest('button');if(!btn)return;
   if(sheet==='pio'){pioClick(btn);return;}
   if(sheet==='rep'){repClick(btn);return;}
-  if(btn.dataset.gm!==undefined&&gravSel){const b=gravSel.b;b.gm=+btn.dataset.gm;applyGravMode(b);b.fieldT=3.5;const n=gravCount(gravSel.g,b);closeTerminal();toast(GM_NAMES[b.gm]+': '+n+' blocks in the field','good');return;}
+  if(false&&btn.dataset.gm!==undefined&&gravSel){const b=gravSel.b;b.gm=+btn.dataset.gm;applyGravMode(b);b.fieldT=3.5;const n=gravCount(gravSel.g,b);closeTerminal();toast(GM_NAMES[b.gm]+': '+n+' blocks in the field','good');return;}
   if(btn.dataset.px){pioXClick(btn);return;}
   if(btn.dataset.cg){cmClosed[btn.dataset.cg]=!cmClosed[btn.dataset.cg];try{localStorage.setItem('void-engineers-cmclosed',JSON.stringify(cmClosed));}catch(e){}const t=$('t-tot');if(t)t._h=null;termRefresh();return;}
   if(btn.dataset.cm){showCm(btn.dataset.cm);return;}
@@ -5590,7 +5579,7 @@ $('tbody').addEventListener('click',e=>{
   if(btn.dataset.tab){openTerminal(0,btn.dataset.tab);return;}
   if(btn.dataset.pick){
     const t=btn.dataset.pick;
-    if(isStn(t)&&!inGrav){toast('Station blocks need a gravity field. Stand inside a Gravity Generator\u2019s field to build them.','bad');return;}
+    if(false){toast('Station blocks need a gravity field. Stand inside a Gravity Generator\u2019s field to build them.','bad');return;}
     selectBlock(BORDER.indexOf(t));closeTerminal();return;
   }
   if(btn.dataset.act==='power'){upgG.powerOff=!upgG.powerOff;setT($('pwbtn'),upgG.powerOff?'Power ON':'Power OFF');setT($('pwst'),upgG.powerOff?'powered down':'running');toast(upgG.name+(upgG.powerOff?': powered down':': power on'),upgG.powerOff?'':'good');return;}
@@ -6367,11 +6356,11 @@ function boot(){
     if(pi&&os){
       pi.group.position.set(0,4,-4);pi.group.updateMatrixWorld(true);
       pi.lock={pos:pi.group.position.clone(),q:pi.group.quaternion.clone(),h:os,pad:null};
-      if(TUTW&&TUTW!=='menus')player.pos.set(0,6,38);else player.pos.set(4,2.85,12);if(TUTW==='menus'){inv.fe=80;inv.si=60;inv.ice=40;inv.pt=20;try{recalc(os);addToGrid(os,'fe',60);addToGrid(os,'si',40);addToGrid(os,'pt',20);}catch(e){console.error(e);}}   // practice world: float 38 m out, clear of the gravity field, facing the outpost
+      if(TUTW&&TUTW!=='menus')player.pos.set(0,6,38);else player.pos.set(...OUT_SPAWN);if(TUTW==='menus'){inv.fe=80;inv.si=60;inv.ice=40;inv.pt=20;try{recalc(os);addToGrid(os,'fe',60);addToGrid(os,'si',40);addToGrid(os,'pt',20);}catch(e){console.error(e);}}   // practice world: float 38 m out, clear of the gravity field, facing the outpost
       camera.quaternion.setFromAxisAngle(AXY,TUTW&&TUTW!=='menus'?Math.PI:0);   // practice world: facing away from the outpost, so the flight lessons happen in open space
     }
   }
-  if(!TUTW){pioBoot(restored);if(!restored){const os2=grids.find(g=>g.station);if(os2){player.pos.set(4,2.85,12);camera.quaternion.identity();}}}
+  if(!TUTW){pioBoot(restored);if(!restored){const os2=grids.find(g=>g.station);if(os2){player.pos.set(...OUT_SPAWN);camera.quaternion.identity();}}}
   savedGame=restored;
   for(const g of grids)markGrid(g);
   for(const g of grids)g.group.updateMatrixWorld(true);
@@ -6389,7 +6378,7 @@ function boot(){
   }
   try{if(window.claude&&window.claude.hot&&window.claude.hot.snapshot)window.claude.hot.snapshot(()=>({save:(wiping||TUTW)?null:serialize()}));}catch(e){}
   window.__VE={renderer,scene,THREE,kf,openRepair,repairBill,repairTick,repairShip,pioNetWorth,pioRepairValue,PRICE0,eco,pioDamage,pioMaxHP,inv,shipAmmo,tpShips,pioEnter,grindStep,gridOn,powerTick,spawnDrone,spawnPlayerDrone,droneTick,damageBlock,repairBlock,hpOf,dmgEff,fireBolt,boltsTick,bolts,wipOn,wipUnit,wipBegin,wipDone,mk,mktClick,mktTick,mktBuild,mktRefresh,MKT,mkFee,mkTier,player,grids,asteroids,update,begin,ACT,keys,tb,camera,inv,mineAt,rayAst,pickAll,aim,serialize,restoreSave,saveGame,
-    addToGrid,gridHas,gridSpace,takeFromGrid,packUsed,packSpace,PACK_CAP,PACKIO,shipIO,spawnShip,interiorOf,bodyHit,bodyMove,cellAt,setTier,growCheck,doorTick,rideSync,seatWorld,nearestSeat,spawnStation,haveK,spend,upgradeBlock,gravR,qMax,tierOf,upCost,recalc,eco,price,PRICE0,ITEMS,loadItem,takeItem,whTotals,payDebt,tradeTick,BEACON,CARGO_CAP,panelSummary,openTerminal,closeTerminal,scanOre,setTool,setPage,addBlock,makeGrid,removeBlock,RECIPES,BDEF,BORDER,
+    gravHas,gravFloors,gravFlash,addToGrid,gridHas,gridSpace,takeFromGrid,packUsed,packSpace,PACK_CAP,PACKIO,shipIO,spawnShip,interiorOf,bodyHit,bodyMove,cellAt,setTier,growCheck,doorTick,rideSync,seatWorld,nearestSeat,spawnStation,haveK,spend,upgradeBlock,gravR,qMax,tierOf,upCost,recalc,eco,price,PRICE0,ITEMS,loadItem,takeItem,whTotals,payDebt,tradeTick,BEACON,CARGO_CAP,panelSummary,openTerminal,closeTerminal,scanOre,setTool,setPage,addBlock,makeGrid,removeBlock,RECIPES,BDEF,BORDER,
     setDev:v=>{DEV=!!v;},platePaint,openPicker,openUpg,connGrid,surveyAst,revealBuried,tutState:()=>tut,startTut,renameGrid,dockPlan,toggleDock,pointSolid,shipHitsAst,enterShip,exitShip,inReach,gridsTouch,isCraft,dockCheck,dockTick,startXfer,moveTarget,PAD_RATE,BASE_RATE,xferState:()=>xfer,
     state:()=>({inGrav,page,termOpen,detRange,detSummary,paused,running}),
     shipAmmo,tpShips,pioEnter,setFire:v=>{mFire=v;},setGrind:v=>{mGrind=v;},MP,mpHandle};
