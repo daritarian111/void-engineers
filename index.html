@@ -163,6 +163,7 @@ body:not(.devon) [data-tap=shot],body:not(.devon) [data-tap=noclip],body:not(.de
 #start.cover h1{position:fixed;top:max(10px,env(safe-area-inset-top,0px));left:0;right:0;margin:0;text-align:center;font-size:clamp(24px,6vw,40px);text-shadow:0 2px 14px #000,0 0 3px #000;pointer-events:none}
 #start.cover .card{position:fixed;left:max(10px,env(safe-area-inset-left,0px));bottom:max(10px,env(safe-area-inset-bottom,0px));width:min(300px,62vw);max-height:calc(100% - 72px);margin:0;overflow-y:auto;touch-action:pan-y;background:rgba(11,18,29,.88);padding:0}
 #start.cover .btns{margin:0;padding:8px;gap:6px}
+.mrows{flex-direction:column;flex-wrap:nowrap;align-items:stretch}.mrow{display:flex;flex-wrap:nowrap;gap:6px;align-items:center}.mrow button{flex:0 1 auto}#start.cover .btns .mrow button{padding:7px 6px;letter-spacing:.05em;font-size:11px}#start.cover .btns .mrow #go{font-size:14px;padding:8px 16px;letter-spacing:.1em}
 #start.cover .btns button{font-size:12px;letter-spacing:.1em;padding:7px 10px}
 #start.cover #go{font-size:14px;padding:8px 16px}
 #start{padding-bottom:0}
@@ -607,7 +608,7 @@ body.uitut #camrow .tb,body.uitut #edge .tb,body.uitut #rbar .tb{visibility:visi
       <div id="mpst">Not connected</div>
       <button id="mpleave">Leave room</button>
     </div>
-    <div class="btns"><button id="go" disabled>Loading…</button><button id="newg" hidden>New game</button><button id="mpbtn">Multiplayer</button><button id="tutmenubtn">Tutorials</button><button id="exitapp" hidden>Exit</button><button id="setbtn">Settings</button><span id="verlab"></span></div>
+    <div class="btns mrows"><div class="mrow"><button id="go" disabled>Loading…</button><button id="newg" hidden>New game</button></div><div class="mrow"><button id="mpbtn">Multiplayer</button><button id="setbtn">Settings</button><button id="tutmenubtn">Tutorials</button><button id="exitapp" hidden>Exit</button></div><span id="verlab"></span></div>
   </div>
 </div>
 <div id="tutwin" class="winwrap" hidden><div class="win"><div class="stripe"></div><h2>Tutorials</h2>
@@ -622,7 +623,7 @@ body.uitut #camrow .tb,body.uitut #edge .tb,body.uitut #rbar .tb{visibility:visi
 'use strict';
 /* =====================  Void Engineers  =====================
    Part A: renderer, sky, procedural voxel asteroids, particles */
-const GAME_VER='210';
+const GAME_VER='214';
 {const vl=document.getElementById('verlab');if(vl)vl.textContent='v'+GAME_VER;}
 /* no page zoom while playing: pinch, double-tap and ctrl+wheel are swallowed */
 (()=>{const no=e=>{e.preventDefault();};
@@ -757,30 +758,42 @@ function blur3(src,dst,nx,ny,nz){
   for(let i=0;i<N;i++)src[i]=dst[i];
 }
 const EDGES=[0,1,2,3,4,5,6,7,0,2,1,3,4,6,5,7,0,4,1,5,2,6,3,7];
-function rebuildAst(a){
-  const nx=a.dims[0],ny=a.dims[1],nz=a.dims[2],N=nx*ny*nz,d=a.data,dm=[nx,ny,nz];
-  if(!a._f||a._f.length!==N){a._f=new Float32Array(N);a._t=new Float32Array(N);a._vi=new Int32Array(N);}
-  const f=a._f,vi=a._vi;vi.fill(-1);
-  for(let i=0;i<N;i++)f[i]=d[i]?1:0;
-  blur3(f,a._t,nx,ny,nz);blur3(f,a._t,nx,ny,nz);
-  const pos=[],tri=[],cv=new Float32Array(8),ISO=.5;
-  for(let z=0;z<nz-1;z++)for(let y=0;y<ny-1;y++)for(let x=0;x<nx-1;x++){
+const AST_CS=12;   // the rock mesh is cut into 12-cell chunks, so digging only rebuilds the chunks next to the hole
+function astMark(a,x,y,z,r){   // note which voxels changed; a rock that was never built (or was just restored) rebuilds whole
+  a.dirty=true;if(!a._built)return;
+  const b=a.db||(a.db=[1e9,1e9,1e9,-1e9,-1e9,-1e9]);
+  b[0]=Math.min(b[0],Math.floor(x-r));b[1]=Math.min(b[1],Math.floor(y-r));b[2]=Math.min(b[2],Math.floor(z-r));
+  b[3]=Math.max(b[3],Math.ceil(x+r));b[4]=Math.max(b[4],Math.ceil(y+r));b[5]=Math.max(b[5],Math.ceil(z+r));
+}
+function astChunk(a,kx,ky,kz){
+  const nx=a.dims[0],ny=a.dims[1],nz=a.dims[2],f=a._f,CS=AST_CS,ISO=.5;
+  const x0=kx*CS,y0=ky*CS,z0=kz*CS,x1=Math.min(x0+CS,nx-1),y1=Math.min(y0+CS,ny-1),z1=Math.min(z0+CS,nz-1);
+  const vx0=Math.max(0,x0-1),vy0=Math.max(0,y0-1),vz0=Math.max(0,z0-1),sx=x1-vx0,sy=y1-vy0,sz=z1-vz0;
+  const key=kx+','+ky+','+kz;
+  let old=a._ch.get(key);
+  if(sx<=0||sy<=0||sz<=0){if(old){a.mesh.remove(old);old.geometry.dispose();a._ch.delete(key);}return;}
+  const vi=new Int32Array(sx*sy*sz).fill(-1),pos=[],nor=[],col=[],tri=[],cv=new Float32Array(8);
+  for(let z=vz0;z<z1;z++)for(let y=vy0;y<y1;y++)for(let x=vx0;x<x1;x++){
     let mask=0;
     for(let c=0;c<8;c++){const v=f[(x+(c&1))+nx*((y+((c>>1)&1))+ny*(z+(c>>2)))];cv[c]=v;if(v>=ISO)mask|=1<<c;}
     if(mask===0||mask===255)continue;
-    let sx=0,sy=0,sz=0,n=0;
+    let ex=0,ey=0,ez=0,n=0;
     for(let e=0;e<24;e+=2){
       const c0=EDGES[e],c1=EDGES[e+1];
       if((cv[c0]>=ISO)===(cv[c1]>=ISO))continue;
       const t=(ISO-cv[c0])/(cv[c1]-cv[c0]);
-      sx+=(c0&1)+((c1&1)-(c0&1))*t;sy+=((c0>>1)&1)+(((c1>>1)&1)-((c0>>1)&1))*t;sz+=(c0>>2)+((c1>>2)-(c0>>2))*t;n++;
+      ex+=(c0&1)+((c1&1)-(c0&1))*t;ey+=((c0>>1)&1)+(((c1>>1)&1)-((c0>>1)&1))*t;ez+=(c0>>2)+((c1>>2)-(c0>>2))*t;n++;
     }
-    vi[x+nx*(y+ny*z)]=pos.length/3;
-    pos.push(a.org.x+x+.5+sx/n,a.org.y+y+.5+sy/n,a.org.z+z+.5+sz/n);
+    vi[(x-vx0)+sx*((y-vy0)+sy*(z-vz0))]=pos.length/3;
+    const px=a.org.x+x+.5+ex/n,py=a.org.y+y+.5+ey/n,pz=a.org.z+z+.5+ez/n;pos.push(px,py,pz);
+    let gx=0,gy=0,gz=0;for(let c=0;c<8;c++){const v=cv[c];gx+=(c&1)?v:-v;gy+=(c&2)?v:-v;gz+=(c&4)?v:-v;}   // the surface faces away from the denser side
+    const l=Math.hypot(gx,gy,gz)||1;nor.push(-gx/l,-gy/l,-gz/l);
+    const patch=noise3(px*.11,py*.11,pz*.11,17),fine=noise3(px*.7,py*.7,pz*.7,29),m=.62+.55*patch+.22*(fine-.5);
+    col.push(.40*m,.37*m,.34*m);
   }
-  const co=[0,0,0],cell=(p)=>vi[p[0]+nx*(p[1]+ny*p[2])];
-  for(let z=0;z<nz-1;z++)for(let y=0;y<ny-1;y++)for(let x=0;x<nx-1;x++){
-    const i0=x+nx*(y+ny*z),in0=f[i0]>=ISO;
+  const dm=[nx,ny,nz],cell=p=>vi[(p[0]-vx0)+sx*((p[1]-vy0)+sy*(p[2]-vz0))];
+  for(let z=z0;z<z1;z++)for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++){
+    const in0=f[x+nx*(y+ny*z)]>=ISO;
     for(let ax=0;ax<3;ax++){
       const bx=(ax+1)%3,cx=(ax+2)%3,p=[x,y,z];
       if(p[ax]>=dm[ax]-1)continue;
@@ -794,28 +807,39 @@ function rebuildAst(a){
       if(in0)tri.push(va,vb,vc,va,vc,vd);else tri.push(va,vc,vb,va,vd,vc);
     }
   }
-  const nv=pos.length/3,P=new Float32Array(pos),Nm=new Float32Array(nv*3),Cl=new Float32Array(nv*3);
-  for(let t=0;t<tri.length;t+=3){
-    const i=tri[t]*3,j=tri[t+1]*3,k=tri[t+2]*3;
-    const ux=P[j]-P[i],uy=P[j+1]-P[i+1],uz=P[j+2]-P[i+2],vx=P[k]-P[i],vy=P[k+1]-P[i+1],vz=P[k+2]-P[i+2];
-    const cx=uy*vz-uz*vy,cy=uz*vx-ux*vz,cz=ux*vy-uy*vx;
-    for(const o of[i,j,k]){Nm[o]+=cx;Nm[o+1]+=cy;Nm[o+2]+=cz;}
-  }
-  for(let v=0;v<nv;v++){
-    const o=v*3,l=Math.hypot(Nm[o],Nm[o+1],Nm[o+2])||1;Nm[o]/=l;Nm[o+1]/=l;Nm[o+2]/=l;
-    const x=P[o],y=P[o+1],z=P[o+2];
-    const patch=noise3(x*.11,y*.11,z*.11,17),fine=noise3(x*.7,y*.7,z*.7,29);
-    const m=.62+.55*patch+.22*(fine-.5);
-    Cl[o]=.40*m;Cl[o+1]=.37*m;Cl[o+2]=.34*m;
-  }
+  if(!tri.length){if(old){a.mesh.remove(old);old.geometry.dispose();a._ch.delete(key);}return;}
   const geo=new THREE.BufferGeometry();
-  geo.setAttribute('position',new THREE.BufferAttribute(P,3));
-  geo.setAttribute('normal',new THREE.BufferAttribute(Nm,3));
-  geo.setAttribute('color',new THREE.BufferAttribute(Cl,3));
-  geo.setIndex(new THREE.BufferAttribute(new Uint32Array(tri),1));
-  if(a.mesh){a.mesh.geometry.dispose();a.mesh.geometry=geo;}
-  else{a.mesh=new THREE.Mesh(geo,voxMat);a.mesh.frustumCulled=true;a.mesh.matrixAutoUpdate=false;scene.add(a.mesh);}
-  a.dirty=false;
+  geo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(pos),3));
+  geo.setAttribute('normal',new THREE.BufferAttribute(new Float32Array(nor),3));
+  geo.setAttribute('color',new THREE.BufferAttribute(new Float32Array(col),3));
+  geo.setIndex(new THREE.BufferAttribute(pos.length/3<65535?new Uint16Array(tri):new Uint32Array(tri),1));
+  if(old){old.geometry.dispose();old.geometry=geo;}
+  else{old=new THREE.Mesh(geo,voxMat);old.frustumCulled=true;old.matrixAutoUpdate=false;a.mesh.add(old);a._ch.set(key,old);}
+}
+function rebuildAst(a){
+  const nx=a.dims[0],ny=a.dims[1],nz=a.dims[2],N=nx*ny*nz,d=a.data,CS=AST_CS;
+  if(!a._f||a._f.length!==N){a._f=new Float32Array(N);a._t=new Float32Array(N);a._built=false;}
+  if(!a.mesh){a.mesh=new THREE.Group();a.mesh.matrixAutoUpdate=false;scene.add(a.mesh);a._ch=new Map();}
+  const f=a._f,nk=[Math.ceil((nx-1)/CS),Math.ceil((ny-1)/CS),Math.ceil((nz-1)/CS)];
+  if(!a._built||!a.db){
+    for(let i=0;i<N;i++)f[i]=d[i]?1:0;
+    blur3(f,a._t,nx,ny,nz);blur3(f,a._t,nx,ny,nz);
+    for(let kz=0;kz<nk[2];kz++)for(let ky=0;ky<nk[1];ky++)for(let kx=0;kx<nk[0];kx++)astChunk(a,kx,ky,kz);
+    a._built=true;
+  }else{
+    const b=a.db,cl=(v,m)=>Math.max(0,Math.min(m-1,v));
+    const e0=[cl(b[0]-2,nx),cl(b[1]-2,ny),cl(b[2]-2,nz)],e1=[cl(b[3]+2,nx),cl(b[4]+2,ny),cl(b[5]+2,nz)];   // the blur reaches two cells
+    const r0=[cl(e0[0]-2,nx),cl(e0[1]-2,ny),cl(e0[2]-2,nz)],r1=[cl(e1[0]+2,nx),cl(e1[1]+2,ny),cl(e1[2]+2,nz)];
+    const lx=r1[0]-r0[0]+1,ly=r1[1]-r0[1]+1,lz=r1[2]-r0[2]+1,L=new Float32Array(lx*ly*lz),T=new Float32Array(lx*ly*lz);
+    for(let z=0;z<lz;z++)for(let y=0;y<ly;y++)for(let x=0;x<lx;x++)L[x+lx*(y+ly*z)]=d[(x+r0[0])+nx*((y+r0[1])+ny*(z+r0[2]))]?1:0;
+    blur3(L,T,lx,ly,lz);blur3(L,T,lx,ly,lz);
+    for(let z=e0[2];z<=e1[2];z++)for(let y=e0[1];y<=e1[1];y++)for(let x=e0[0];x<=e1[0];x++)f[x+nx*(y+ny*z)]=L[(x-r0[0])+lx*((y-r0[1])+ly*(z-r0[2]))];
+    const c0=[Math.max(0,e0[0]-1),Math.max(0,e0[1]-1),Math.max(0,e0[2]-1)],c1=[Math.min(nx-2,e1[0]),Math.min(ny-2,e1[1]),Math.min(nz-2,e1[2])];
+    for(let kz=Math.floor(c0[2]/CS);kz<=Math.min(nk[2]-1,Math.floor((c1[2]+1)/CS));kz++)
+      for(let ky=Math.floor(c0[1]/CS);ky<=Math.min(nk[1]-1,Math.floor((c1[1]+1)/CS));ky++)
+        for(let kx=Math.floor(c0[0]/CS);kx<=Math.min(nk[0]-1,Math.floor((c1[0]+1)/CS));kx++)astChunk(a,kx,ky,kz);
+  }
+  a.db=null;a.dirty=false;
 }
 function astAt(a,wx,wy,wz){
   const x=Math.floor(wx-a.org.x),y=Math.floor(wy-a.org.y),z=Math.floor(wz-a.org.z);
@@ -1137,7 +1161,7 @@ function revealBuried(a,quiet){
       if(x<1||y<1||z<1||x>=nx-1||y>=ny-1||z>=nz-1)continue;
       const i=x+nx*(y+ny*z);if(dt[i]){dt[i]=0;a.count--;}
     }
-    d.buried=false;a.dirty=true;depBuild(d);
+    d.buried=false;astMark(a,cx,cy,cz,cr+1);depBuild(d);
     if(!quiet){toast('Buried '+RNAME[RES[d.k]]+' deposit found!','good');for(let i=0;i<16;i++)spawnP(d.x,d.y,d.z,(Math.random()-.5)*8,(Math.random()-.5)*8,(Math.random()-.5)*8,VCOL[d.k+2],.8+Math.random());}
   }
 }
@@ -2584,7 +2608,7 @@ function mineAt(a,hit,r){
     a.data[i]=0;a.count--;removed++;
     if(removed<=8)spawnP(a.org.x+x+.5,a.org.y+y+.5,a.org.z+z+.5,hit.nx*4+(Math.random()-.5)*4,hit.ny*4+(Math.random()-.5)*4,hit.nz*4+(Math.random()-.5)*4,VCOL[id],.6+Math.random()*.9);
   }
-  if(removed){a.dirty=true;for(const k in got)addRes(k,got[k]);revealBuried(a,false);}
+  if(removed){astMark(a,hit.ix,hit.iy,hit.iz,R+1);for(const k in got)addRes(k,got[k]);revealBuried(a,false);}
 }
 function aim(){if(fcamOn)_o.copy(player.pos).addScaledVector(player.lastUp,player.eye);else camera.getWorldPosition(_o);   // in third person the ray starts at the character's eyes, not the camera
   _d.set(0,0,-1).applyQuaternion(camera.quaternion).normalize();}
@@ -3846,7 +3870,7 @@ function pioLevel(T){   // DOCK: stand the ship upright on the surface under its
   const nrm=new V3();
   for(let i=0;i<3;i++){if(gap[i]===null)continue;
     const cx=_lv[i].x-up.x*gap[i],cy=_lv[i].y-up.y*gap[i],cz=_lv[i].z-up.z*gap[i];
-    for(const a of AXES6)if(!pointSolid(cx+a[0]*.5,cy+a[1]*.5,cz+a[2]*.5)){nrm.x+=a[0];nrm.y+=a[1];nrm.z+=a[2];}}
+    for(const a of AXES6)if(a[0]*up.x+a[1]*up.y+a[2]*up.z>.5&&!pointSolid(cx+a[0]*.5,cy+a[1]*.5,cz+a[2]*.5)){nrm.x+=a[0];nrm.y+=a[1];nrm.z+=a[2];}}
   if(nrm.lengthSq()<.01)return;
   nrm.normalize();
   if(nrm.dot(up)<.6)return;   // a wall or a steep rock: do not roll the ship onto its side
@@ -3857,13 +3881,28 @@ function pioLevel(T){   // DOCK: stand the ship upright on the surface under its
   if(pioFootGap(T,up2,gap)>=1){let m=1e9;for(let i=0;i<3;i++)if(gap[i]!==null&&gap[i]<m)m=gap[i];
     G.position.addScaledVector(up2,-(m-.03));G.updateMatrixWorld(true);}
 }
+function padUpNear(pos,R){   // the deck normal of the nearest Landing Pad within R metres, or null
+  let best=null,bd=R;
+  for(const g of grids){if(!g.pads||!g.pads.length)continue;g.group.updateMatrixWorld(true);
+    for(const p of g.pads){const c=g.group.localToWorld(_pe.set(p.i*2,p.j*2+.8,p.k*2)),d=c.distanceTo(pos);
+      if(d<bd){bd=d;best=_lu.set(0,1,0).applyQuaternion(p.iq.clone().invert()).applyQuaternion(g.group.quaternion).normalize().clone();}}}
+  return best;
+}
+function pioPadSnap(T){   // set down on a pad but badly tilted: stand the ship on the deck's own up, then lift it clear before the feet find the deck
+  const G=T.group,up=new V3(0,1,0).applyQuaternion(G.quaternion),pu=padUpNear(G.position,14);
+  if(!pu||up.dot(pu)>.97)return;
+  G.quaternion.premultiply(new THREE.Quaternion().setFromUnitVectors(up,pu)).normalize();G.updateMatrixWorld(true);
+  for(let i=0;i<150&&pioHits(T);i++){G.position.addScaledVector(pu,.1);G.updateMatrixWorld(true);}
+  for(let i=0;i<200&&!pioHits(T);i++){G.position.addScaledVector(pu,-.1);G.updateMatrixWorld(true);}   // then lower it until the feet just touch
+  G.position.addScaledVector(pu,.1);G.updateMatrixWorld(true);
+}
 function pioDock(){
   const T=pioSeat&&pioSeat.T;if(!T)return;
   if(T.lock){T.lock=null;T.vel.set(0,1.6,0).applyQuaternion(T.group.quaternion);T.gearTgt=0;T.grace=1;T.group.position.addScaledVector(_lu.set(0,1,0).applyQuaternion(T.group.quaternion),.15);T.group.updateMatrixWorld(true);toast('Pioneer released','good');return;}
   const D=pioDockOK(T);
   if(!D.near){toast('Nothing to set down on','bad');return;}
   if(!D.slow){toast('You are traveling too fast to dock.','bad');return;}
-  pioLevel(T);
+  pioPadSnap(T);pioLevel(T);
   T.lock={pos:T.group.position.clone(),q:T.group.quaternion.clone()};T.vel.set(0,0,0);T.rate=[0,0,0];T.gearTgt=1;
   toast('Pioneer set down · tap UNDOCK to take off','good');
 }
@@ -4813,6 +4852,7 @@ function machineTick(dt){
 
 /* ---------- economy: credits, market, warehouses, freight traders ---------- */
 const ITEMS=['phage','algae','comp','motor','thP','tAl','board','wire','constr','stP','plate','ptI','tiI','siI','alI','cuI','stI','feI','pt','ti','al','cu','si','carb','ice','fe'];
+ITEMS.sort((a,b)=>SHORT[a].localeCompare(SHORT[b]));   // goods are listed alphabetically by name
 /* Every made good is priced at about 1.3 x its inputs (see claude/void-engineers-materials-and-crafting.md). */
 /* credits: v195 rebalance, every price is the old one divided by 1000 (Iron ore 8) */
 const PRICE0={phage:24,algae:15,fe:8,si:12,ice:5,pt:40,carb:9,cu:14,al:16,ti:22,feI:21,siI:62,ptI:416,cuI:55,stI:33,alI:62,tiI:114,plate:82,constr:55,stP:86,tAl:121,thP:408,wire:24,board:217,motor:273,comp:645};
@@ -5648,7 +5688,7 @@ function tradeRefresh(){
   const tot=$('t-tot');
   if(tot){
     const GR=[['Ores',['fe','si','ice','pt','carb','cu','al','ti']],['Ingots',['feI','siI','ptI','cuI','stI','alI','tiI']],['Components',['plate','constr','stP','tAl','thP','wire','board','motor','comp']],['Live Items',['algae','phage'].filter(k=>ITEMS.includes(k))]];
-    const rest=ITEMS.filter(k=>!GR.some(x=>x[1].includes(k)));if(rest.length)GR.push(['Other',rest]);
+    for(const x of GR)x[1].sort((p,q)=>SHORT[p].localeCompare(SHORT[q]));const rest=ITEMS.filter(k=>!GR.some(x=>x[1].includes(k)));if(rest.length)GR.push(['Other',rest]);
     const tg=[];if(chips)for(const c of chips.querySelectorAll('.chip')){const g=grids.find(x=>x.name===c.dataset.g);if(g)tg.push(g);}
     const tgw=tg.map(g=>whTotals(g));
     const html='<div class="mh"><b>All commodities</b><span>tap one to see where it is stored</span></div>'+GR.filter(x=>x[1].length).map(x=>{const op=!cmClosed[x[0]];return '<button class="cgh" data-cg="'+x[0]+'" aria-expanded="'+op+'"><span>'+x[0]+'</span><i>'+(op?'\u25B2':'\u25BC')+'</i></button>'+(op?'<div class="srow">'+x[1].map(k=>{let n=inv[k]|0;for(const w of tgw)n+=w.t[k]||0;return '<button class="sc cm" data-cm="'+k+'"><i style="'+ITEM_ICON(k)+'"></i>'+SHORT[k]+' <b>'+n+'</b></button>';}).join('')+'</div>':'');}).join('');
@@ -6172,7 +6212,7 @@ function serialize(){
     grids:grids.filter(g=>g.kind!=='drone').map(g=>{
       const gq=g.group.quaternion;
       return{n:g.name,k:g.kind||0,s:g.station?1:0,p:r3(g.group.position),q:[gq.x,gq.y,gq.z,gq.w],v:r3(g.vel),f:Math.round(g.fuel),po:g.powerOff?1:0,
-        b:Array.from(g.blocks.values()).map(b=>[b.type,b.i,b.j,b.k,b.f||0,b.queue&&b.queue.length?b.queue.slice():0,b.job?[b.job.id,+b.job.t.toFixed(2)]:0,tierOf(b),b.store&&Object.keys(b.store).length?Object.assign({},b.store):0,b.s|0,b.pf?b.pf.join(''):0,wipOn(b)?Object.assign({},b.wi):0,b.dmg?+b.dmg.toFixed(1):0,b.gm|0]),
+        b:Array.from(g.blocks.values()).map(b=>[b.type,b.i,b.j,b.k,b.f||0,b.queue&&b.queue.length?b.queue.slice():0,b.job?[b.job.id,+b.job.t.toFixed(2)]:0,tierOf(b),b.store&&Object.keys(b.store).length?Object.assign({},b.store):0,b.s|0,b.pf?b.pf.join(''):0,wipOn(b)?Object.assign({},b.wi):0,b.dmg?+b.dmg.toFixed(1):0,b.gm|0,b.ph?+b.ph.toFixed(3):0]),
         tr:g.trade?[Math.round(g.trade.timer),g.trade.state===3?g.trade.pay:0]:0};
     })
   };
@@ -6394,7 +6434,7 @@ function restoreSave(S){
     let tot=0;for(let k=0;k<S.ast[i].length;k+=2)tot+=S.ast[i][k+1];
     if(tot!==asteroids[i].data.length){astOK=false;break;}
   }
-  if(astOK)for(let i=0;i<asteroids.length;i++){unrle(S.ast[i],asteroids[i].data);asteroids[i].dirty=true;const dd=asteroids[i].data;for(let q=0;q<dd.length;q++)if(dd[q]>1)dd[q]=1;
+  if(astOK)for(let i=0;i<asteroids.length;i++){unrle(S.ast[i],asteroids[i].data);asteroids[i].dirty=true;asteroids[i]._built=false;const dd=asteroids[i].data;for(let q=0;q<dd.length;q++)if(dd[q]>1)dd[q]=1;
     const ds=S.dep&&S.dep[i];if(ds&&ds.length===asteroids[i].deps.length)asteroids[i].deps.forEach((d,n)=>setDepStock(d,ds[n]));}
   Object.assign(inv,S.inv||{});gridSeq=S.gs||1;
   if(S.sv&&S.sv.length===asteroids.length){S.sv.forEach((n,i)=>{if(n)surveyAst(asteroids[i],true,n);});}else asteroids.forEach(a=>surveyAst(a,true));   // older saves: everything already known
@@ -6413,6 +6453,7 @@ function restoreSave(S){
       if(b&&e[12])b.dmg=e[12];
       if(b&&b.queue){if(e[5])b.queue=e[5].slice();if(e[6])b.job={id:e[6][0],t:e[6][1]};}
       if(b&&e[13])b.gm=e[13]|0;
+      if(b&&e[14])b.ph=+e[14]||0;   // the part-grown Phage is kept between sessions
       if(b&&(b.tier>1||b.gm))applyTier(b);
       if(b&&b.store&&e[8])for(const k in e[8])if(inv[k]!==undefined)b.store[k]=e[8][k];
     }
@@ -6483,7 +6524,7 @@ function boot(){
   }
   try{if(window.claude&&window.claude.hot&&window.claude.hot.snapshot)window.claude.hot.snapshot(()=>({save:(wiping||TUTW)?null:serialize()}));}catch(e){}
   window.__VE={asteroids,renderer,scene,THREE,kf,openRepair,repairBill,repairTick,repairShip,pioNetWorth,pioRepairValue,PRICE0,eco,pioDamage,pioMaxHP,inv,shipAmmo,tpShips,pioEnter,grindStep,gridOn,powerTick,spawnDrone,spawnPlayerDrone,droneTick,damageBlock,repairBlock,hpOf,dmgEff,fireBolt,boltsTick,bolts,wipOn,wipUnit,wipBegin,wipDone,mk,mktClick,mktTick,mktBuild,mktRefresh,MKT,mkFee,mkTier,player,grids,asteroids,update,begin,ACT,keys,tb,camera,inv,mineAt,rayAst,pickAll,aim,serialize,restoreSave,saveGame,
-    pioHits,pioDockOK,pointSolid,padArmRoom,padArmAimed,gravHas,gravFloors,gravFlash,addToGrid,gridHas,gridSpace,takeFromGrid,packUsed,packSpace,PACK_CAP,PACKIO,shipIO,spawnShip,interiorOf,bodyHit,bodyMove,cellAt,setTier,growCheck,doorTick,rideSync,seatWorld,nearestSeat,spawnStation,haveK,spend,upgradeBlock,gravR,qMax,tierOf,upCost,recalc,eco,price,PRICE0,ITEMS,loadItem,takeItem,whTotals,payDebt,tradeTick,BEACON,CARGO_CAP,panelSummary,openTerminal,closeTerminal,scanOre,setTool,setPage,addBlock,makeGrid,removeBlock,RECIPES,BDEF,BORDER,
+    pioHits,pioDockOK,pioLevel,pioFootGap,pioPadSnap,rebuildAst,pointSolid,padArmRoom,padArmAimed,gravHas,gravFloors,gravFlash,addToGrid,gridHas,gridSpace,takeFromGrid,packUsed,packSpace,PACK_CAP,PACKIO,shipIO,spawnShip,interiorOf,bodyHit,bodyMove,cellAt,setTier,growCheck,doorTick,rideSync,seatWorld,nearestSeat,spawnStation,haveK,spend,upgradeBlock,gravR,qMax,tierOf,upCost,recalc,eco,price,PRICE0,ITEMS,loadItem,takeItem,whTotals,payDebt,tradeTick,BEACON,CARGO_CAP,panelSummary,openTerminal,closeTerminal,scanOre,setTool,setPage,addBlock,makeGrid,removeBlock,RECIPES,BDEF,BORDER,
     setDev:v=>{DEV=!!v;},platePaint,openPicker,openUpg,connGrid,surveyAst,revealBuried,tutState:()=>tut,startTut,renameGrid,dockPlan,toggleDock,pointSolid,shipHitsAst,enterShip,exitShip,inReach,gridsTouch,isCraft,dockCheck,dockTick,startXfer,moveTarget,PAD_RATE,BASE_RATE,xferState:()=>xfer,
     state:()=>({inGrav,page,termOpen,detRange,detSummary,paused,running}),
     shipAmmo,tpShips,pioEnter,setFire:v=>{mFire=v;},setGrind:v=>{mGrind=v;},MP,mpHandle};
