@@ -630,7 +630,7 @@ body.uitut #camrow .tb,body.uitut #edge .tb,body.uitut #rbar .tb{visibility:visi
 'use strict';
 /* =====================  Void Engineers  =====================
    Part A: renderer, sky, procedural voxel asteroids, particles */
-const GAME_VER='230';
+const GAME_VER='232';
 {const vl=document.getElementById('verlab');if(vl)vl.textContent='v'+GAME_VER;}
 /* no page zoom while playing: pinch, double-tap and ctrl+wheel are swallowed */
 (()=>{const no=e=>{e.preventDefault();};
@@ -1269,8 +1269,8 @@ const BDEF={
   steps:{name:'Steps',cost:{fe:8},mass:500,part:true,spin:true,spec:'climbable \u00b7 SPIN turns the rise \u00b7 0.5 t'},
   thruster:{name:'Thruster',cost:{fe:12,si:8},mass:1500,thrust:50,spec:'50 kN · 1.5 t'},
   mthruster:{name:'Maneuvering Thruster',cost:{fe:12,si:8},mass:1500,thrust:50,spec:'50 kN \u00b7 a hull block with a vent \u00b7 1.5 t'},
-  turret:{name:'Turret',cost:{fe:60,si:20,cu:12},mass:2000,hp:400,turret:true,spec:'autocannon \u00b7 range 250 m \u00b7 10 damage, 2 shots/s \u00b7 draws power and iron from this grid\u2019s hold \u00b7 400 HP \u00b7 2.0 t'},
-  gun:{name:'Gun',cost:{fe:20,si:6},mass:800,gun:true,spec:'fires along its barrel \u00b7 1 damage, 4 shots/s \u00b7 0.8 t'},
+  turret:{name:'Turret',cost:{fe:60,si:20,cu:12},mass:2000,hp:400,turret:true,spec:'autocannon \u00b7 range 250 m \u00b7 10 damage, 2 shots/s \u00b7 draws power and Iron ammo from this grid\u2019s hold \u00b7 400 HP \u00b7 2.0 t'},
+  gun:{name:'Gun',cost:{fe:20,si:6},mass:800,gun:true,spec:'fires along its barrel \u00b7 uses Iron ammo \u00b7 1 damage, 4 shots/s \u00b7 0.8 t'},
   bigthruster:{name:'Large Thruster',cost:{fe:30,si:20,pt:4},mass:4200,thrust:160,spec:'160 kN · 4.2 t'},
   gyro:{name:'Gyroscope',cost:{fe:15,si:10,pt:2},mass:3000,spec:'turn rate · 3.0 t'},
   seat:{name:'Pilot Seat',cost:{fe:15,si:12},mass:400,part:true,spin:true,spec:'sit to fly \u00b7 SPIN sets the ship\u2019s forward \u00b7 0.4 t'},
@@ -2591,6 +2591,20 @@ function setBuildUI(){
 function setTool(n){if(n===4&&!paintOK()){toast('Painting only works at a dock or station','bad');n=5;}player.tool=n;setBuildUI();if(n===1)showBar();}
 
 /* ---------- audio ---------- */
+let _noiseBuf=null;
+function gunPop(vol,pitch){   // a small explosion: a burst of filtered noise and a dropping thump
+  if(!AC||muted)return;
+  try{
+    const t=AC.currentTime,sr=AC.sampleRate;
+    if(!_noiseBuf){_noiseBuf=AC.createBuffer(1,Math.floor(sr*.25),sr);const d=_noiseBuf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;}
+    const n=AC.createBufferSource();n.buffer=_noiseBuf;
+    const f=AC.createBiquadFilter();f.type='lowpass';f.frequency.setValueAtTime(2600*pitch,t);f.frequency.exponentialRampToValueAtTime(260,t+.16);
+    const g=AC.createGain();g.gain.setValueAtTime(.22*vol,t);g.gain.exponentialRampToValueAtTime(.001,t+.17);
+    n.connect(f);f.connect(g);g.connect(AC.destination);n.start(t);n.stop(t+.2);
+    const o=AC.createOscillator(),og=AC.createGain();o.type='sine';o.frequency.setValueAtTime(170*pitch,t);o.frequency.exponentialRampToValueAtTime(45,t+.12);
+    og.gain.setValueAtTime(.3*vol,t);og.gain.exponentialRampToValueAtTime(.001,t+.13);o.connect(og);og.connect(AC.destination);o.start(t);o.stop(t+.15);
+  }catch(e){}
+}
 let AC=null,thrGain=null,drillGain=null,drillOsc=null,muted=false;
 function initAudio(){
   if(AC)return;
@@ -3499,15 +3513,15 @@ function driftGrids(dt){
 let last=0;
 /* ---- gun bolts: a short glowing streak that carries the ship's own speed and damages the first block it meets ---- */
 const BOLT_V=260,BOLT_LIFE=1.8,BOLT_DMG=1,bolts=[],_bp=new V3();
-const boltGeo=new THREE.BoxGeometry(.14,.14,1.8),boltMat=new THREE.MeshBasicMaterial({color:0xffd24a});
-const SHOTS_PER_IRON=20,SHOTS_PER_AMMO=40;   // one iron in the hold is 20 shots; the cargo panel shows the iron left
+const boltGeo=new THREE.BoxGeometry(.14,.14,.9),boltMat=new THREE.MeshBasicMaterial({color:0xffd24a});
+const SHOTS_PER_AMMO=40;   // guns fire Iron ammo only (made in the Refinery); one is 40 shots
 function shipAmmo(g){
   if(DEV)return true;
   if(!(g._ammo>0)){
-    if(takeFromGrid(g,'ammo',1)>=1)g._ammo=SHOTS_PER_AMMO;else if(takeFromGrid(g,'fe',1)>=1)g._ammo=SHOTS_PER_IRON;else return false;
+    if(takeFromGrid(g,'ammo',1)>=1)g._ammo=SHOTS_PER_AMMO;else return false;
   }
   g._ammo--;
-  if(g._ammo===0&&gridHas(g,'fe')<=0&&gridHas(g,'ammo')<=0)toast('Last of the iron loaded. Resupply soon.','bad');
+  if(g._ammo===0&&gridHas(g,'ammo')<=0)toast('Last of the ammo loaded. Resupply soon.','bad');
   return true;
 }
 function fireBolt(g,b,q){
@@ -3532,7 +3546,7 @@ function fireBolt(g,b,q){
   }
   const m=new THREE.Mesh(boltGeo,boltMat);scene.add(m);
   bolts.push({p:muzzle.clone(),v:dir.clone().multiplyScalar(BOLT_V).add(g.vel),life:BOLT_LIFE,src:g,mesh:m});
-  if(booted)beep(900,.04);
+  if(booted)gunPop(1,1);
 }
 function boltsTick(dt){
   for(let n=bolts.length-1;n>=0;n--){
@@ -3866,9 +3880,9 @@ function pirateToggle(){   // dev: one pirate goes for the nearest turret; tap a
   let tg=null,bd=1e12;for(const g of grids){if(!g.turrets||!g.turrets.length)continue;const d=g.group.position.distanceToSquared(camera.position);if(d<bd){bd=d;tg=g;}}
   const f=new V3(0,0,-1).applyQuaternion(camera.quaternion);let pos;
   if(tg){const a=tg.group.position.clone().sub(camera.position);if(a.lengthSq()<1)a.copy(f);a.normalize();pos=tg.group.position.clone().addScaledVector(a,-1).addScaledVector(new V3(0,1,0),20).addScaledVector(a.clone().cross(new V3(0,1,0)).normalize(),60);pos.addScaledVector(a,-190);}
-  else pos=camera.position.clone().addScaledVector(f,170);
-  const P=pirateSpawn(pos,camera.quaternion);P.vel.set(0,0,0);
-  toast(tg?'Pirate inbound for '+tg.name+' (tap again to destroy it)':'Pirate spawned, no turret to attack (tap again to destroy it)','bad');
+  else pos=camera.position.clone().addScaledVector(f,38);
+  const P=pirateSpawn(pos,camera.quaternion);P.vel.set(0,0,0);if(!tg)P.passive=true;
+  toast(tg?'Pirate inbound for '+tg.name+' (tap again to destroy it)':'Pirate on display, no turret to attack yet (tap again to destroy it)','bad');
 }
 function pirateTarget(P){   // pirates go for turrets first, then the player's ship or the player
   let best=null,bd=900;
@@ -3880,6 +3894,10 @@ function pirateTarget(P){   // pirates go for turrets first, then the player's s
 }
 function pirateTick(dt){
   for(const P of pirates.slice()){
+    if(P.passive){   // a display pirate: hovers where it was put, until a turret exists to attack
+      if(grids.some(g=>g.turrets&&g.turrets.length&&g.kind!=='derelict'))P.passive=false;
+      else{P.t+=dt;P.flash=Math.max(0,P.flash-dt);P.body.emissive.setRGB(P.flash>0?.7:0,P.flash>0?.25:0,0);P.grp.rotation.y+=dt*.35;P.grp.updateMatrixWorld(true);P.c.set(0,1.1,0).applyQuaternion(P.grp.quaternion).add(P.grp.position);continue;}
+    }
     const gp=P.grp.position,tg=pirateTarget(P),rel=tg.pos.clone().sub(gp),range=rel.length()||1,rh=rel.clone().multiplyScalar(1/range);
     P.t+=dt;P.flash=Math.max(0,P.flash-dt);
     P.body.emissive.setRGB(P.flash>0?.7:0,P.flash>0?.25:0,0);
@@ -3908,7 +3926,7 @@ function pirateTick(dt){
         const wb=weaponBonus();
         const m=new THREE.Mesh(boltGeo,boltMat);scene.add(m);
         bolts.push({p:muz,v:dir.multiplyScalar(BOLT_V).add(P.vel),life:BOLT_LIFE,src:P,mesh:m,bd:PIRATE.blk,pd:PIRATE.pio});
-        if(booted&&gp.distanceTo(camera.position)<300)beep(520,.04);
+        if(booted){const dd=gp.distanceTo(camera.position);if(dd<300)gunPop(Math.max(.2,1-dd/300),.85);}
       }
     }
   }
@@ -3918,7 +3936,6 @@ function turretLoad(g,b){   // one iron in the grid's hold is 20 shots, like the
   if(b._ammo>0)return true;
   const wb=weaponBonus().ammo;
   if(takeFromGrid(g,'ammo',1)>=1){b._ammo=Math.round(SHOTS_PER_AMMO*wb);return true;}
-  if(takeFromGrid(g,'fe',1)>=1){b._ammo=Math.round(SHOTS_PER_IRON*wb);return true;}
   return false;
 }
 const _ctp=new V3(),_ctq=new V3(),_ctm=new V3();
@@ -3947,7 +3964,7 @@ function turretTick(dt){
         pit.updateMatrixWorld(true);const muz=pit.localToWorld(new V3(0,0,-1.7)),dir=new V3(0,0,-1).transformDirection(pit.matrixWorld);
         const wb=weaponBonus(),m=new THREE.Mesh(boltGeo,boltMat);scene.add(m);
         bolts.push({p:muz,v:dir.multiplyScalar(BOLT_V).add(g.vel),life:BOLT_LIFE,src:g,mesh:m,dmg:TURRET.dmg*wb.dmg,bd:BOLT_DMG*wb.dmg});
-        if(booted&&g.group.position.distanceTo(camera.position)<300)beep(700,.05);
+        if(booted){const dd=g.group.position.distanceTo(camera.position);if(dd<300)gunPop(Math.max(.2,1-dd/300),1.15);}
       }
     }
   }
@@ -3958,7 +3975,7 @@ function turretTest(){   // dev: a small powered turret station with iron in its
   addBlock(g,0,0,0,'hull');addBlock(g,1,0,0,'hull');addBlock(g,0,0,1,'hull');addBlock(g,1,0,1,'hull');
   addBlock(g,0,1,0,'turret');addBlock(g,1,1,0,'powergen',null,0,1);addBlock(g,0,1,1,'cargo',null,0,1);addBlock(g,1,1,1,'tank',null,0,1);
   g.bulk=false;recalc(g);g.fuel=g.fuelCap;g.group.updateMatrixWorld(true);
-  for(const b of g.cargos){b.store=b.store||{};b.store.fe=40;}hudDirty=true;
+  for(const b of g.cargos){b.store=b.store||{};b.store.ammo=40;}hudDirty=true;
   toast('Test turret placed: powered, 40 iron in its hold. Tap PIRATE.','good');
 }
 
@@ -6055,7 +6072,7 @@ function tradeRefresh(){
   // all commodities, one block per container or docked craft, then the pack
   const tot=$('t-tot');
   if(tot){
-    const GR=[['Ores',['fe','si','ice','pt','carb','cu','al','ti']],['Ingots',['feI','siI','ptI','cuI','stI','alI','tiI']],['Components',['ammo','plate','constr','stP','tAl','thP','wire','board','motor','comp']],['Live Items',['algae','phage'].filter(k=>ITEMS.includes(k))]];
+    const GR=[['Ores',['fe','si','ice','pt','carb','cu','al','ti']],['Ingots',['feI','siI','ptI','cuI','stI','alI','tiI']],['Ammo',['ammo']],['Components',['plate','constr','stP','tAl','thP','wire','board','motor','comp']],['Live Items',['algae','phage'].filter(k=>ITEMS.includes(k))]];
     for(const x of GR)x[1].sort((p,q)=>SHORT[p].localeCompare(SHORT[q]));const rest=ITEMS.filter(k=>!GR.some(x=>x[1].includes(k)));if(rest.length)GR.push(['Other',rest]);
     const tg=[];if(chips)for(const c of chips.querySelectorAll('.chip')){const g=grids.find(x=>x.name===c.dataset.g);if(g)tg.push(g);}
     const tgw=tg.map(g=>whTotals(g));
