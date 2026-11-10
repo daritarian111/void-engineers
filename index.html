@@ -302,6 +302,7 @@ body[data-tool="3"] #cross::before,body[data-tool="3"] #cross::after{background:
 #wvlab{padding:8px 16px 14px;color:var(--dim);font:11px var(--mono);letter-spacing:.04em}
 #dev,#orient,#saver,#musicbtn{border:0;background:transparent;box-shadow:inset 0 0 0 1px var(--edge);color:var(--dim);font:600 15px var(--display);letter-spacing:.16em;text-transform:uppercase;padding:10px 20px;cursor:pointer}
 #tnote{position:fixed;left:50%;top:27%;transform:translateX(-50%);z-index:40;display:flex;gap:12px;align-items:center;max-width:min(520px,90vw);background:rgba(8,13,22,.92);box-shadow:inset 0 0 0 1px var(--hazard);padding:10px 14px;font:500 13px var(--mono);color:var(--ink)}
+#t-inv .ivr{display:flex;align-items:center;gap:10px;padding:6px 2px;border-bottom:1px solid var(--edge);font-size:13px}#t-inv .ivr .nm{flex:1;display:flex;align-items:center;gap:6px}#t-inv .ivr.z{color:var(--dim)}#t-inv .ivr b{min-width:46px;text-align:right}#t-inv .ivr .bt{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 #hint{position:fixed;left:50%;top:18%;transform:translateX(-50%);z-index:70;display:flex;gap:12px;align-items:center;max-width:min(520px,90vw);background:rgba(8,13,22,.94);box-shadow:inset 0 0 0 1px var(--ice);padding:10px 14px;font:500 13px var(--mono);color:var(--ink)}
 #hint[hidden]{display:none}#hint b{color:var(--ice)}#hint button{border:0;background:rgba(143,227,245,.2);box-shadow:inset 0 0 0 1px var(--ice);color:var(--ink);font:700 12px var(--display);letter-spacing:.12em;padding:8px 12px;min-height:40px;cursor:pointer;touch-action:manipulation}
 #tnote[hidden]{display:none}#tnote b{color:var(--hazard)}#tnote button{border:0;background:var(--hazard);color:var(--hazard-ink);font:700 13px var(--display);letter-spacing:.12em;padding:8px 14px;cursor:pointer}
@@ -633,7 +634,7 @@ body.uitut #camrow .tb,body.uitut #edge .tb,body.uitut #rbar .tb{visibility:visi
 'use strict';
 /* =====================  Void Engineers  =====================
    Part A: renderer, sky, procedural voxel asteroids, particles */
-const GAME_VER='238';
+const GAME_VER='240';
 {const vl=document.getElementById('verlab');if(vl)vl.textContent='v'+GAME_VER;}
 /* no page zoom while playing: pinch, double-tap and ctrl+wheel are swallowed */
 (()=>{const no=e=>{e.preventDefault();};
@@ -1226,7 +1227,7 @@ const CARGO_CAP=[1000,2000,3500,6000];
 const BEACON=[{cap:400,every:240,fee:.30},{cap:700,every:200,fee:.25},{cap:1100,every:160,fee:.20},{cap:1600,every:120,fee:.15}];
 const C_CARGO=[{plate:4,constr:4},{plate:8,constr:8,comp:1},{plate:14,constr:12,comp:3}];
 const C_BCN=[{plate:6,motor:3,comp:3},{plate:12,motor:6,comp:6,ptI:3},{plate:20,motor:10,comp:10,ptI:8}];
-const PAD_RATE=[40,80,160,320],BASE_RATE=12,PAD_REACH=40;   // cargo transfer speed (units/s) with and without a Landing Pad
+const PAD_RATE=[40,80,160,320],BASE_RATE=15,PAD_REACH=40;   // cargo transfer speed (units/s) with and without a Landing Pad
 const C_PAD=[{plate:6,constr:6,comp:1},{plate:12,constr:10,comp:3},{plate:18,constr:16,comp:6}];
 const C_PADL=[{plate:12,constr:12,comp:2},{plate:24,constr:20,comp:6},{plate:36,constr:32,comp:12}];
 const TIER_DEF={
@@ -5831,7 +5832,7 @@ function powerSummary(g){
 }
 function startXfer(from,to,only){xfer={from,to,acc:0,moved:0,only:only||null};}
 function dockTick(dt){
-  tutNoteTick();tutTick(dt);upbTick(dt);dockBtnTick(dt);powerTick(dt);
+  tutNoteTick();tutTick(dt);upbTick(dt);dockBtnTick(dt);powerTick(dt);ivJobTick(dt);
   dockAcc+=dt;if(dockAcc<.25)return;
   const step=dockAcc;dockAcc=0;
   for(const g of grids){
@@ -5988,7 +5989,7 @@ function openTerminal(focusUid,mode){
   Object.keys(keys).forEach(k=>keys[k]=false);mFire=mGrind=false;tb.fire=tb.up=tb.down=0;audioLevels(0,false);
   termMap.clear();
   $('tbody').dataset.mode=m;
-  $('tbody').innerHTML=tabsHTML(m)+(m==='prod'?buildProd(prodList):m==='mkt'?mktBuild():buildTrade(sg)+pioXHTML());
+  $('tbody').innerHTML=tabsHTML(m)+(m==='prod'?buildProd(prodList):m==='mkt'?mktBuild():buildTrade(sg));
   if(m==='mkt')hint('mkt','Each settlement has its own prices and shipping costs. Shop around for the best price.');
   if(m==='prod')for(const card of $('tbody').querySelectorAll('.mcard')){
     const uid=+card.dataset.m,e=prodList.find(x=>x.b.uid===uid);
@@ -6010,17 +6011,7 @@ function buildProd(list){
   }).join('');
 }
 const ITEM_ICON=k=>{const i=RES.indexOf(k),j=['feI','siI','ptI','cuI','stI','alI','tiI'].indexOf(k);if(j>=0)return 'background-image:url('+ING_IMG[j]+')';if(COMP_IMG[k])return 'background-image:url('+COMP_IMG[k]+')';return i>=0?'background-image:url('+ORE_IMG[i][0]+')':'background:'+RCOL[k]+';border-radius:3px;transform:scale(.6)';};
-function buildTrade(sg){
-  let h='<div class="mcard" id="t-tot"></div>';
-  h+='<div class="mcard"><div class="mh"><b>Storage</b><span id="t-pack"></span></div>'+
-    (sg.length?'<div class="bt" style="justify-content:flex-start" id="t-chips">'+sg.map(g=>'<button class="rb chip'+(undocked(g)?' nd':'')+'" data-act="sel" data-g="'+g.name+'">'+g.name+(undocked(g)?' (not docked)':'')+' <small></small></button>').join('')+'</div>':'<div class="qrow">No cargo container in reach and no craft docked. Build a Cargo Container, or land a craft on the station.</div>')+
-    '<div class="qrow" id="t-dock" style="white-space:pre-line"></div>'+
-    (sg.length>1?'<div class="mfoot"><button class="rb" data-act="moveall" id="t-move"></button></div>':'')+
-    '<div class="gtab"><div class="grow2 h"><span>Goods</span><span>Your pack</span><span id="t-here">Here</span><span></span></div>'+
-    ITEMS.map(k=>'<div class="grow2" data-k="'+k+'"><span class="nm"><i style="'+ITEM_ICON(k)+'"></i>'+SHORT[k]+'</span><span class="cg"></span><span class="wh"></span>'+
-      '<span class="bt"><button class="rb" data-act="load" data-k="'+k+'" data-n="50">+50</button><button class="rb" data-act="load" data-k="'+k+'" data-n="99999">All in</button><button class="rb" data-act="take" data-k="'+k+'" data-n="99999">Take</button><button class="rb mvi" data-act="moveitem" data-k="'+k+'">Move</button></span></div>').join('')+'</div></div>';
-  return h;
-}
+function buildTrade(sg){return '<div class="mcard" id="t-tot"></div><div id="t-inv"></div>';}
 function termRefresh(){
   if(sheet==='pio'){pioRefresh();return;}
   if(sheet==='rep'){repRefresh();return;}
@@ -6064,46 +6055,142 @@ function termRefresh(){
     ent.up.disabled=!uc||!canAfford(uc);
   }
 }
-function tradeRefresh(){
-  if(!$('t-pack'))return;
-  const f=termF,sel=selGrid();
-  // storage
-  setT($('t-pack'),'Pack '+packUsed()+' / '+PACK_CAP);
-  const chips=$('t-chips');
-  if(chips)for(const c of chips.querySelectorAll('.chip')){
-    const g=grids.find(x=>x.name===c.dataset.g);if(!g)continue;
-    const w=whTotals(g);setT(c.lastChild,w.u+'/'+w.c);c.classList.toggle('on',!!sel&&sel.name===g.name);
-  }
-  const mv=$('t-move');
-  if(mv){
-    const other=moveTarget(sel),slow=sel&&other&&(isCraft(sel)||isCraft(other)),cr=slow?(isCraft(sel)?sel:other):null;
-    setT(mv,!(sel&&other)?'':(xfer&&xfer.from===sel?'Moving\u2026 '+gridUsed(sel)+' left \u00b7 tap to stop':'Move all from '+sel.name+' to '+other.name+(slow&&cr.dock?' \u00b7 '+cr.dock.rate+' units/s':'')));
-    mv.style.display=other?'':'none';
-  }
-  const dk=$('t-dock');
-  if(dk){
-    const ls=[];
-    for(const c of grids){
-      if(!isCraft(c)||!inReach(c))continue;
-      ls.push(c.dock?c.name+' docked at '+c.dock.h.name+' \u00b7 '+c.dock.rate+' units/s'+(c.dock.pad?' (Landing Pad T'+c.dock.pad+')':' \u2014 build a Landing Pad for faster transfers'):
-        c.name+(c.legs.length?' is not docked \u2014 set it down on a station and hold still':' has no Landing Leg'));
+
+// ---- Inventory page: all commodities, Local Storage (view only), and a transfer section ----
+let ivView='',ivXfer='pack';
+function ivStores(){
+  const out=[],gs=viewGrids();
+  const prim=gs.find(g=>!isCraft(g))||gs[0]||null;
+  if(prim)out.push({id:'g:'+prim.name,name:prim.name,g:prim,primary:true});
+  for(const g of gs)if(g!==prim)out.push({id:'g:'+g.name,name:g.name,g,craft:isCraft(g)});
+  const T=pioXT();if(T)out.push({id:'pio',name:'Pioneer',T});
+  out.push({id:'pack',name:'Pack',pack:true});
+  return out;
+}
+const ivHas=(s,k)=>s.g?gridHas(s.g,k):s.T?(s.T.hold[k]|0):(inv[k]|0);
+const ivCap=s=>s.g?(w=>[w.u,w.c])(whTotals(s.g)):s.T?[pioHoldUsed(s.T),pioHoldCap(s.T)]:[packUsed(),PACK_CAP];
+const ivSpace=s=>{const c=ivCap(s);return Math.max(0,c[1]-c[0]);};
+function ivPut(s,k,n){   // put up to n into a store, return what fitted
+  n=Math.min(n,ivSpace(s));if(n<=0)return 0;
+  if(s.g)return addToGrid(s.g,k,n);
+  if(s.T){s.T.hold[k]=(s.T.hold[k]|0)+n;return n;}
+  inv[k]=(inv[k]|0)+n;hudDirty=true;return n;
+}
+function ivGet(s,k,n){   // take up to n out of a store, return what came out
+  n=Math.min(n,ivHas(s,k));if(n<=0)return 0;
+  if(s.g)return takeFromGrid(s.g,k,n);
+  if(s.T){s.T.hold[k]-=n;return n;}
+  inv[k]-=n;hudDirty=true;return n;
+}
+const ivEsc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+function ivTabs(stores,cur,kind){return '<div class="ttabs">'+stores.map(s=>'<button class="ttab'+(s.id===cur?' on':'')+'" data-iv="'+kind+'" data-id="'+ivEsc(s.id)+'">'+ivEsc(s.name)+(s.craft&&undocked(s.g)?' (not docked)':'')+'</button>').join('')+'</div>';}
+function ivGoods(s,act,prim){
+  const rows=[];
+  for(const k of ITEMS){
+    const n=ivHas(s,k);if(n<=0&&!(act&&ivHas(prim,k)>0))continue;
+    let btns='';
+    if(act){
+      const pn=ivEsc(prim.name),back=ivHas(prim,k)>0;
+      btns='<span class="bt">'+(n>0?'<button class="rb" data-iv="add" data-k="'+k+'">Add to '+pn+'</button>':'')+(back?'<button class="rb" data-iv="pull" data-k="'+k+'">Pull from '+pn+'</button>':'')+'</span>';
     }
-    setT(dk,ls.join('\n'));
+    rows.push('<div class="ivr'+(n>0?'':' z')+'"><span class="nm"><i style="'+ITEM_ICON(k)+'"></i>'+SHORT[k]+'</span><b>'+n+'</b>'+btns+'</div>');
   }
-  const wt=sel?whTotals(sel):{t:{},u:0,c:0};
-  setT($('t-here'),sel?sel.name:'Here');
-  for(const row of $('tbody').querySelectorAll('.grow2[data-k]')){
-    const k=row.dataset.k;
-    setT(row.querySelector('.cg'),String(inv[k]|0));setT(row.querySelector('.wh'),String(wt.t[k]||0));
-    const mvb=row.querySelector('.mvi');if(mvb){const ot=moveTarget(sel);mvb.style.display=ot?'':'none';mvb.disabled=!(wt.t[k]>0);}
+  return rows.length?rows.join(''):'<div class="qrow">Nothing stored here.</div>';
+}
+let ivJob=null;   // a timed transfer between the primary storage and a craft or the Pioneer (the Pack is carried by hand, instantly)
+const ivRate=s=>s.craft&&s.g.dock?s.g.dock.rate:BASE_RATE;
+function ivStart(dir,xs,prim,k,amt){
+  if(ivJob){toast('A transfer is already running','bad');return;}
+  if(xs.craft&&!gridOn(prim.g)&&!gridOn(xs.g)){toast('Transfers need power: neither grid has a running generator','bad');return;}
+  ivJob={dir,xsId:xs.id,k,left:amt,moved:0,acc:0};
+  toast((dir==='add'?'Moving ':'Pulling ')+SHORT[k]+(dir==='add'?' to ':' from ')+prim.name+'\u2026 '+ivRate(xs)+' units/s');ivRender();
+}
+function ivJobTick(dt){
+  if(!ivJob)return;
+  const st=ivStores(),prim=st.find(s=>s.primary),xs=st.find(s=>s.id===ivJob.xsId),j=ivJob;
+  const end=(msg,kind)=>{if(msg)toast(msg,kind);ivJob=null;if(termOpen)ivRender();};
+  if(!prim||!xs||(xs.craft&&undocked(xs.g)))return end('Transfer interrupted ('+j.moved+' units moved)','bad');
+  if(xs.craft&&!gridOn(prim.g)&&!gridOn(xs.g))return end('Transfer stopped: no power on either grid ('+j.moved+' units moved)','bad');
+  j.acc+=ivRate(xs)*dt;let n=Math.floor(j.acc);if(n<1)return;j.acc-=n;
+  const from=j.dir==='add'?xs:prim,to=j.dir==='add'?prim:xs;
+  n=Math.min(n,j.left,ivHas(from,j.k),ivSpace(to));
+  if(n<=0){const full=ivHas(from,j.k)>0&&j.left>0;if(full&&to===prim)hint('full2',HINT_STATION_FULL);return end(j.moved?'Transfer complete: '+j.moved+' '+SHORT[j.k]+' to '+to.name:(full?to.name+' storage is full':'Nothing to move'),j.moved?'good':'bad');}
+  const got=ivGet(from,j.k,n),put=ivPut(to,j.k,got);if(got>put)ivPut(from,j.k,got-put);
+  j.moved+=put;j.left-=put;
+  if(j.left<=0)return end('Transfer complete: '+j.moved+' '+SHORT[j.k]+' to '+to.name,'good');
+  if(termOpen)ivRender();
+}
+function ivRender(){
+  const el=$('t-inv');if(!el)return;
+  const st=ivStores();
+  if(!st.some(s=>s.id===ivView))ivView=st[0].id;
+  if(!st.some(s=>s.id===ivXfer))ivXfer=st[st.length-1].id;
+  const vs=st.find(s=>s.id===ivView),xs=st.find(s=>s.id===ivXfer),prim=st.find(s=>s.primary)||null;
+  const cs=s=>{const c=ivCap(s);return c[0]+' / '+c[1];};
+  let h='<div class="mcard" id="iv-view"><div class="mh"><b>Local Storage</b><span>'+cs(vs)+'</span></div>'+ivTabs(st,ivView,'view')+ivGoods(vs,false,prim)+'</div>';
+  h+='<div class="mcard" id="iv-xfer"><div class="mh"><b>Move goods</b><span>'+cs(xs)+'</span></div>'+ivTabs(st,ivXfer,'xfer');
+  if(!prim)h+='<div class="qrow">There is no station storage here to move goods into.</div>'+ivGoods(xs,false,null);
+  else if(xs===prim)h+='<div class="qrow">Pick the Pioneer, a docked craft or your Pack to move goods in and out of '+ivEsc(prim.name)+'.</div>'+ivGoods(xs,false,prim);
+  else if(xs.craft&&undocked(xs.g))h+='<div class="qrow">'+ivEsc(xs.name)+' is not docked. Set it down on a station with its Landing Legs to move cargo.</div>'+ivGoods(xs,false,prim);
+  else h+=ivGoods(xs,true,prim);
+  if(ivJob){const jx=st.find(s=>s.id===ivJob.xsId);h+='<div class="mfoot"><button class="rb" data-iv="stop">Moving '+SHORT[ivJob.k]+'\u2026 '+ivJob.left+' left \u00b7 '+(jx?ivRate(jx):BASE_RATE)+' units/s \u00b7 tap to stop</button></div>';}
+  h+='</div>';
+  if(el._h!==h){el._h=h;el.innerHTML=h;}
+}
+const pullw=document.createElement('div');pullw.className='winwrap';pullw.style.zIndex=60;pullw.hidden=true;document.body.appendChild(pullw);
+function ivPullPrompt(k){
+  const st=ivStores(),prim=st.find(s=>s.primary),xs=st.find(s=>s.id===ivXfer);if(!prim||!xs||xs===prim)return;
+  const have=ivHas(prim,k),room=ivSpace(xs),max=Math.min(have,room);
+  if(have<=0){toast('No '+SHORT[k]+' in '+prim.name,'bad');return;}
+  if(room<=0){toast(xs.name+' is full','bad');if(xs.pack||xs.T)hint('full1','Storage is full. You can save your goods at the Outpost.');return;}
+  pullw.innerHTML='<div class="win"><div class="stripe"></div><h2>Pull '+SHORT[k]+'</h2><div style="padding:0 16px;display:grid;gap:8px"><div class="cmr"><span>In '+ivEsc(prim.name)+'</span><b>'+have+'</b></div><div class="cmr"><span>Room in '+ivEsc(xs.name)+'</span><b>'+room+'</b></div>'+
+    '<label class="cmr"><span>Amount</span><input id="pull-n" type="number" inputmode="numeric" min="1" max="'+max+'" value="'+max+'" style="width:110px;font:600 15px var(--mono);background:rgba(255,255,255,.06);color:var(--ink);border:1px solid var(--edge);padding:6px 8px"></label></div>'+
+    '<div class="wb" style="margin-top:10px"><button id="pull-max">Max</button><button id="pull-ok">Pull</button><button id="pull-x">Cancel</button></div></div>';
+  pullw.hidden=false;pullw._k=k;pullw._max=max;
+}
+pullw.addEventListener('click',e=>{
+  const b=e.target.closest('button');
+  if(e.target===pullw||(b&&b.id==='pull-x')){pullw.hidden=true;return;}
+  if(!b)return;
+  if(b.id==='pull-max'){$('pull-n').value=pullw._max;return;}
+  if(b.id==='pull-ok'){
+    const k=pullw._k,st=ivStores(),prim=st.find(s=>s.primary),xs=st.find(s=>s.id===ivXfer);pullw.hidden=true;
+    if(!prim||!xs)return;
+    const want=Math.max(0,Math.min(pullw._max,Math.floor(+$('pull-n').value||0)));
+    if(want<=0)return;
+    if(xs.craft&&!gridOn(prim.g)&&!gridOn(xs.g)){toast('Transfers need power: neither grid has a running generator','bad');return;}
+    if(!xs.pack){ivStart('pull',xs,prim,k,want);return;}
+    const got=ivGet(prim,k,want),put=ivPut(xs,k,got);if(got>put)ivPut(prim,k,got-put);
+    toast(put?'Pulled '+put+' '+SHORT[k]+' from '+prim.name:'Nothing moved',put?'good':'bad');ivRender();
   }
+});
+function ivClick(btn){
+  const d=btn.dataset.iv;
+  if(d==='stop'){if(ivJob){toast('Transfer stopped ('+ivJob.moved+' units moved)');ivJob=null;ivRender();}return;}
+  if(d==='view'){ivView=btn.dataset.id;ivRender();return;}
+  if(d==='xfer'){ivXfer=btn.dataset.id;ivRender();return;}
+  const k=btn.dataset.k,st=ivStores(),prim=st.find(s=>s.primary),xs=st.find(s=>s.id===ivXfer);
+  if(!prim||!xs||xs===prim)return;
+  if(d==='pull'){ivPullPrompt(k);return;}
+  if(d==='add'){
+    if(xs.craft&&!gridOn(prim.g)&&!gridOn(xs.g)){toast('Transfers need power: neither grid has a running generator','bad');return;}
+    const have=ivHas(xs,k);
+    if(!xs.pack){if(ivSpace(prim)<=0){toast(prim.name+' storage is full','bad');hint('full2',HINT_STATION_FULL);return;}ivStart('add',xs,prim,k,have);return;}
+    if(ivSpace(prim)<=0){toast(prim.name+' storage is full','bad');hint('full2',HINT_STATION_FULL);return;}
+    const got=ivGet(xs,k,have),put=ivPut(prim,k,got);if(got>put)ivPut(xs,k,got-put);
+    if(put<have)hint('full2',HINT_STATION_FULL);
+    toast(put?'Added '+put+' '+SHORT[k]+' to '+prim.name+(put<have?' ('+(have-put)+' left, storage full)':''):'Nothing moved',put?'good':'bad');ivRender();
+  }
+}
+function tradeRefresh(){
+  if(!$('t-inv'))return;
+  ivRender();
   // all commodities, one block per container or docked craft, then the pack
   const tot=$('t-tot');
   if(tot){
     const GR=[['Ores',['fe','si','ice','pt','carb','cu','al','ti']],['Ingots',['feI','siI','ptI','cuI','stI','alI','tiI']],['Ammo',['ammo']],['Components',['plate','constr','stP','tAl','thP','wire','board','motor','comp']],['Live Items',['algae','phage'].filter(k=>ITEMS.includes(k))]];
     for(const x of GR)x[1].sort((p,q)=>SHORT[p].localeCompare(SHORT[q]));const rest=ITEMS.filter(k=>!GR.some(x=>x[1].includes(k)));if(rest.length)GR.push(['Other',rest]);
-    const tg=[];if(chips)for(const c of chips.querySelectorAll('.chip')){const g=grids.find(x=>x.name===c.dataset.g);if(g)tg.push(g);}
-    const tgw=tg.map(g=>whTotals(g));
+    const tgw=viewGrids().map(g=>whTotals(g));{const pT=pioXT();if(pT)tgw.push({t:pT.hold});}
     const html='<div class="mh"><b>All commodities</b><span>tap one to see where it is stored</span></div>'+GR.filter(x=>x[1].length).map(x=>{const op=!cmClosed[x[0]];return '<button class="cgh" data-cg="'+x[0]+'" aria-expanded="'+op+'"><span>'+x[0]+'</span><i>'+(op?'\u25B2':'\u25BC')+'</i></button>'+(op?'<div class="srow">'+x[1].map(k=>{let n=inv[k]|0;for(const w of tgw)n+=w.t[k]||0;return '<button class="sc cm" data-cm="'+k+'"><i style="'+ITEM_ICON(k)+'"></i>'+SHORT[k]+' <b>'+n+'</b></button>';}).join('')+'</div>':'');}).join('');
     if(tot._h!==html){tot._h=html;tot.innerHTML=html;}
   }
@@ -6113,6 +6200,7 @@ cmw.addEventListener('pointerdown',e=>{if(e.target===cmw||e.target.closest('#cmx
 function showCm(k){   // where one commodity is stored: every container and craft, then the pack
   const rows=[];
   for(const g of viewGrids()){const n=whTotals(g).t[k]||0;rows.push([g.name+(undocked(g)?' (not docked)':''),n]);}
+  {const pT=pioXT();if(pT)rows.push(['Pioneer',pT.hold[k]|0]);}
   rows.push(['Your pack',inv[k]|0]);
   cmw.innerHTML='<div class="win"><div class="stripe"></div><h2>'+SHORT[k]+'</h2><div style="padding:0 16px;display:grid;gap:2px">'+
     rows.map(r=>'<div class="cmr'+(r[1]?'':' z')+'"><span>'+String(r[0]).replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</span><b>'+r[1]+'</b></div>').join('')+
@@ -6130,6 +6218,7 @@ $('tbody').addEventListener('click',e=>{
   if(sheet==='pio'){pioClick(btn);return;}
   if(sheet==='rep'){repClick(btn);return;}
   if(false&&btn.dataset.gm!==undefined&&gravSel){const b=gravSel.b;b.gm=+btn.dataset.gm;applyGravMode(b);b.fieldT=3.5;const n=gravCount(gravSel.g,b);closeTerminal();toast(GM_NAMES[b.gm]+': '+n+' blocks in the field','good');return;}
+  if(btn.dataset.iv){ivClick(btn);return;}
   if(btn.dataset.px){pioXClick(btn);return;}
   if(btn.dataset.cg){cmClosed[btn.dataset.cg]=!cmClosed[btn.dataset.cg];try{localStorage.setItem('void-engineers-cmclosed',JSON.stringify(cmClosed));}catch(e){}const t=$('t-tot');if(t)t._h=null;termRefresh();return;}
   if(btn.dataset.cm){showCm(btn.dataset.cm);return;}
@@ -6364,24 +6453,18 @@ const MENUS=[
   {next:true,panel:'prod',ui:'[data-r=refFe],[data-r=refFe25]',t:'Bigger batches',d:'+5 and +25 queue bigger batches that cost less ore per ingot: 8 Iron ore = 5 ingots, 35 = 25. Ingots are what the Assembler builds parts from.'},
   {next:true,panel:'trade',ui:'[data-tab=trade]',t:'Inventory tab',d:'This is where all your goods live: your pack, the Outpost’s storage and any docked ship.'},
   {next:true,panel:'trade',ui:'#t-tot',t:'All commodities',d:'The top card lists each commodity once, with your total across the pack and every container. Tap one to see where it is stored.'},
-  {next:true,panel:'trade',ui:'#t-chips',card:true,top:'#t-chips',t:'Storage card',d:'One chip per container or craft, with how full it is. Tap a chip to select it; the table below then works on that one.'},
-  {next:true,panel:'trade',ui:'.gtab',top:'self',t:'The goods table',d:'Your pack is what you carry. Here is what the selected container holds. +50 and All in load goods into it, Take brings them back to your pack, and Move sends them to the other container.'},
-  {panel:'trade',pre:'.ttabs',top:'#t-chips',ui:'[data-g=OUTPOST],.grow2[data-k=fe] [data-act=load]',t:'Pack to the Outpost',
-    enter(){tSelect(tStn());tut.m.b=tUsed(tStn());},d:'OUTPOST is selected. On the Iron row, tap +50 or All in to load it from your pack into the Outpost.',
+  {next:true,panel:'trade',ui:'#iv-view',card:true,top:'#iv-view',t:'Local Storage',d:'This card only shows. One tab per container or docked craft, plus the Pioneer and your Pack. Pick a tab to see how full it is and what it holds. Nothing moves here.'},
+  {next:true,panel:'trade',ui:'#iv-xfer',card:true,top:'#iv-xfer',t:'Move goods',d:'Moving happens here. Pick the Pioneer, a docked craft or your Pack. Add puts all of an item into the Outpost. Pull from Outpost asks how many to take back.'},
+  {panel:'trade',top:'#iv-xfer',ui:'#iv-xfer [data-id=pack],#iv-xfer [data-iv=add][data-k=fe]',t:'Pack to the Outpost',
+    enter(){ivXfer='pack';ivRender();tut.m.b=tUsed(tStn());},d:'The Pack tab is open. On the Iron row, tap Add to OUTPOST. All the Iron in your pack goes into the Outpost.',
     done:()=>tUsed(tStn())>tut.m.b},
-  {panel:'trade',pre:'.ttabs',top:'#t-chips',ui:'[data-g=PIONEER],.grow2[data-k=si] [data-act=load]',t:'Pack to the Pioneer',
-    enter(){tut.m.b=tUsed(tPio());},d:'Tap the PIONEER chip, then on the Silicon row tap +50 or All in. The PIONEER is docked, so you can load it from here.',
+  {panel:'trade',top:'#iv-xfer',ui:'#iv-xfer [data-id="g:PIONEER"],#iv-xfer [data-iv=pull][data-k=fe]',t:'Outpost to Pioneer',
+    enter(){ivXfer='g:PIONEER';ivRender();tut.m.b=tUsed(tPio());},d:'Tap the PIONEER tab, then on the Iron row tap Pull from OUTPOST. Enter an amount (or Max) and tap Pull. The PIONEER is docked, so you can load it from here.',
     done:()=>tUsed(tPio())>tut.m.b},
-  {panel:'trade',pre:'.ttabs',top:'#t-chips',ui:'[data-g=OUTPOST],.grow2[data-k=fe] .mvi',t:'Outpost to Pioneer',
-    enter(){tSelect(tStn());tut.m.b=tUsed(tPio());},d:'Select OUTPOST, then on the Iron row tap Move. It sends the Iron to the other container, the PIONEER. Ship transfers take a few seconds.',
-    done:()=>tUsed(tPio())>tut.m.b&&!xfer},
-  {panel:'trade',pre:'.ttabs',top:'#t-chips',ui:'[data-g=PIONEER],.grow2[data-k=fe] .mvi',t:'And back again',
-    enter(){tSelect(tPio());tut.m.b=tUsed(tStn());},d:'Now select PIONEER and tap Move on the Iron row to send it back to the Outpost.',
-    done:()=>tUsed(tStn())>tut.m.b&&!xfer},
-  {panel:'trade',pre:'.ttabs',top:'#t-chips',ui:'#t-move',t:'Move all',
-    enter(){tut.m.b=tUsed(tStn());},d:'The Move all button below the chips moves everything from the selected container to the other one. Tap it.',
-    done:()=>!!tut.m.xf||tUsed(tStn())!==tut.m.b},
-  {next:true,panel:'trade',ui:'#t-dock',t:'Docked ships',d:'The PIONEER is listed because it is docked. A ship that is not docked is greyed out and cannot be loaded. The Docking tutorial shows how.'},
+  {panel:'trade',top:'#iv-xfer',ui:'#iv-xfer [data-iv=add][data-k=fe]',t:'And back again',
+    enter(){ivXfer='g:PIONEER';ivRender();tut.m.b=tUsed(tStn());},d:'With the PIONEER tab open, tap Add to OUTPOST on the Iron row to send it all back.',
+    done:()=>tUsed(tStn())>tut.m.b},
+  {next:true,panel:'trade',ui:'#iv-xfer',top:'#iv-xfer',t:'Docked ships',d:'The PIONEER has a tab because it is docked. A craft that is not docked is marked (not docked) and cannot be loaded. The Docking tutorial shows how.'},
   {next:true,panel:'mkt',ui:'[data-tab=mkt]',t:'Market tab',d:'The Market buys and sells goods. They pay is the price you get, You pay is the price to buy. Use the Sell and Buy buttons for quantities.  This is a quick look; a full Market tutorial will follow.'},
   {next:true,panel:'upg',ui:'[data-tab=upg]',t:'Interface tab',d:'This tab is for the ship or station you are connected to, here the OUTPOST. You can reach it from a storage container or a pilot seat.'},
   {next:true,panel:'upg',ui:'#gname',t:'Name',d:'Rename the ship or station here.'},
@@ -6939,7 +7022,7 @@ function boot(){
     }else{try{begin();}catch(e){console.error(e);}if(tcv)tcv.hidden=true;}
   }
   try{if(window.claude&&window.claude.hot&&window.claude.hot.snapshot)window.claude.hot.snapshot(()=>({save:(wiping||TUTW)?null:serialize()}));}catch(e){}
-  window.__VE={hint,inv,bolts,pirates,pirateSpawn,turretTest,makeMusic,asteroids,renderer,scene,THREE,kf,openRepair,repairBill,repairTick,repairShip,pioNetWorth,pioRepairValue,PRICE0,eco,pioDamage,pioMaxHP,inv,shipAmmo,tpShips,pioEnter,grindStep,gridOn,powerTick,spawnDrone,spawnPlayerDrone,droneTick,damageBlock,repairBlock,hpOf,dmgEff,fireBolt,boltsTick,bolts,wipOn,wipUnit,wipBegin,wipDone,mk,mktClick,mktTick,mktBuild,mktRefresh,MKT,mkFee,mkTier,player,grids,asteroids,update,begin,ACT,keys,tb,camera,inv,mineAt,rayAst,pickAll,aim,serialize,restoreSave,saveGame,
+  window.__VE={openTerminal,ivRender,hint,inv,bolts,pirates,pirateSpawn,turretTest,makeMusic,asteroids,renderer,scene,THREE,kf,openRepair,repairBill,repairTick,repairShip,pioNetWorth,pioRepairValue,PRICE0,eco,pioDamage,pioMaxHP,inv,shipAmmo,tpShips,pioEnter,grindStep,gridOn,powerTick,spawnDrone,spawnPlayerDrone,droneTick,damageBlock,repairBlock,hpOf,dmgEff,fireBolt,boltsTick,bolts,wipOn,wipUnit,wipBegin,wipDone,mk,mktClick,mktTick,mktBuild,mktRefresh,MKT,mkFee,mkTier,player,grids,asteroids,update,begin,ACT,keys,tb,camera,inv,mineAt,rayAst,pickAll,aim,serialize,restoreSave,saveGame,
     TX,MAT,setTier,growCheck,serialize,pioLeave,pioHits,pioDockOK,pioDockTarget,pioDock,padNear,pioLevel,pioFootGap,pioPadSnap,rebuildAst,pointSolid,padArmRoom,padArmAimed,gravHas,gravFloors,gravFlash,addToGrid,gridHas,gridSpace,takeFromGrid,packUsed,packSpace,PACK_CAP,PACKIO,shipIO,spawnShip,interiorOf,bodyHit,bodyMove,cellAt,setTier,growCheck,doorTick,rideSync,seatWorld,nearestSeat,spawnStation,haveK,spend,upgradeBlock,gravR,qMax,tierOf,upCost,recalc,eco,price,PRICE0,ITEMS,loadItem,takeItem,whTotals,payDebt,tradeTick,BEACON,CARGO_CAP,panelSummary,openTerminal,closeTerminal,scanOre,setTool,setPage,addBlock,makeGrid,removeBlock,RECIPES,BDEF,BORDER,
     setDev:v=>{DEV=!!v;},platePaint,openPicker,openUpg,connGrid,surveyAst,revealBuried,tutState:()=>tut,startTut,renameGrid,dockPlan,toggleDock,pointSolid,shipHitsAst,enterShip,exitShip,inReach,gridsTouch,isCraft,dockCheck,dockTick,startXfer,moveTarget,PAD_RATE,BASE_RATE,xferState:()=>xfer,
     state:()=>({inGrav,page,termOpen,detRange,detSummary,paused,running}),
