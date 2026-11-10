@@ -634,7 +634,7 @@ body.uitut #camrow .tb,body.uitut #edge .tb,body.uitut #rbar .tb{visibility:visi
 'use strict';
 /* =====================  Void Engineers  =====================
    Part A: renderer, sky, procedural voxel asteroids, particles */
-const GAME_VER='240';
+const GAME_VER='241';
 {const vl=document.getElementById('verlab');if(vl)vl.textContent='v'+GAME_VER;}
 /* no page zoom while playing: pinch, double-tap and ctrl+wheel are swallowed */
 (()=>{const no=e=>{e.preventDefault();};
@@ -6057,7 +6057,7 @@ function termRefresh(){
 }
 
 // ---- Inventory page: all commodities, Local Storage (view only), and a transfer section ----
-let ivView='',ivXfer='pack';
+let ivView='';
 function ivStores(){
   const out=[],gs=viewGrids();
   const prim=gs.find(g=>!isCraft(g))||gs[0]||null;
@@ -6124,13 +6124,10 @@ function ivRender(){
   const el=$('t-inv');if(!el)return;
   const st=ivStores();
   if(!st.some(s=>s.id===ivView))ivView=st[0].id;
-  if(!st.some(s=>s.id===ivXfer))ivXfer=st[st.length-1].id;
-  const vs=st.find(s=>s.id===ivView),xs=st.find(s=>s.id===ivXfer),prim=st.find(s=>s.primary)||null;
-  const cs=s=>{const c=ivCap(s);return c[0]+' / '+c[1];};
-  let h='<div class="mcard" id="iv-view"><div class="mh"><b>Local Storage</b><span>'+cs(vs)+'</span></div>'+ivTabs(st,ivView,'view')+ivGoods(vs,false,prim)+'</div>';
-  h+='<div class="mcard" id="iv-xfer"><div class="mh"><b>Move goods</b><span>'+cs(xs)+'</span></div>'+ivTabs(st,ivXfer,'xfer');
-  if(!prim)h+='<div class="qrow">There is no station storage here to move goods into.</div>'+ivGoods(xs,false,null);
-  else if(xs===prim)h+='<div class="qrow">Pick the Pioneer, a docked craft or your Pack to move goods in and out of '+ivEsc(prim.name)+'.</div>'+ivGoods(xs,false,prim);
+  const xs=st.find(s=>s.id===ivView),prim=st.find(s=>s.primary)||null;
+  const c=ivCap(xs);
+  let h='<div class="mcard" id="iv-view"><div class="mh"><b>Local Storage</b><span>'+c[0]+' / '+c[1]+'</span></div>'+ivTabs(st,ivView,'view');
+  if(!prim||xs===prim)h+=ivGoods(xs,false,prim);
   else if(xs.craft&&undocked(xs.g))h+='<div class="qrow">'+ivEsc(xs.name)+' is not docked. Set it down on a station with its Landing Legs to move cargo.</div>'+ivGoods(xs,false,prim);
   else h+=ivGoods(xs,true,prim);
   if(ivJob){const jx=st.find(s=>s.id===ivJob.xsId);h+='<div class="mfoot"><button class="rb" data-iv="stop">Moving '+SHORT[ivJob.k]+'\u2026 '+ivJob.left+' left \u00b7 '+(jx?ivRate(jx):BASE_RATE)+' units/s \u00b7 tap to stop</button></div>';}
@@ -6139,7 +6136,7 @@ function ivRender(){
 }
 const pullw=document.createElement('div');pullw.className='winwrap';pullw.style.zIndex=60;pullw.hidden=true;document.body.appendChild(pullw);
 function ivPullPrompt(k){
-  const st=ivStores(),prim=st.find(s=>s.primary),xs=st.find(s=>s.id===ivXfer);if(!prim||!xs||xs===prim)return;
+  const st=ivStores(),prim=st.find(s=>s.primary),xs=st.find(s=>s.id===ivView);if(!prim||!xs||xs===prim)return;
   const have=ivHas(prim,k),room=ivSpace(xs),max=Math.min(have,room);
   if(have<=0){toast('No '+SHORT[k]+' in '+prim.name,'bad');return;}
   if(room<=0){toast(xs.name+' is full','bad');if(xs.pack||xs.T)hint('full1','Storage is full. You can save your goods at the Outpost.');return;}
@@ -6154,7 +6151,7 @@ pullw.addEventListener('click',e=>{
   if(!b)return;
   if(b.id==='pull-max'){$('pull-n').value=pullw._max;return;}
   if(b.id==='pull-ok'){
-    const k=pullw._k,st=ivStores(),prim=st.find(s=>s.primary),xs=st.find(s=>s.id===ivXfer);pullw.hidden=true;
+    const k=pullw._k,st=ivStores(),prim=st.find(s=>s.primary),xs=st.find(s=>s.id===ivView);pullw.hidden=true;
     if(!prim||!xs)return;
     const want=Math.max(0,Math.min(pullw._max,Math.floor(+$('pull-n').value||0)));
     if(want<=0)return;
@@ -6168,8 +6165,7 @@ function ivClick(btn){
   const d=btn.dataset.iv;
   if(d==='stop'){if(ivJob){toast('Transfer stopped ('+ivJob.moved+' units moved)');ivJob=null;ivRender();}return;}
   if(d==='view'){ivView=btn.dataset.id;ivRender();return;}
-  if(d==='xfer'){ivXfer=btn.dataset.id;ivRender();return;}
-  const k=btn.dataset.k,st=ivStores(),prim=st.find(s=>s.primary),xs=st.find(s=>s.id===ivXfer);
+  const k=btn.dataset.k,st=ivStores(),prim=st.find(s=>s.primary),xs=st.find(s=>s.id===ivView);
   if(!prim||!xs||xs===prim)return;
   if(d==='pull'){ivPullPrompt(k);return;}
   if(d==='add'){
@@ -6453,18 +6449,17 @@ const MENUS=[
   {next:true,panel:'prod',ui:'[data-r=refFe],[data-r=refFe25]',t:'Bigger batches',d:'+5 and +25 queue bigger batches that cost less ore per ingot: 8 Iron ore = 5 ingots, 35 = 25. Ingots are what the Assembler builds parts from.'},
   {next:true,panel:'trade',ui:'[data-tab=trade]',t:'Inventory tab',d:'This is where all your goods live: your pack, the Outpost’s storage and any docked ship.'},
   {next:true,panel:'trade',ui:'#t-tot',t:'All commodities',d:'The top card lists each commodity once, with your total across the pack and every container. Tap one to see where it is stored.'},
-  {next:true,panel:'trade',ui:'#iv-view',card:true,top:'#iv-view',t:'Local Storage',d:'This card only shows. One tab per container or docked craft, plus the Pioneer and your Pack. Pick a tab to see how full it is and what it holds. Nothing moves here.'},
-  {next:true,panel:'trade',ui:'#iv-xfer',card:true,top:'#iv-xfer',t:'Move goods',d:'Moving happens here. Pick the Pioneer, a docked craft or your Pack. Add puts all of an item into the Outpost. Pull from Outpost asks how many to take back.'},
-  {panel:'trade',top:'#iv-xfer',ui:'#iv-xfer [data-id=pack],#iv-xfer [data-iv=add][data-k=fe]',t:'Pack to the Outpost',
-    enter(){ivXfer='pack';ivRender();tut.m.b=tUsed(tStn());},d:'The Pack tab is open. On the Iron row, tap Add to OUTPOST. All the Iron in your pack goes into the Outpost.',
+  {next:true,panel:'trade',ui:'#iv-view',card:true,top:'#iv-view',t:'Local Storage',d:'One tab per container or docked craft, plus the Pioneer and your Pack. Pick a tab to see how full it is and what it holds. On the Pioneer, a docked craft or the Pack, Add puts all of an item into the Outpost and Pull from Outpost asks how many to take back.'},
+  {panel:'trade',top:'#iv-view',ui:'#iv-view [data-id=pack],#iv-view [data-iv=add][data-k=fe]',t:'Pack to the Outpost',
+    enter(){ivView='pack';ivRender();tut.m.b=tUsed(tStn());},d:'The Pack tab is open. On the Iron row, tap Add to OUTPOST. All the Iron in your pack goes into the Outpost.',
     done:()=>tUsed(tStn())>tut.m.b},
-  {panel:'trade',top:'#iv-xfer',ui:'#iv-xfer [data-id="g:PIONEER"],#iv-xfer [data-iv=pull][data-k=fe]',t:'Outpost to Pioneer',
-    enter(){ivXfer='g:PIONEER';ivRender();tut.m.b=tUsed(tPio());},d:'Tap the PIONEER tab, then on the Iron row tap Pull from OUTPOST. Enter an amount (or Max) and tap Pull. The PIONEER is docked, so you can load it from here.',
+  {panel:'trade',top:'#iv-view',ui:'#iv-view [data-id="g:PIONEER"],#iv-view [data-iv=pull][data-k=fe]',t:'Outpost to Pioneer',
+    enter(){ivView='g:PIONEER';ivRender();tut.m.b=tUsed(tPio());},d:'Tap the PIONEER tab, then on the Iron row tap Pull from OUTPOST. Enter an amount (or Max) and tap Pull. The PIONEER is docked, so you can load it from here.',
     done:()=>tUsed(tPio())>tut.m.b},
-  {panel:'trade',top:'#iv-xfer',ui:'#iv-xfer [data-iv=add][data-k=fe]',t:'And back again',
-    enter(){ivXfer='g:PIONEER';ivRender();tut.m.b=tUsed(tStn());},d:'With the PIONEER tab open, tap Add to OUTPOST on the Iron row to send it all back.',
+  {panel:'trade',top:'#iv-view',ui:'#iv-view [data-iv=add][data-k=fe]',t:'And back again',
+    enter(){ivView='g:PIONEER';ivRender();tut.m.b=tUsed(tStn());},d:'With the PIONEER tab open, tap Add to OUTPOST on the Iron row to send it all back.',
     done:()=>tUsed(tStn())>tut.m.b},
-  {next:true,panel:'trade',ui:'#iv-xfer',top:'#iv-xfer',t:'Docked ships',d:'The PIONEER has a tab because it is docked. A craft that is not docked is marked (not docked) and cannot be loaded. The Docking tutorial shows how.'},
+  {next:true,panel:'trade',ui:'#iv-view',top:'#iv-view',t:'Docked ships',d:'The PIONEER has a tab because it is docked. A craft that is not docked is marked (not docked) and cannot be loaded. The Docking tutorial shows how.'},
   {next:true,panel:'mkt',ui:'[data-tab=mkt]',t:'Market tab',d:'The Market buys and sells goods. They pay is the price you get, You pay is the price to buy. Use the Sell and Buy buttons for quantities.  This is a quick look; a full Market tutorial will follow.'},
   {next:true,panel:'upg',ui:'[data-tab=upg]',t:'Interface tab',d:'This tab is for the ship or station you are connected to, here the OUTPOST. You can reach it from a storage container or a pilot seat.'},
   {next:true,panel:'upg',ui:'#gname',t:'Name',d:'Rename the ship or station here.'},
