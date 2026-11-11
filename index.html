@@ -634,7 +634,7 @@ body.uitut #camrow .tb,body.uitut #edge .tb,body.uitut #rbar .tb{visibility:visi
 'use strict';
 /* =====================  Void Engineers  =====================
    Part A: renderer, sky, procedural voxel asteroids, particles */
-const GAME_VER='243';
+const GAME_VER='244';
 {const vl=document.getElementById('verlab');if(vl)vl.textContent='v'+GAME_VER;}
 /* no page zoom while playing: pinch, double-tap and ctrl+wheel are swallowed */
 (()=>{const no=e=>{e.preventDefault();};
@@ -3087,7 +3087,7 @@ function shipUpdate(g,dt){
   for(const b of g.thr){
     if(!b.flame)continue;
     const a=b.f[0]?0:b.f[1]?1:2,s=-b.f[a],th=Math.max(0,cmd[a]*s);
-    b.flame.visible=th>.03;if(th>.03)b.flame.scale.set(.85+Math.random()*.3,th*(.9+Math.random()*.2),.85+Math.random()*.3);
+    b.flame.visible=th>.03;if(th>.03){b.flame.scale.set(.85+Math.random()*.3,th*(.9+Math.random()*.2),.85+Math.random()*.3);gridExhaust(g,b,th,dt);}
   }
   // drills
   let drilling=false;
@@ -3665,7 +3665,7 @@ function droneTick(dt){
   }
 }
 function update(dt){
-  const lap=ptLap();hitCool-=dt;boltsTick(dt);droneTick(dt);pirateTick(dt);turretTick(dt);lap('shots+drones');
+  const lap=ptLap();hitCool-=dt;boltsTick(dt);droneTick(dt);pirateTick(dt);turretTick(dt);exTick(dt);lap('shots+drones');
   let bakedNow=false;
   for(const g of grids){
     let ch=false;if(g.hullDirty){rebuildHull(g);ch=true;}if(g.wipDirty){rebuildWip(g);ch=true;}
@@ -3866,6 +3866,57 @@ function tshipToggle(){
 }
 
 /* ---------- combat (v229): pirate drones and the autocannon turret ---------- */
+
+/* ---------- exhaust: blue flame particles that stay where the ship left them, so they trail opposite to the way it TRAVELS ---------- */
+const EX_N=640,exPos=new Float32Array(EX_N*3),exVel=new Float32Array(EX_N*3),exP=new Float32Array(EX_N*2),exLife=new Float32Array(EX_N),exT=new Float32Array(EX_N).fill(9),exSz=new Float32Array(EX_N);
+let exI=0,exLive=0;
+for(let i=0;i<EX_N;i++)exLife[i]=1;
+const exGeo=new THREE.BufferGeometry();
+exGeo.setAttribute('position',new THREE.BufferAttribute(exPos,3).setUsage(THREE.DynamicDrawUsage));
+exGeo.setAttribute('aP',new THREE.BufferAttribute(exP,2).setUsage(THREE.DynamicDrawUsage));
+const exMat=new THREE.ShaderMaterial({transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,uniforms:{uScale:{value:300}},
+  vertexShader:'attribute vec2 aP;varying float vA;uniform float uScale;void main(){vA=aP.x;vec4 mv=modelViewMatrix*vec4(position,1.);gl_PointSize=aP.y*uScale/max(1.,-mv.z);gl_Position=projectionMatrix*mv;}',
+  fragmentShader:'varying float vA;void main(){vec2 d=gl_PointCoord-.5;float r=length(d)*2.;if(r>1.||vA>=1.)discard;float a=(1.-r)*(1.-r);vec3 core=vec3(.8,.93,1.);vec3 blue=vec3(.16,.42,1.);vec3 col=mix(core,blue,smoothstep(0.,.45,vA));gl_FragColor=vec4(col*a*(1.-vA)*1.5,1.);}'});
+const exPts=new THREE.Points(exGeo,exMat);exPts.frustumCulled=false;exPts.renderOrder=4;scene.add(exPts);
+const _exd=new V3();
+function exEmit(p,dir,vel,sp,size,life){   // a puff at p: the ship's own velocity plus a push down the exhaust direction
+  const i=exI;exI=(exI+1)%EX_N;
+  exPos[i*3]=p.x;exPos[i*3+1]=p.y;exPos[i*3+2]=p.z;
+  const j=.16*sp,s2=sp*(.8+Math.random()*.4);
+  exVel[i*3]=vel.x+dir.x*s2+(Math.random()-.5)*j;exVel[i*3+1]=vel.y+dir.y*s2+(Math.random()-.5)*j;exVel[i*3+2]=vel.z+dir.z*s2+(Math.random()-.5)*j;
+  exLife[i]=life*(.75+Math.random()*.5);exT[i]=0;exSz[i]=size*(.8+Math.random()*.4);
+}
+function exTick(dt){
+  if(dt<=0)return;
+  const dr=Math.exp(-1.6*dt);let live=0;
+  for(let i=0;i<EX_N;i++){
+    if(exT[i]>=exLife[i]){if(exP[i*2+1]!==0){exP[i*2]=1;exP[i*2+1]=0;live=-1;}continue;}
+    exT[i]+=dt;const f=exT[i]/exLife[i];
+    exVel[i*3]*=dr;exVel[i*3+1]*=dr;exVel[i*3+2]*=dr;
+    exPos[i*3]+=exVel[i*3]*dt;exPos[i*3+1]+=exVel[i*3+1]*dt;exPos[i*3+2]+=exVel[i*3+2]*dt;
+    exP[i*2]=f;exP[i*2+1]=f>=1?0:exSz[i]*(.55+f*1.9);live=1;
+  }
+  exGeo.attributes.position.needsUpdate=true;exGeo.attributes.aP.needsUpdate=true;
+  exMat.uniforms.uScale.value=gH()/(2*Math.tan(camera.fov*Math.PI/360));
+}
+const PIO_NOZ=[[-3.0,2.6,7.9,1.1],[0,3.7,7.9,1.5],[3.0,2.6,7.9,1.1]];   // the Pioneer's three rear engines (local x, y, z, flame size)
+const _exp=new V3(),_exq=new V3(),_exD=new V3();
+function pioExhaust(T,dt){
+  const th=T._thr||0;if(th<.03)return;
+  const G=T.group;G.updateMatrixWorld(true);
+  _exD.set(0,0,1).transformDirection(G.matrixWorld);   // the engines blow straight out of the back
+  for(const n of PIO_NOZ){
+    T._ea=(T._ea||0)+dt*70*th;
+    while(T._ea>=1){T._ea-=1;_exp.set(n[0]*1,n[1],n[2]-.2).multiplyScalar(1);G.localToWorld(_exp);exEmit(_exp.addScaledVector(T.vel,-Math.random()*dt),_exD,T.vel,9+th*7,n[3]*(.7+.3*th),.85);}
+  }
+}
+function gridExhaust(g,b,th,dt){   // a block thruster: its flame points out along the block's +y
+  const f=b.flame;if(!f)return;
+  f.updateMatrixWorld(true);_exp.setFromMatrixPosition(f.matrixWorld);_exD.set(0,1,0).transformDirection(f.matrixWorld);
+  const big=b.type==='bigthruster'?1.7:b.type==='mthruster'?.55:1;
+  b._ea=(b._ea||0)+dt*55*th*(big>1?1.4:1);
+  while(b._ea>=1){b._ea-=1;exEmit(_exp,_exD,g.vel,7+th*6,.55*big,.7);}
+}
 const weaponBonus=()=>({dmg:1,ammo:1});   // CLASS HOOK: a Soldier online will raise dmg (+1.5/3/7.5/15%) and ammo (+5/10/25/50%); every turret and pirate shot already reads this
 const TURRET={range:250,rate:.5,dmg:10,load:3,turn:2.6};   // metres; seconds between shots; damage on a ship; power load (a light is 1); head turn rad/s
 const PIRATE={hp:300,spd:42,fire:.4,blk:2.5,pio:8};         // a pirate hull, its top speed, seconds between shots, damage to a block, damage to the Pioneer
@@ -4280,7 +4331,7 @@ function pioRefuel(){
   T.fuel=Math.min(cap,T.fuel+used*60);hudDirty=true;toast('+'+used*60+' L hydrogen ('+used+' ice)','good');
 }
 const pioIO=T=>({name:'Hold',space:()=>pioHoldCap(T)-pioHoldUsed(T),add:(k,n)=>{const m=Math.min(n,pioHoldCap(T)-pioHoldUsed(T));if(m>0)T.hold[k]=(T.hold[k]|0)+m;return Math.max(0,m);}});
-const PIO_TURN=.7,PIO_TURN_MAX=.8;   // the Pioneer's swipe, flip, pitch and roll feel: lower is slower
+const PIO_TURN=.6,PIO_TURN_MAX=.6;   // the Pioneer's swipe, flip, pitch and roll feel: lower is slower
 function pioFly(T,dt){
   const G=T.group,q=G.quaternion;
   const mv=T.lock?{x:0,y:0,z:0}:inputMove(),look=lookDelta(dt);
@@ -4304,7 +4355,7 @@ function pioFly(T,dt){
     }
     T.vel.addScaledVector(new V3(F[0],F[1],F[2]).applyQuaternion(q),dt);
     const vmax=PIO_VMAX*eng;if(T.vel.length()>vmax)T.vel.setLength(Math.max(vmax,T.vel.length()-12*dt));
-    T.fuel=Math.max(0,T.fuel-burn*dt);T.burn=burn;
+    T.fuel=Math.max(0,T.fuel-burn*dt);T.burn=burn;T._thr=T.fuel>0&&cmd[2]>.02?Math.min(1,cmd[2]):0;
     if(T.fuel<=0&&(mv.x||mv.y||mv.z)&&!T._warned){T._warned=true;toast('Out of hydrogen. '+(coarse?'Tap FUEL':'Press R')+' to melt ice from the hold or your pack.','bad');}
     if(T.fuel>0)T._warned=false;
     // turning
@@ -4336,7 +4387,7 @@ function pioFly(T,dt){
     if(T.auto){const A=T.auto;A.t+=dt;const u=Math.min(1,A.t/A.dur),e=u*u*(3-2*u);
       T.lock.pos.lerpVectors(A.p0,A.p1,e);T.lock.q.copy(A.q0).slerp(A.q1,e);
       if(u>=1){T.lock.pos.copy(A.p1);T.lock.q.copy(A.q1);T.auto=null;toast('Pioneer set down · tap UNDOCK to take off','good');}}
-    G.position.copy(T.lock.pos);q.copy(T.lock.q);T.vel.set(0,0,0);T.rate=[0,0,0];T.burn=0;G.updateMatrixWorld(true);}
+    G.position.copy(T.lock.pos);q.copy(T.lock.q);T.vel.set(0,0,0);T.rate=[0,0,0];T.burn=0;T._thr=0;G.updateMatrixWorld(true);}
   pioHitCool-=dt;
   // the laser drill: its tip is at the nose, the beam goes to the reticle when the drill points roughly that way
   let drilling=false;const fireNow=mFire||tb.fire;
@@ -4356,6 +4407,7 @@ function pioFly(T,dt){
     else if(aimD<1e9)beam(tip,tip.clone().addScaledVector(dir,Math.min(reach,aimD)));
   }
   drillOn=drilling;
+  pioExhaust(T,dt);
   audioLevels(Math.min(1,(T.burn||0)/7.5)*2.4,drilling);
   // the camera: the pilot's eye, or behind and above
   if(T.view===1){camera.position.copy(G.localToWorld(_pe.set(0,9*PIO_S,22*PIO_S)));camera.quaternion.copy(q).multiply(_q1.setFromAxisAngle(AXX,-.2));}
