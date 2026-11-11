@@ -644,7 +644,7 @@ body.uitut #camrow .tb,body.uitut #edge .tb,body.uitut #rbar .tb{visibility:visi
 'use strict';
 /* =====================  Void Engineers  =====================
    Part A: renderer, sky, procedural voxel asteroids, particles */
-const GAME_VER='252';
+const GAME_VER='253';
 {const vl=document.getElementById('verlab');if(vl)vl.textContent='v'+GAME_VER;}
 /* no page zoom while playing: pinch, double-tap and ctrl+wheel are swallowed */
 (()=>{const no=e=>{e.preventDefault();};
@@ -3521,7 +3521,7 @@ function updateHUD(dt){
     if(pk&&pk.kind==='blk'&&pk.t<=9&&pk.h.b.dmg>0&&!wipOn(pk.h.b)){const pb2=pk.h.b;t1=BDEF[pb2.type].name;t2=Math.round(100*pb2.dmg/hpOf(pb2))+'% damaged'+(player.tool===1?' \u00b7 hold BUILD with the Welder to repair':'');}
     if(!(pk&&pk.kind==='blk')){aimG=null;aimT=0;}
     {const pa=!t1?padArmAimed():null;if(pa){t1='Repair Arm';t2=repairSummary(pa.g);pr=(coarse?'INTERACT':'F')+' \u2014 repair the ship';}}
-    {const pA=pioSeat?null:pioAimed();if(pA){t1='Pioneer \u00b7 cockpit';t2='Canopy open';pr=(coarse?'INTERACT':'F')+' \u2014 climb in and pilot';}}
+    {const pA=pioSeat?null:pioAimed();if(pA){t1=pioLadderAim?'Pioneer \u00b7 ladder':'Pioneer \u00b7 cockpit';t2=pioLadderAim?'Climb up to the cockpit':'Canopy open';pr=(coarse?'INTERACT':'F')+' \u2014 climb in and pilot';}}
     if(pioSeat){t1='Pioneer \u00b7 cockpit';t2='Fuel '+Math.round(100*pioSeat.T.fuel/pioFuelCap(pioSeat.T))+'% \u00b7 Hold '+Math.round(pioHoldUsed(pioSeat.T))+' / '+pioHoldCap(pioSeat.T);pr=pioSeat.T.fuel<pioFuelCap(pioSeat.T)*.15?(coarse?'FUEL':'R')+' \u2014 melt ice into hydrogen':'';}
   }else if(g.fuel<g.fuelCap*.15&&inv.ice>0)pr=(coarse?'FUEL':'R')+' — melt ice into hydrogen';
   if(!g&&player.tool===4&&!termOpen){t1='PAINT \u00b7 '+PAINT_NAMES[paintSel].toUpperCase();t2='ROT changes the look';}
@@ -3954,8 +3954,6 @@ let mhEl=null,mhC=null,mhX=null,mhW=0,mhH=0,mhTags=[],mhProx=[0,0,0,0,0,0],mhPro
 function pioMeshes(T){
   if(!T._pm){
     T._pm=[];T.group.traverse(m=>{if(m.isMesh)T._pm.push(m);});
-    const tip=new THREE.Mesh(new THREE.ConeGeometry(.45,2.8,14).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0xffb347,depthTest:false}));   // the drill tip stays solid while the hull is a ghost
-    tip.position.set(0,2.6*PIO_S,-9.5);tip.renderOrder=6;tip.visible=false;T.group.add(tip);T._tip=tip;
   }
   return T._pm;
 }
@@ -3963,7 +3961,6 @@ function pioGhost(T,k){
   const ms=pioMeshes(T);
   if(k>0){for(const m of ms)if(m.material!==mGhost){m._om=m.material;m.material=mGhost;}mGhost.opacity=1-(1-MH_GHOST)*k;T._ghost=1;}
   else if(T._ghost){for(const m of ms)if(m._om){m.material=m._om;m._om=null;}T._ghost=0;T.cp.children[0].material=T.view===1?tplMatPio:tplMatPioIn;}
-  T._tip.visible=k>.3;
 }
 function mhBuild(){
   mhEl=document.createElement('div');mhEl.id='mh';
@@ -4210,6 +4207,19 @@ const tplMatPio=new THREE.MeshLambertMaterial({color:0x808080,side:THREE.DoubleS
   im.onerror=()=>{};im.src='pioneer_skin.png?v='+GAME_VER;
 })();
 const tplMatGlass=new THREE.MeshLambertMaterial({vertexColors:true,transparent:true,opacity:.55,depthWrite:false,side:THREE.DoubleSide});
+
+const PIO_LAD={x:-4.3,y:2.8,z:-1.0};   // a ladder up the port side (ship-local metres): look at it to climb to the cockpit
+let tplLadder=null;
+function pioLadder(){
+  if(!tplLadder){
+    const m=new THREE.MeshLambertMaterial({color:0xb08a46}),g=new THREE.Group(),rail=new THREE.BoxGeometry(.08,5.8,.08),rung=new THREE.BoxGeometry(.07,.07,.9),brk=new THREE.BoxGeometry(.24,.07,.07);
+    for(const z of [-.45,.45]){const r=new THREE.Mesh(rail,m);r.position.set(0,2.9,z);g.add(r);}
+    for(let i=0;i<12;i++){const r=new THREE.Mesh(rung,m);r.position.set(0,.4+i*.47,0);g.add(r);}
+    for(const y of [1.1,3.0,5.0])for(const z of [-.45,.45]){const b=new THREE.Mesh(brk,m);b.position.set(.1,y,z);g.add(b);}
+    g.position.set(PIO_LAD.x,0,PIO_LAD.z);tplLadder=g;
+  }
+  return tplLadder.clone();
+}
 function pioSpawn(quiet){
   const geo=pioGeo(),grp=new THREE.Group();
   grp.add(new THREE.Mesh(geo.body,tplMatPio));
@@ -4218,6 +4228,7 @@ function pioSpawn(quiet){
   const gm=new THREE.Mesh(geo.gear,tplMatPio);grp.add(gm);
   const cp=new THREE.Group();cp.position.set(PIO_PIV[0],PIO_PIV[1],PIO_PIV[2]);   // the canopy is its own part, hinged at the rear
   cp.add(new THREE.Mesh(geo.can,tplMatPio));cp.add(new THREE.Mesh(geo.canGlow,tplMatShipGlow));cp.add(new THREE.Mesh(geo.canGlass,tplMatGlass));grp.add(cp);   // the landing gear is its own part so it can fold up
+  grp.add(pioLadder());
   // level on the player's "up", broadside to the player with the nose to the right, a few metres ahead and at foot level
   const up=player.lastUp.clone().normalize(),f=new V3(0,0,-1).applyQuaternion(camera.quaternion);
   f.addScaledVector(up,-f.dot(up));if(f.lengthSq()<1e-4)f.set(0,0,-1);f.normalize();
@@ -4236,9 +4247,10 @@ const _pp=new V3();
 function pioNear(T,r){   // metres from the player to the hull footprint (the main hull and side modules)
   T.group.updateMatrixWorld();_pp.copy(player.pos);T.group.worldToLocal(_pp);
   const dx=Math.max(Math.abs(_pp.x)-3.7*PIO_S,0),dz=Math.max(-4.6*PIO_S-_pp.z,_pp.z-2.0*PIO_S,0);
-  return _pp.y>-3&&_pp.y<12&&Math.hypot(dx,dz)<=r;
+  return _pp.y>-3&&_pp.y<12&&(Math.hypot(dx,dz)<=r||Math.hypot(_pp.x-PIO_LAD.x,_pp.z-PIO_LAD.z)<=r+.9);   // or within reach of the ladder
 }
 function pioTick(dt){
+  if(!pioSeat&&player.mode==='foot'){const A=tpShips.find(t=>t._autoSeat);if(A){A._autoSeat=false;pioEnter(A);A.glide=1;}}   // reloading a game saved in the cockpit puts you back in the seat
   for(const T of tpShips){
     if(!T.lock&&!(pioSeat&&pioSeat.T===T)&&T.vel.lengthSq()>1e-4)T.group.position.addScaledVector(T.vel,dt);
     const tg=(pioSeat&&pioSeat.T===T)?0:pioNear(T,T.want?PIO_CLOSE_R:PIO_OPEN_R)?1:0;T.want=tg;
@@ -4282,9 +4294,13 @@ const tplMatPioIn=new THREE.MeshLambertMaterial({color:0x808080,side:THREE.Front
 tplMatPioIn.map=tplMatPio.map;
 const _eu=new THREE.Euler(),_pe=new V3(),_pc=new V3(),_pf=new V3();
 const pioHoldCap=T=>CARGO_CAP[T.up.hold-1],pioHoldUsed=T=>{let s=0;for(const k in T.hold)s+=T.hold[k];return s;};
-function pioAimed(){   // on foot, near the front of an open Pioneer, looking at its cockpit
+let pioLadderAim=false;
+function pioAimed(){   // on foot, near the front of an open Pioneer looking at its cockpit, or looking at the port ladder
+  pioLadderAim=false;
   if(player.mode!=='foot'||player.build||player.tool===1)return null;
   for(const T of tpShips){
+    T.group.updateMatrixWorld();const LC=T.group.localToWorld(_pc.set(PIO_LAD.x,PIO_LAD.y,PIO_LAD.z)),ld=LC.sub(camera.position),LL=ld.length();
+    if(LL<=5&&_pf.set(0,0,-1).applyQuaternion(camera.quaternion).dot(ld.multiplyScalar(1/LL))>.8){pioLadderAim=true;return T;}
     if(T.can<.9)continue;
     T.group.updateMatrixWorld();_pp.copy(player.pos);T.group.worldToLocal(_pp);
     if(_pp.z>0)continue;
@@ -4543,7 +4559,7 @@ function pioFly(T,dt){
 }
 function pioSave(){
   const T=tpShips.find(x=>x.main);if(!T)return;
-  try{localStorage.setItem('void-engineers-pio-v1',JSON.stringify({p:T.group.position.toArray(),q:T.group.quaternion.toArray(),v:T.vel.toArray(),hold:T.hold,up:T.up,plate:T.plate,hp:T.hp,fuel:T.fuel,lock:!!T.lock}));}catch(e){}
+  try{localStorage.setItem('void-engineers-pio-v1',JSON.stringify({p:T.group.position.toArray(),q:T.group.quaternion.toArray(),v:T.vel.toArray(),hold:T.hold,up:T.up,plate:T.plate,hp:T.hp,fuel:T.fuel,lock:!!T.lock,seat:!!(pioSeat&&pioSeat.T===T)}));}catch(e){}
 }
 const OUT_PIO={x:0,y:3,z:-2},OUT_SPAWN=[8,2.85,2];   // the Outpost: the Pioneer on the Long Pad at cell (0,1,-1), you on the deck
 function pioBoot(restored){   // the starter Pioneer, set down on the platform (or wherever the last save left it)
@@ -4556,6 +4572,7 @@ function pioBoot(restored){   // the starter Pioneer, set down on the platform (
   T.group.updateMatrixWorld(true);if(S&&S.lock){try{pioLevel(T);}catch(e){}}   // a saved landing is stood upright again, never restored on a slant
   if(!S||S.lock){T.lock={pos:T.group.position.clone(),q:T.group.quaternion.clone()};T.gear=T.gearTgt=1;}else{T.gear=T.gearTgt=0;T.gm.visible=false;}
   T.cp.rotation.x=0;if(T.gear===0)T.gm.position.y=1.15*PIO_S;
+  if(S&&S.seat)T._autoSeat=true;
 }
 addEventListener('pagehide',pioSave);setInterval(pioSave,4000);
 /* ---- the Pioneer's hold is reached through the platform's cargo container (Inventory tab), not from the cockpit ---- */
@@ -7212,7 +7229,7 @@ function boot(){
     }else{try{begin();}catch(e){console.error(e);}if(tcv)tcv.hidden=true;}
   }
   try{if(window.claude&&window.claude.hot&&window.claude.hot.snapshot)window.claude.hot.snapshot(()=>({save:(wiping||TUTW)?null:serialize()}));}catch(e){}
-  window.__VE={asteroids,pioSeatUpdate,pioLeave,mhProxT,pioProx,HOLD,exTick,exPos,exT,exLife,pioFly,pioEnter,keys,stick,mktRows,mk,ITEMS,PRICE0,RECIPES,BDEF,openTerminal,ivRender,hint,inv,bolts,pirates,pirateSpawn,turretTest,makeMusic,asteroids,renderer,scene,THREE,kf,openRepair,repairBill,repairTick,repairShip,pioNetWorth,pioRepairValue,PRICE0,eco,pioDamage,pioMaxHP,inv,shipAmmo,tpShips,pioEnter,grindStep,gridOn,powerTick,spawnDrone,spawnPlayerDrone,droneTick,damageBlock,repairBlock,hpOf,dmgEff,fireBolt,boltsTick,bolts,wipOn,wipUnit,wipBegin,wipDone,mk,mktClick,mktTick,mktBuild,mktRefresh,MKT,mkFee,mkTier,player,grids,asteroids,update,begin,ACT,keys,tb,camera,inv,mineAt,rayAst,pickAll,aim,serialize,restoreSave,saveGame,
+  window.__VE={pioAimed,asteroids,pioSeatUpdate,pioLeave,mhProxT,pioProx,HOLD,exTick,exPos,exT,exLife,pioFly,pioEnter,keys,stick,mktRows,mk,ITEMS,PRICE0,RECIPES,BDEF,openTerminal,ivRender,hint,inv,bolts,pirates,pirateSpawn,turretTest,makeMusic,asteroids,renderer,scene,THREE,kf,openRepair,repairBill,repairTick,repairShip,pioNetWorth,pioRepairValue,PRICE0,eco,pioDamage,pioMaxHP,inv,shipAmmo,tpShips,pioEnter,grindStep,gridOn,powerTick,spawnDrone,spawnPlayerDrone,droneTick,damageBlock,repairBlock,hpOf,dmgEff,fireBolt,boltsTick,bolts,wipOn,wipUnit,wipBegin,wipDone,mk,mktClick,mktTick,mktBuild,mktRefresh,MKT,mkFee,mkTier,player,grids,asteroids,update,begin,ACT,keys,tb,camera,inv,mineAt,rayAst,pickAll,aim,serialize,restoreSave,saveGame,
     TX,MAT,setTier,growCheck,serialize,pioLeave,pioHits,pioDockOK,pioDockTarget,pioDock,padNear,pioLevel,pioFootGap,pioPadSnap,rebuildAst,pointSolid,padArmRoom,padArmAimed,gravHas,gravFloors,gravFlash,addToGrid,gridHas,gridSpace,takeFromGrid,packUsed,packSpace,PACK_CAP,PACKIO,shipIO,spawnShip,interiorOf,bodyHit,bodyMove,cellAt,setTier,growCheck,doorTick,rideSync,seatWorld,nearestSeat,spawnStation,haveK,spend,upgradeBlock,gravR,qMax,tierOf,upCost,recalc,eco,price,PRICE0,ITEMS,loadItem,takeItem,whTotals,payDebt,tradeTick,BEACON,CARGO_CAP,panelSummary,openTerminal,closeTerminal,scanOre,setTool,setPage,addBlock,makeGrid,removeBlock,RECIPES,BDEF,BORDER,
     setDev:v=>{DEV=!!v;},platePaint,openPicker,openUpg,connGrid,surveyAst,revealBuried,tutState:()=>tut,startTut,renameGrid,dockPlan,toggleDock,pointSolid,shipHitsAst,enterShip,exitShip,inReach,gridsTouch,isCraft,dockCheck,dockTick,startXfer,moveTarget,PAD_RATE,BASE_RATE,xferState:()=>xfer,
     state:()=>({inGrav,page,termOpen,detRange,detSummary,paused,running}),
