@@ -442,6 +442,7 @@ body.devon #perfbtns{display:flex}
 @media (max-width:460px){#aux{grid-template-rows:auto repeat(2,36px);grid-template-columns:56px repeat(5,38px);gap:4px}#aux #shot{height:30px}}
 
 .mkr{display:grid;grid-template-columns:minmax(0,1.3fr) .8fr .8fr 1.25fr 1.25fr;gap:4px 6px;align-items:center;font-size:12px;font-variant-numeric:tabular-nums;padding:3px 0}
+.mkg{margin:10px 0 2px;color:var(--dim);font:600 10px var(--display);letter-spacing:.14em;text-transform:uppercase;border-bottom:1px solid var(--edge);padding-bottom:2px}
 .mkr.h{color:var(--dim);font:600 10px var(--display);letter-spacing:.14em;text-transform:uppercase}
 .mkr .nm{display:flex;align-items:center;gap:5px;min-width:0}.mkr .nm small{color:var(--dim)}
 .mkr.h span:nth-child(n+4){text-align:center}
@@ -634,7 +635,7 @@ body.uitut #camrow .tb,body.uitut #edge .tb,body.uitut #rbar .tb{visibility:visi
 'use strict';
 /* =====================  Void Engineers  =====================
    Part A: renderer, sky, procedural voxel asteroids, particles */
-const GAME_VER='244';
+const GAME_VER='245';
 {const vl=document.getElementById('verlab');if(vl)vl.textContent='v'+GAME_VER;}
 /* no page zoom while playing: pinch, double-tap and ctrl+wheel are swallowed */
 (()=>{const no=e=>{e.preventDefault();};
@@ -1281,8 +1282,8 @@ const BDEF={
   tank:{name:'Hydrogen Tank',cost:{fe:12,ice:6},mass:2500,spec:'+1500 L · 2.5 t'},
   drill:{name:'Laser Drill',cost:{fe:14,si:8},mass:2500,spec:'laser \u00b7 9 m reach \u00b7 2.5 t'},
   gravgen:{name:'Gravity Generator',cost:{fe:40,si:25,pt:8},mass:6000,panel:true,spec:'gravity over floors within 5 blocks \u00b7 upgradable \u00b7 6.0 t'},
-  refinery:{name:'Refinery',cost:{fe:60,si:30},mass:5000,machine:true,spin:true,spec:'ore \u2192 ingots \u00b7 1\u00d72 (1\u00d73 at tier 2) \u00b7 5.0 t'},
-  assembler:{name:'Assembler',cost:{fe:60,board:3,comp:1},mass:4000,machine:true,spin:true,spec:'ingots \u2192 components \u00b7 1\u00d72 (1\u00d73 at tier 2) \u00b7 4.0 t'},
+  refinery:{name:'Refinery',cost:{fe:60,si:30,disp:1},mass:5000,machine:true,spin:true,spec:'ore \u2192 ingots \u00b7 1\u00d72 (1\u00d73 at tier 2) \u00b7 5.0 t'},
+  assembler:{name:'Assembler',cost:{fe:60,board:3,comp:1,disp:1},mass:4000,machine:true,spin:true,spec:'ingots \u2192 components \u00b7 1\u00d72 (1\u00d73 at tier 2) \u00b7 4.0 t'},
   lgyro:{name:'Large Gyroscope',cost:{plate:6,motor:4,comp:4,ptI:2},mass:7000,spec:'5\u00d7 turn rate \u00b7 7.0 t'},
   bigtank:{name:'Large H\u2082 Tank',cost:{plate:10,constr:8,ice:20},mass:6000,spec:'+6000 L \u00b7 6.0 t'},
   bigdrill:{name:'Large Laser Drill',cost:{plate:8,motor:4,constr:6,comp:2},mass:5000,spec:'laser \u00b7 14 m reach \u00b7 wide bore \u00b7 5.0 t'},
@@ -1295,7 +1296,7 @@ const BDEF={
   padl:{name:'Long Landing Pad',cost:{fe:60,si:20},mass:4000,spec:'6 \u00d7 12 m deck for big craft \u00b7 sets the ship lengthwise on the pad \u00b7 a Repair Arm rises for a damaged ship \u00b7 4.0 t'},
   pad:{name:'Landing Pad',cost:{fe:30,si:10},mass:2000,spec:'6 m deck \u00b7 DOCK snaps craft from 12 m \u00b7 faster transfers \u00b7 a Repair Arm rises for a damaged ship \u00b7 2.0 t'},
   algae:{name:'Algae Farm',cost:{fe:30,si:30,board:2},mass:2500,machine:true,spec:'4 Ice \u2192 3 Algae paste \u00b7 a domed bed (2\u00d72 blocks at tier 3) \u00b7 makes Phage while it grows \u00b7 2.5 t'},
-  terminal:{name:'Terminal',cost:{fe:30,board:2,comp:1},mass:1200,panel:true,spin:true,spec:'opens the control panel: storage, trade, production, upgrades \u00b7 needs power \u00b7 1.2 t'},
+  terminal:{name:'Terminal',cost:{fe:30,board:2,comp:1,disp:1},mass:1200,panel:true,spin:true,spec:'opens the control panel: storage, trade, production, upgrades \u00b7 needs power \u00b7 1.2 t'},
   repair:{name:'Repair Arm',cost:{plate:4,constr:4,motor:1},mass:2500,spin:true,spec:'mounts beside a Landing Pad \u00b7 two blocks tall \u00b7 repairs a Pioneer in reach, 1 HP a second \u00b7 2.5 t'},
   beacon:{name:'Trade Beacon',cost:{plate:3,constr:3,comp:1},mass:1500,panel:true,spec:'calls freight traders \u00b7 1.5 t'}
 };
@@ -4887,9 +4888,9 @@ $('shotshare').addEventListener('click',async()=>{
 /* =====================  Part D: gravity stations, production, terminal, detector, saves, boot  ===================== */
 
 /* ---------- extra materials and pages ---------- */
-Object.assign(inv,{ammo:0,algae:0,phage:0,feI:0,siI:0,ptI:0,cuI:0,stI:0,alI:0,tiI:0,plate:0,constr:0,stP:0,tAl:0,thP:0,wire:0,board:0,motor:0,comp:0});
-Object.assign(RCOL,{ammo:'#e8c24a',algae:'#5fcf6e',phage:'#b6f08a',feI:'#e0905a',siI:'#d3dcec',ptI:'#ffe9a0',cuI:'#e8985f',stI:'#b9c9da',alI:'#dfe6ee',tiI:'#9db3cc',stP:'#8fa6c8',tAl:'#6fd0e0',thP:'#7f95b8',plate:'#9fb2c8',constr:'#8fb0a3',wire:'#e8985f',board:'#4fae6a',motor:'#d98c6a',comp:'#74c8a0'});
-const SHORT={ammo:'Iron ammo',algae:'Algae paste',phage:'Phage',fe:'Iron',si:'Silicon',ice:'Ice',pt:'Platinum',carb:'Carbon',cu:'Copper',al:'Aluminium',ti:'Titanium',feI:'Iron ingot',siI:'Silicon ingot',ptI:'Platinum ingot',cuI:'Copper ingot',stI:'Steel ingot',alI:'Aluminium ingot',tiI:'Titanium ingot',stP:'Steel Plate',tAl:'Transparent Aluminium',thP:'Thruster Parts',plate:'Plate',constr:'Construction',wire:'Wire',board:'Circuit Board',motor:'Motor',comp:'Computer'};
+Object.assign(inv,{rub:0,disp:0,ammo:0,algae:0,phage:0,feI:0,siI:0,ptI:0,cuI:0,stI:0,alI:0,tiI:0,plate:0,constr:0,stP:0,tAl:0,thP:0,wire:0,board:0,motor:0,comp:0});
+Object.assign(RCOL,{rub:'#3c4048',disp:'#5aa8d6',ammo:'#e8c24a',algae:'#5fcf6e',phage:'#b6f08a',feI:'#e0905a',siI:'#d3dcec',ptI:'#ffe9a0',cuI:'#e8985f',stI:'#b9c9da',alI:'#dfe6ee',tiI:'#9db3cc',stP:'#8fa6c8',tAl:'#6fd0e0',thP:'#7f95b8',plate:'#9fb2c8',constr:'#8fb0a3',wire:'#e8985f',board:'#4fae6a',motor:'#d98c6a',comp:'#74c8a0'});
+const SHORT={ammo:'Iron ammo',algae:'Algae paste',phage:'Phage',fe:'Iron',si:'Silicon',ice:'Ice',pt:'Platinum',carb:'Carbon',cu:'Copper',al:'Aluminium',ti:'Titanium',feI:'Iron ingot',siI:'Silicon ingot',ptI:'Platinum ingot',cuI:'Copper ingot',stI:'Steel ingot',alI:'Aluminium ingot',tiI:'Titanium ingot',stP:'Steel Plate',tAl:'Transparent Aluminium',thP:'Thruster Parts',plate:'Iron Plate',constr:'Construction Parts',wire:'Wire',board:'Circuit Board',motor:'Motor',comp:'CPU',rub:'Rubber',disp:'Display'};
 const ALLK=Object.keys(inv);
 // ship and structure parts can be built anywhere; station machines need a gravity field
 const PAGE_BASIC=['hull','slope','corner','icorner','glass','glassc','glassd','plate','platd','platt','door','steps','seat','light','powergen','thruster','mthruster','gun','turret','bigthruster','gyro','lgyro','tank','bigtank','drill','bigdrill','cargo','refinery','assembler','leg','gravgen','dronee'];
@@ -4902,7 +4903,7 @@ player.grav=null;player.gT=0;player.eye=0;player.lastUp=new V3(0,1,0);player.air
 
 /* ---------- station stock panel ---------- */
 const STN_ING=[['feI','Iron ingot'],['siI','Silicon ingot'],['ptI','Platinum ingot']];
-const STN_COMP=[['plate','Plate'],['constr','Construction'],['motor','Motor'],['comp','Computer']];
+const STN_COMP=[['plate','Iron Plate'],['constr','Construction Parts'],['motor','Motor'],['comp','CPU']];
 const STNK=STN_ING.concat(STN_COMP).map(e=>e[0]);
 const stnRows=a=>a.map(e=>'<div class="rr" style="--c:'+RCOL[e[0]]+'"><i></i><span>'+e[1]+'</span><b id="r-'+e[0]+'">0</b></div>').join('');
 $('stn').innerHTML='<div class="ph" id="stn-ph">Station stock</div><div class="scols"><div class="scol"><div class="ph2">Ingots</div>'+stnRows(STN_ING)+'</div><div class="scol"><div class="ph2">Components</div>'+stnRows(STN_COMP)+'</div></div>';
@@ -5258,19 +5259,21 @@ const RECIPES={
   refAm1:{m:'refinery',name:'Iron ammo (1)',in:{fe:2},out:{ammo:1},t:1},
   refAm:{m:'refinery',name:'Iron ammo (5)',in:{fe:8},out:{ammo:5},t:5},
   refAm25:{m:'refinery',name:'Iron ammo (25)',in:{fe:35},out:{ammo:25},t:25},
+  refRub:{m:'refinery',alloy:1,name:'Rubber',in:{carb:2,ice:1},out:{rub:2},t:2},
   refSteel:{m:'refinery',alloy:1,name:'Steel ingot',in:{feI:2,carb:1},out:{stI:2},t:2},
-  asPlate:{m:'assembler',name:'Plate',in:{feI:3},out:{plate:1},t:2},
-  asConstr:{m:'assembler',name:'Construction',in:{feI:2},out:{constr:1},t:2},
+  asPlate:{m:'assembler',name:'Iron Plate',in:{feI:3},out:{plate:1},t:2},
+  asConstr:{m:'assembler',name:'Construction Parts',in:{feI:2},out:{constr:1},t:2},
   asStP:{m:'assembler',name:'Steel Plate',in:{stI:2},out:{stP:1},t:3},
   asTAl:{m:'assembler',name:'Transparent Aluminium',in:{alI:2,siI:1},out:{tAl:2},t:3},
-  asThP:{m:'assembler',name:'Thruster Parts',in:{tiI:2,stP:1},out:{thP:1},t:4},
+  asThP:{m:'assembler',name:'Thruster Parts',in:{tiI:2,stP:1,rub:4},out:{thP:1},t:4},
   asWire:{m:'assembler',name:'Wire',in:{cuI:1},out:{wire:3},t:1},
   asBoard:{m:'assembler',name:'Circuit Board',in:{siI:1,wire:4,carb:1},out:{board:1},t:3},
-  asMotor:{m:'assembler',name:'Motor',in:{stI:2,wire:6},out:{motor:1},t:4},
-  asComp:{m:'assembler',name:'Computer',in:{board:2,alI:1},out:{comp:1},t:5}
+  asMotor:{m:'assembler',name:'Motor',in:{stI:2,wire:6,rub:1},out:{motor:1},t:4},
+  asDisp:{m:'assembler',name:'Display',in:{tAl:1,board:1,wire:2},out:{disp:1},t:4},
+  asComp:{m:'assembler',name:'CPU',in:{board:2,alI:1,rub:1},out:{comp:1},t:5}
 };
 RECIPES.algae1={m:'algae',name:'Algae paste (3)',in:{ice:4},out:{algae:3},t:20};
-const RORDER={algae:['#Growing','algae1'],refinery:['#Ingots','refFe','refSi','refCu','refAl','refTi','refPt','#Ammunition','refAm','#Alloys','refSteel'],assembler:['#Structure','asPlate','asConstr','asStP','asTAl','asThP','#Electronics','asWire','asBoard','asMotor','asComp']};
+const RORDER={algae:['#Growing','algae1'],refinery:['#Ingots','refFe','refSi','refCu','refAl','refTi','refPt','#Ammunition','refAm','#Alloys','refSteel','#Materials','refRub'],assembler:['#Structure','asPlate','asConstr','asStP','asTAl','asThP','#Electronics','asWire','asBoard','asDisp','asMotor','asComp']};
 function upgradeBlock(g,b){
   if(!canUp(b)){toast('Already at the top tier','bad');return false;}
   const c=upCost(b);
@@ -5320,11 +5323,12 @@ function machineTick(dt){
 }
 
 /* ---------- economy: credits, market, warehouses, freight traders ---------- */
-const ITEMS=['ammo','phage','algae','comp','motor','thP','tAl','board','wire','constr','stP','plate','ptI','tiI','siI','alI','cuI','stI','feI','pt','ti','al','cu','si','carb','ice','fe'];
-ITEMS.sort((a,b)=>SHORT[a].localeCompare(SHORT[b]));   // goods are listed alphabetically by name
+const ITEM_GROUPS=[['Ores',['fe','si','ice','pt','carb','cu','al','ti']],['Ingots',['feI','siI','ptI','cuI','stI','alI','tiI']],['Components',['plate','constr','stP','tAl','thP','wire','board','motor','comp','rub','disp']],['Live Items',['algae','phage']],['Ammo',['ammo']]];
+for(const x of ITEM_GROUPS)x[1].sort((a,b)=>SHORT[a].localeCompare(SHORT[b]));   // grouped by type, A to Z inside each group
+const ITEMS=ITEM_GROUPS.flatMap(x=>x[1]);
 /* Every made good is priced at about 1.3 x its inputs (see claude/void-engineers-materials-and-crafting.md). */
 /* credits: v195 rebalance, every price is the old one divided by 1000 (Iron ore 8) */
-const PRICE0={ammo:21,phage:24,algae:15,fe:8,si:12,ice:5,pt:40,carb:9,cu:14,al:16,ti:22,feI:21,siI:62,ptI:416,cuI:55,stI:33,alI:62,tiI:114,plate:82,constr:55,stP:86,tAl:121,thP:408,wire:24,board:217,motor:273,comp:645};
+const PRICE0={rub:15,disp:502,ammo:21,phage:24,algae:15,fe:8,si:12,ice:5,pt:40,carb:9,cu:14,al:16,ti:22,feI:21,siI:62,ptI:416,cuI:55,stI:33,alI:62,tiI:114,plate:82,constr:55,stP:86,tAl:121,thP:486,wire:24,board:217,motor:293,comp:665};
 const RUSH_FEE=100;
 let ecoOld=false;
 const eco={cr:2000,debt:170000000,won:false,pt:0};
@@ -5426,14 +5430,14 @@ function payDebt(amount){
 }
 /* ---------- the Market: five settlements, orders, and drones that run them ---------- */
 const MKT=[   // dist: 1 near .. 5 far; every: seconds between drones; max: units per order each way; m: demand multiplier on base price (0 = they don't want it)
-  {id:0,name:'Alnra Station',type:'Base',dist:1,every:450,max:15,m:{algae:1,phage:1,fe:.9,si:.9,ice:1.6,pt:0,feI:1,siI:1,ptI:0,plate:1.2,constr:1.1,motor:1.3,comp:1,carb:1,cu:.9,cuI:1,stI:1.2,wire:1,board:.9,al:.8,ti:1,alI:1,tiI:1,stP:1.1,tAl:1.2,thP:1.1}},
-  {id:1,name:'Vergera',type:'Moon',dist:2,every:600,max:20,m:{algae:1,phage:1,fe:1.2,si:1.2,ice:.8,pt:.9,feI:1.3,siI:1.3,ptI:.9,plate:1,constr:1.3,motor:1,comp:.9,carb:1.3,cu:1.3,cuI:1.3,stI:1.1,wire:1.2,board:1,al:1.1,ti:1.3,alI:1.2,tiI:1.3,stP:1,tAl:1.4,thP:1}},
-  {id:2,name:'Mara 4',type:'Planet',dist:3,every:900,max:25,m:{algae:1,phage:1,fe:.9,si:.9,ice:0,pt:1.5,feI:1,siI:1.1,ptI:1.8,plate:1.1,constr:1,motor:1.4,comp:1.8,carb:1.1,cu:1,cuI:1.1,stI:1,wire:1.3,board:1.6,al:1.3,ti:1.2,alI:1.4,tiI:1.2,stP:1.1,tAl:1,thP:1.2}},
-  {id:3,name:'Mara 7',type:'Planet',dist:4,every:1200,max:55,m:{algae:1,phage:1,fe:.8,si:.8,ice:0,pt:1.2,feI:1.1,siI:1.1,ptI:1.3,plate:1.7,constr:1.2,motor:1.6,comp:1.4,carb:.8,cu:1.2,cuI:1.2,stI:1.6,wire:1.1,board:1.3,al:1.4,ti:1.7,alI:1.3,tiI:1.7,stP:1.7,tAl:.9,thP:1.6}},
-  {id:4,name:'Hernolon 5',type:'Planet',dist:5,every:1800,max:70,m:{algae:1,phage:1,fe:1.3,si:1.3,ice:0,pt:1.8,feI:1.5,siI:1.5,ptI:1.7,plate:1.5,constr:1.5,motor:1.5,comp:1.6,carb:1.4,cu:1.4,cuI:1.5,stI:1.5,wire:1.5,board:1.6,al:1.5,ti:1.5,alI:1.5,tiI:1.5,stP:1.5,tAl:1.5,thP:1.5}}];
-const MK_WT={ammo:1,algae:1,phage:1,fe:1,si:1,ice:1,pt:2,carb:1,cu:2,feI:2,siI:2,ptI:3,cuI:2,stI:2,plate:4,constr:5,wire:1,board:2,motor:8,comp:6,al:1,ti:2,alI:1,tiI:3,stP:5,tAl:3,thP:6};   // weight of one unit
+  {id:0,name:'Alnra Station',type:'Base',dist:1,every:450,max:15,m:{algae:1,phage:1,fe:.9,si:.9,ice:1.6,pt:0,feI:1,siI:1,ptI:0,plate:1.2,constr:1.1,motor:1.3,comp:1,carb:1,cu:.9,cuI:1,stI:1.2,wire:1,board:.9,al:.8,ti:1,alI:1,tiI:1,stP:1.1,tAl:1.2,thP:1.1,rub:1,disp:1.1}},
+  {id:1,name:'Vergera',type:'Moon',dist:2,every:600,max:20,m:{algae:1,phage:1,fe:1.2,si:1.2,ice:.8,pt:.9,feI:1.3,siI:1.3,ptI:.9,plate:1,constr:1.3,motor:1,comp:.9,carb:1.3,cu:1.3,cuI:1.3,stI:1.1,wire:1.2,board:1,al:1.1,ti:1.3,alI:1.2,tiI:1.3,stP:1,tAl:1.4,thP:1,rub:1.1,disp:1}},
+  {id:2,name:'Mara 4',type:'Planet',dist:3,every:900,max:25,m:{algae:1,phage:1,fe:.9,si:.9,ice:0,pt:1.5,feI:1,siI:1.1,ptI:1.8,plate:1.1,constr:1,motor:1.4,comp:1.8,carb:1.1,cu:1,cuI:1.1,stI:1,wire:1.3,board:1.6,al:1.3,ti:1.2,alI:1.4,tiI:1.2,stP:1.1,tAl:1,thP:1.2,rub:1.2,disp:1.5}},
+  {id:3,name:'Mara 7',type:'Planet',dist:4,every:1200,max:55,m:{algae:1,phage:1,fe:.8,si:.8,ice:0,pt:1.2,feI:1.1,siI:1.1,ptI:1.3,plate:1.7,constr:1.2,motor:1.6,comp:1.4,carb:.8,cu:1.2,cuI:1.2,stI:1.6,wire:1.1,board:1.3,al:1.4,ti:1.7,alI:1.3,tiI:1.7,stP:1.7,tAl:.9,thP:1.6,rub:1.4,disp:1.2}},
+  {id:4,name:'Hernolon 5',type:'Planet',dist:5,every:1800,max:70,m:{algae:1,phage:1,fe:1.3,si:1.3,ice:0,pt:1.8,feI:1.5,siI:1.5,ptI:1.7,plate:1.5,constr:1.5,motor:1.5,comp:1.6,carb:1.4,cu:1.4,cuI:1.5,stI:1.5,wire:1.5,board:1.6,al:1.5,ti:1.5,alI:1.5,tiI:1.5,stP:1.5,tAl:1.5,thP:1.5,rub:1.5,disp:1.6}}];
+const MK_WT={rub:1,disp:3,ammo:1,algae:1,phage:1,fe:1,si:1,ice:1,pt:2,carb:1,cu:2,feI:2,siI:2,ptI:3,cuI:2,stI:2,plate:4,constr:5,wire:1,board:2,motor:8,comp:6,al:1,ti:2,alI:1,tiI:3,stP:5,tAl:3,thP:6};   // weight of one unit
 const MK_FLAT=20,MK_RATE=.6,MK_DAY=180,MK_SPREAD=1.3,MK_STEP=5;
-const mk={sel:0,carts:{},tm:MKT.map(s=>s.every*.5),q:[]};
+const mk={sel:0,sortP:false,carts:{},tm:MKT.map(s=>s.every*.5),q:[]};
 const mkTier=w=>w<100?0:w<=200?.05:w<=350?.1:w<=600?.2:w<=1000?.35:.5;
 const mkPay=(s,k)=>s.m[k]>0?Math.max(1,Math.round(PRICE0[k]*s.m[k])):0;   // what they pay you
 const mkCost=(s,k)=>s.m[k]>0&&s.m[k]<=1?Math.max(1,Math.round(PRICE0[k]*Math.max(s.m[k],.75)*MK_SPREAD)):0;   // what you pay them (only goods they have in surplus)
@@ -5492,19 +5496,26 @@ function mktBuild(){
     MKT.map(s=>'<button class="rb chip" data-mk="sel" data-s="'+s.id+'">'+s.name+' <small></small></button>').join('')+'</div>'+
     '<div class="qrow" id="m-info" style="white-space:pre-line"></div></div>';
   h+='<div class="mcard"><div class="mh"><b id="m-title">Orders</b><span>tap the number to fill it</span></div>'+
+    '<div class="bt" style="justify-content:flex-end;margin:2px 0 4px"><button class="rb" data-mk="sort" id="m-sort">'+(mk.sortP?'Default':'Sort by Price')+'</button></div>'+
     '<div class="mkr h"><span>Goods</span><span>They pay</span><span>You pay</span><span>Sell</span><span>Buy</span></div>'+
-    ITEMS.map(k=>'<div class="mkr" data-k="'+k+'"><span class="nm"><i style="'+ITEM_ICON(k)+'"></i>'+SHORT[k]+' <small class="mst"></small></span><span class="mpay"></span><span class="mcost"></span>'+
-      '<span class="mq"><button class="rb" data-mk="s-" data-k="'+k+'">&minus;</button><button class="rb mn" data-mk="sm" data-k="'+k+'">0</button><button class="rb" data-mk="s+" data-k="'+k+'">+</button></span>'+
-      '<span class="mq"><button class="rb" data-mk="b-" data-k="'+k+'">&minus;</button><button class="rb mn" data-mk="bm" data-k="'+k+'">0</button><button class="rb" data-mk="b+" data-k="'+k+'">+</button></span></div>').join('')+
+    '<div id="m-rows">'+mktRows()+'</div>'+
     '<div class="qrow" id="m-sum" style="white-space:pre-line"></div>'+
     '<div class="mfoot"><button class="rb" data-mk="clear">Clear</button><button class="rb up" data-mk="submit" id="m-go">Submit order</button></div></div>';
   h+='<div class="mcard"><div class="mh"><b>Orders on the way</b></div><div class="qrow" id="m-q" style="white-space:pre-line"></div></div>';
   return h;
 }
+function mktRows(){
+  const row=k=>'<div class="mkr" data-k="'+k+'"><span class="nm"><i style="'+ITEM_ICON(k)+'"></i>'+SHORT[k]+' <small class="mst"></small></span><span class="mpay"></span><span class="mcost"></span>'+
+      '<span class="mq"><button class="rb" data-mk="s-" data-k="'+k+'">&minus;</button><button class="rb mn" data-mk="sm" data-k="'+k+'">0</button><button class="rb" data-mk="s+" data-k="'+k+'">+</button></span>'+
+      '<span class="mq"><button class="rb" data-mk="b-" data-k="'+k+'">&minus;</button><button class="rb mn" data-mk="bm" data-k="'+k+'">0</button><button class="rb" data-mk="b+" data-k="'+k+'">+</button></span></div>';
+  if(mk.sortP)return ITEMS.slice().sort((a,b)=>price[b]-price[a]||SHORT[a].localeCompare(SHORT[b])).map(row).join('');
+  return ITEM_GROUPS.map(x=>'<div class="mkg">'+x[0]+'</div>'+x[1].map(row).join('')).join('');
+}
 const mkLimits=(s,g,cart)=>({sellLeft:s.max-mkSum(cart.sell),buyLeft:s.max-mkSum(cart.buy),space:Math.max(0,gridSpace(g)-mkIncoming(g)-mkSum(cart.buy))});
 function mktClick(btn){
   const a=btn.dataset.mk,s=MKT[mk.sel],g=mkG(),k=btn.dataset.k;
   if(a==='sel'){mk.sel=+btn.dataset.s;return;}
+  if(a==='sort'){mk.sortP=!mk.sortP;const r=$('m-rows');if(r)r.innerHTML=mktRows();setT($('m-sort'),mk.sortP?'Default':'Sort by Price');return;}
   if(mkGuest()){toast('The host runs the Market. Orders from guests are coming with shared economy.','bad');return;}
   if(!g){toast('The Market needs a station with a Trade Beacon and a Cargo Container','bad');return;}
   const cart=mkCart();
@@ -6242,8 +6253,7 @@ function tradeRefresh(){
   // all commodities, one block per container or docked craft, then the pack
   const tot=$('t-tot');
   if(tot){
-    const GR=[['Ores',['fe','si','ice','pt','carb','cu','al','ti']],['Ingots',['feI','siI','ptI','cuI','stI','alI','tiI']],['Ammo',['ammo']],['Components',['plate','constr','stP','tAl','thP','wire','board','motor','comp']],['Live Items',['algae','phage'].filter(k=>ITEMS.includes(k))]];
-    for(const x of GR)x[1].sort((p,q)=>SHORT[p].localeCompare(SHORT[q]));const rest=ITEMS.filter(k=>!GR.some(x=>x[1].includes(k)));if(rest.length)GR.push(['Other',rest]);
+    const GR=ITEM_GROUPS.map(x=>[x[0],x[1].filter(k=>ITEMS.includes(k))]);const rest=ITEMS.filter(k=>!GR.some(x=>x[1].includes(k)));if(rest.length)GR.push(['Other',rest]);
     const tgw=viewGrids().map(g=>whTotals(g));{const pT=pioXT();if(pT)tgw.push({t:pT.hold});}
     const html='<div class="mh"><b>All commodities</b><span>tap one to see where it is stored</span></div>'+GR.filter(x=>x[1].length).map(x=>{const op=!cmClosed[x[0]];return '<button class="cgh" data-cg="'+x[0]+'" aria-expanded="'+op+'"><span>'+x[0]+'</span><i>'+(op?'\u25B2':'\u25BC')+'</i></button>'+(op?'<div class="srow">'+x[1].map(k=>{let n=inv[k]|0;for(const w of tgw)n+=w.t[k]||0;return '<button class="sc cm" data-cm="'+k+'"><i style="'+ITEM_ICON(k)+'"></i>'+SHORT[k]+' <b>'+n+'</b></button>';}).join('')+'</div>':'');}).join('');
     if(tot._h!==html){tot._h=html;tot.innerHTML=html;}
@@ -7075,7 +7085,7 @@ function boot(){
     }else{try{begin();}catch(e){console.error(e);}if(tcv)tcv.hidden=true;}
   }
   try{if(window.claude&&window.claude.hot&&window.claude.hot.snapshot)window.claude.hot.snapshot(()=>({save:(wiping||TUTW)?null:serialize()}));}catch(e){}
-  window.__VE={openTerminal,ivRender,hint,inv,bolts,pirates,pirateSpawn,turretTest,makeMusic,asteroids,renderer,scene,THREE,kf,openRepair,repairBill,repairTick,repairShip,pioNetWorth,pioRepairValue,PRICE0,eco,pioDamage,pioMaxHP,inv,shipAmmo,tpShips,pioEnter,grindStep,gridOn,powerTick,spawnDrone,spawnPlayerDrone,droneTick,damageBlock,repairBlock,hpOf,dmgEff,fireBolt,boltsTick,bolts,wipOn,wipUnit,wipBegin,wipDone,mk,mktClick,mktTick,mktBuild,mktRefresh,MKT,mkFee,mkTier,player,grids,asteroids,update,begin,ACT,keys,tb,camera,inv,mineAt,rayAst,pickAll,aim,serialize,restoreSave,saveGame,
+  window.__VE={mktRows,mk,ITEMS,PRICE0,RECIPES,BDEF,openTerminal,ivRender,hint,inv,bolts,pirates,pirateSpawn,turretTest,makeMusic,asteroids,renderer,scene,THREE,kf,openRepair,repairBill,repairTick,repairShip,pioNetWorth,pioRepairValue,PRICE0,eco,pioDamage,pioMaxHP,inv,shipAmmo,tpShips,pioEnter,grindStep,gridOn,powerTick,spawnDrone,spawnPlayerDrone,droneTick,damageBlock,repairBlock,hpOf,dmgEff,fireBolt,boltsTick,bolts,wipOn,wipUnit,wipBegin,wipDone,mk,mktClick,mktTick,mktBuild,mktRefresh,MKT,mkFee,mkTier,player,grids,asteroids,update,begin,ACT,keys,tb,camera,inv,mineAt,rayAst,pickAll,aim,serialize,restoreSave,saveGame,
     TX,MAT,setTier,growCheck,serialize,pioLeave,pioHits,pioDockOK,pioDockTarget,pioDock,padNear,pioLevel,pioFootGap,pioPadSnap,rebuildAst,pointSolid,padArmRoom,padArmAimed,gravHas,gravFloors,gravFlash,addToGrid,gridHas,gridSpace,takeFromGrid,packUsed,packSpace,PACK_CAP,PACKIO,shipIO,spawnShip,interiorOf,bodyHit,bodyMove,cellAt,setTier,growCheck,doorTick,rideSync,seatWorld,nearestSeat,spawnStation,haveK,spend,upgradeBlock,gravR,qMax,tierOf,upCost,recalc,eco,price,PRICE0,ITEMS,loadItem,takeItem,whTotals,payDebt,tradeTick,BEACON,CARGO_CAP,panelSummary,openTerminal,closeTerminal,scanOre,setTool,setPage,addBlock,makeGrid,removeBlock,RECIPES,BDEF,BORDER,
     setDev:v=>{DEV=!!v;},platePaint,openPicker,openUpg,connGrid,surveyAst,revealBuried,tutState:()=>tut,startTut,renameGrid,dockPlan,toggleDock,pointSolid,shipHitsAst,enterShip,exitShip,inReach,gridsTouch,isCraft,dockCheck,dockTick,startXfer,moveTarget,PAD_RATE,BASE_RATE,xferState:()=>xfer,
     state:()=>({inGrav,page,termOpen,detRange,detSummary,paused,running}),
