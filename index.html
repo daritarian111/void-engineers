@@ -112,6 +112,15 @@ body.uitut #res.colp .rr.mine{display:none!important}
 .toast{background:var(--panel);box-shadow:inset 0 0 0 1px var(--edge);padding:5px 12px;font-size:12px;animation:tin .18s ease-out;text-align:center}
 .toast.bad{color:var(--bad)} .toast.good{color:var(--good)}
 @keyframes tin{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+#mh{position:fixed;top:0;right:0;bottom:0;left:0;pointer-events:none;z-index:3;opacity:0;transition:opacity .25s}
+#mh canvas{position:absolute;top:0;left:0}
+#mh .mht{position:absolute;top:8px;left:50%;transform:translateX(-50%);font:700 11px var(--display);letter-spacing:.3em;color:rgba(120,230,255,.8);text-shadow:0 0 6px rgba(79,224,255,.6)}
+#mh .mhore{position:absolute;top:0;left:0;white-space:nowrap;font:600 10px var(--mono);color:#ffd9a0;text-shadow:0 0 4px #000}
+#mh .mhore i{position:absolute;top:0;left:0;width:18px;height:18px;border:2px solid var(--c,#f5a524);border-radius:3px;box-shadow:0 0 6px var(--c,#f5a524)}
+#mh .mhore span{position:absolute;top:20px;left:-8px}
+body.mhud #res,body.mhud #status{background:linear-gradient(90deg,rgba(6,28,36,.62),rgba(6,28,36,.18));border-radius:0;box-shadow:inset 2px 0 0 #4fe0ff;color:#bff3ff;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)}
+body.mhud #status{background:linear-gradient(270deg,rgba(6,28,36,.62),rgba(6,28,36,.18));box-shadow:inset -2px 0 0 #4fe0ff;clip-path:polygon(10px 0,100% 0,100% 100%,0 100%,0 10px)}
+body.mhud #res b,body.mhud #status b{color:#e8fbff}
 #vignette{position:fixed;top:0;right:0;bottom:0;left:0;pointer-events:none;opacity:0;transition:opacity .35s;box-shadow:inset 0 0 120px 30px rgba(255,80,50,.55)}
 #vignette.hit{opacity:1;transition:none}
 
@@ -442,7 +451,6 @@ body.devon #perfbtns{display:flex}
 @media (max-width:460px){#aux{grid-template-rows:auto repeat(2,36px);grid-template-columns:56px repeat(5,38px);gap:4px}#aux #shot{height:30px}}
 
 .mkr{display:grid;grid-template-columns:minmax(0,1.3fr) .8fr .8fr 1.25fr 1.25fr;gap:4px 6px;align-items:center;font-size:12px;font-variant-numeric:tabular-nums;padding:3px 0}
-.pmark{position:fixed;z-index:6;pointer-events:none;transform:translate(-50%,-50%);display:none}.pmark i{display:block;width:26px;height:14px;border:2px solid rgba(245,165,36,.9);border-radius:4px;box-shadow:0 0 6px rgba(245,165,36,.55)}.pmark span{position:absolute;left:50%;top:100%;transform:translateX(-50%);margin-top:1px;font:600 8px var(--display);letter-spacing:.12em;color:rgba(245,165,36,.85)}
 .mkg{margin:10px 0 2px;color:var(--dim);font:600 10px var(--display);letter-spacing:.14em;text-transform:uppercase;border-bottom:1px solid var(--edge);padding-bottom:2px}
 .mkr.h{color:var(--dim);font:600 10px var(--display);letter-spacing:.14em;text-transform:uppercase}
 .mkr .nm{display:flex;align-items:center;gap:5px;min-width:0}.mkr .nm small{color:var(--dim)}
@@ -621,7 +629,7 @@ body.uitut #camrow .tb,body.uitut #edge .tb,body.uitut #rbar .tb{visibility:visi
       <div id="mpst">Not connected</div>
       <button id="mpleave">Leave room</button>
     </div>
-    <div class="btns mrows"><div class="mrow"><button id="go" disabled>Loading…</button><button id="newg" hidden>New game</button></div><div class="mrow"><button id="mpbtn">Multiplayer</button><button id="setbtn">Settings</button><button id="goodsbtn">Goods</button><button id="tutmenubtn">Tutorials</button><button id="exitapp" hidden>Exit</button></div><span id="verlab"></span></div>
+    <div class="btns mrows"><div class="mrow"><button id="go" disabled>Loading…</button><button id="newg" hidden>New game</button></div><div class="mrow"><button id="mpbtn">Multiplayer</button><button id="setbtn">Settings</button><button id="tutmenubtn">Tutorials</button><button id="exitapp" hidden>Exit</button></div><span id="verlab"></span></div>
   </div>
 </div>
 <div id="tutwin" class="winwrap" hidden><div class="win"><div class="stripe"></div><h2>Tutorials</h2>
@@ -636,7 +644,7 @@ body.uitut #camrow .tb,body.uitut #edge .tb,body.uitut #rbar .tb{visibility:visi
 'use strict';
 /* =====================  Void Engineers  =====================
    Part A: renderer, sky, procedural voxel asteroids, particles */
-const GAME_VER='250';
+const GAME_VER='252';
 {const vl=document.getElementById('verlab');if(vl)vl.textContent='v'+GAME_VER;}
 /* no page zoom while playing: pinch, double-tap and ctrl+wheel are swallowed */
 (()=>{const no=e=>{e.preventDefault();};
@@ -2482,7 +2490,7 @@ function poseEngineer(E,dt,feet,up,face,speed,tool,floating,seated,firing){
 
 /* =====================  Part C: player, tools, HUD, input, loop  ===================== */
 const player={pos:new V3(3,2.6,.5),vel:new V3(),mode:'foot',ship:null,tool:5,build:false,sel:0,damp:true,third:false,dt:0};
-let NOCLIP=false,spin=0,orient=0,lampOn=false,shipLampOn=false,lampAboard=false,running=false,paused=true,locked=false,wasLocked=false,noLock=false,hudDirty=true;
+let packOnly=false,NOCLIP=false,spin=0,orient=0,lampOn=false,shipLampOn=false,lampAboard=false,running=false,paused=true,locked=false,wasLocked=false,noLock=false,hudDirty=true;
 const ORIENTS=[null,[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];
 const ORIENT_NAMES=['Auto (surface normal)','+X','-X','+Y','-Y','+Z','-Z'];
 const flash={fe:0,si:0,ice:0,pt:0};
@@ -3925,7 +3933,6 @@ function gridExhaust(g,b,th,dt){   // a block thruster: its flame points out alo
 /* ---------- lamps: the suit lamp on foot, the ship's exterior lamp when aboard (one light, so no extra shader cost) ---------- */
 const _lp=new V3(),_lf=new V3();
 function lampTick(){
-  if(!pioSeat)pioMarkHide();
   const ab=player.mode==='tseat'||player.mode==='pilot';
   if(ab&&!lampAboard)lampOn=false;   // stepping aboard switches the suit lamp off
   lampAboard=ab;
@@ -3939,21 +3946,95 @@ function lampTick(){
   lamp.distance=170;lamp.intensity=shipLampOn?3.4:0;
 }
 
-/* ---------- cab-view size markers: where the nose tip (the drill) and the belly are on screen ---------- */
-let pmN=null,pmB=null;const _pmv=new V3();
-function pmMake(txt){const d=document.createElement('div');d.className='pmark';d.innerHTML='<i></i><span>'+txt+'</span>';d.style.display='none';document.body.appendChild(d);return d;}
-function pmPlace(el,G,lx,ly,lz){
-  _pmv.set(lx,ly,lz);G.localToWorld(_pmv);_pmv.project(camera);
-  if(_pmv.z>=1||Math.abs(_pmv.x)>1.02||Math.abs(_pmv.y)>1.02){el.style.display='none';return;}
-  el.style.display='block';el.style.left=((_pmv.x*.5+.5)*innerWidth).toFixed(1)+'px';el.style.top=((-_pmv.y*.5+.5)*innerHeight).toFixed(1)+'px';
+
+/* ---------- Miner HUD: the cockpit is spoofed. The camera glides to the pilot's eye, the hull fades to a ghost, and a HUD takes over ---------- */
+const mGhost=new THREE.MeshLambertMaterial({color:0x7fb0c8,transparent:true,opacity:1,depthWrite:false,side:THREE.FrontSide}),MH_GHOST=.06,MH_ORE_R=50,MH_NEAR=3;
+const _gp=new V3(),_gq=new THREE.Quaternion(),_mp=new V3(),_mt=new V3(),_md=new V3(),_mo=new V3();
+let mhEl=null,mhC=null,mhX=null,mhW=0,mhH=0,mhTags=[],mhProx=[0,0,0,0,0,0],mhProxT=[0,0,0,0,0,0],mhN=0;
+function pioMeshes(T){
+  if(!T._pm){
+    T._pm=[];T.group.traverse(m=>{if(m.isMesh)T._pm.push(m);});
+    const tip=new THREE.Mesh(new THREE.ConeGeometry(.45,2.8,14).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0xffb347,depthTest:false}));   // the drill tip stays solid while the hull is a ghost
+    tip.position.set(0,2.6*PIO_S,-9.5);tip.renderOrder=6;tip.visible=false;T.group.add(tip);T._tip=tip;
+  }
+  return T._pm;
 }
-function pioMarkers(T){
-  if(!pmN){pmN=pmMake('NOSE');pmB=pmMake('BELLY');}
-  if(T.view!==0||T.lock){pmN.style.display=pmB.style.display='none';return;}
-  camera.updateMatrixWorld(true);const G=T.group;
-  pmPlace(pmN,G,0,2.2,-9.9);pmPlace(pmB,G,0,0,-9.2);
+function pioGhost(T,k){
+  const ms=pioMeshes(T);
+  if(k>0){for(const m of ms)if(m.material!==mGhost){m._om=m.material;m.material=mGhost;}mGhost.opacity=1-(1-MH_GHOST)*k;T._ghost=1;}
+  else if(T._ghost){for(const m of ms)if(m._om){m.material=m._om;m._om=null;}T._ghost=0;T.cp.children[0].material=T.view===1?tplMatPio:tplMatPioIn;}
+  T._tip.visible=k>.3;
 }
-function pioMarkHide(){if(pmN)pmN.style.display=pmB.style.display='none';}
+function mhBuild(){
+  mhEl=document.createElement('div');mhEl.id='mh';
+  mhC=document.createElement('canvas');mhEl.appendChild(mhC);mhX=mhC.getContext('2d');
+  const t=document.createElement('div');t.className='mht';t.textContent='MINER';mhEl.appendChild(t);
+  for(let i=0;i<8;i++){const d=document.createElement('div');d.className='mhore';d.innerHTML='<i></i><span></span>';d.style.display='none';mhEl.appendChild(d);mhTags.push(d);}
+  document.body.appendChild(mhEl);
+}
+function mhProject(v){   // world point to screen pixels, or null when behind the camera
+  _mp.copy(v).applyMatrix4(camera.matrixWorldInverse);if(_mp.z>-.1)return null;
+  _mp.applyMatrix4(camera.projectionMatrix);return [(_mp.x*.5+.5)*mhW,(-_mp.y*.5+.5)*mhH];
+}
+function pioProx(T){   // 0..1 per side: L R U D nose tail, from how close solid things are to the hull (3 m and in)
+  const out=mhProxT;out.fill(0);if(T.lock)return;
+  const G=T.group;G.updateMatrixWorld(true);
+  for(const p of PIO_PROBES){
+    const w=G.localToWorld(_mo.set(p[0]*PIO_S,p[1]*PIO_S,p[2]*PIO_S)),r=p[3]*PIO_S;
+    if(!sphereSolid(w,r+MH_NEAR))continue;
+    const lvl=sphereSolid(w,r+MH_NEAR*.34)?1:sphereSolid(w,r+MH_NEAR*.67)?.66:.33;
+    const x=p[0],y=p[1]-3.1,z=p[2],n=Math.hypot(x,y,z)||1;
+    const ws=[-x/n,x/n,y/n,-y/n,-z/n,z/n];
+    for(let i=0;i<6;i++)if(ws[i]>.35)out[i]=Math.max(out[i],lvl*Math.min(1,ws[i]*1.4));
+  }
+}
+function mhDraw(T,dt){
+  const W=innerWidth,H=innerHeight,sc=.75;
+  if(mhW!==W||mhH!==H){mhW=W;mhH=H;mhC.width=Math.round(W*sc);mhC.height=Math.round(H*sc);mhC.style.width=W+'px';mhC.style.height=H+'px';}
+  const x=mhX;x.setTransform(sc,0,0,sc,0,0);x.clearRect(0,0,W,H);
+  const cx=W/2,cy=H/2,R=Math.min(W,H)*.3,TAU=Math.PI*2,d2r=Math.PI/180;
+  if(++mhN%4===1)pioProx(T);
+  for(let i=0;i<6;i++)mhProx[i]+=(mhProxT[i]-mhProx[i])*Math.min(1,dt*9);
+  // reticle ring with ticks
+  x.lineWidth=2;x.strokeStyle='rgba(79,224,255,.26)';x.beginPath();x.arc(cx,cy,R,0,TAU);x.stroke();
+  x.beginPath();for(let a=0;a<360;a+=30){const c=Math.cos(a*d2r),s=Math.sin(a*d2r);x.moveTo(cx+c*R,cy+s*R);x.lineTo(cx+c*(R+(a%90?6:12)),cy+s*(R+(a%90?6:12)));}x.stroke();
+  // red shading around the screen edge, by ship side
+  const big=Math.hypot(W,H)*.5,sec=[[135,225],[-45,45],[225,315],[45,135]];
+  for(let i=0;i<4;i++){const v=mhProx[i];if(v<.02)continue;
+    x.save();x.beginPath();x.moveTo(cx,cy);x.arc(cx,cy,big*1.1,sec[i][0]*d2r,sec[i][1]*d2r);x.closePath();x.clip();
+    const g=x.createRadialGradient(cx,cy,Math.min(W,H)*.3,cx,cy,big);g.addColorStop(0,'rgba(255,40,40,0)');g.addColorStop(1,'rgba(255,40,40,'+(.8*v).toFixed(3)+')');
+    x.fillStyle=g;x.fillRect(0,0,W,H);x.restore();}
+  // inner ring arcs: top = nose, bottom = tail
+  x.lineWidth=13;x.lineCap='round';
+  for(const [i,a0,a1] of [[4,230,310],[5,50,130]]){const v=mhProx[i];if(v<.02)continue;x.strokeStyle='rgba(255,50,50,'+(.25+.7*v).toFixed(3)+')';x.beginPath();x.arc(cx,cy,R*.82,a0*d2r,a1*d2r);x.stroke();}
+  x.lineCap='butt';
+  // where the drill beam ends
+  const G=T.group;_mt.copy(G.localToWorld(_mo.set(0,2.6*PIO_S,-11.7*PIO_S)));_md.set(0,0,-1).applyQuaternion(G.quaternion);
+  const e=mhProject(_mo.copy(_mt).addScaledVector(_md,11));
+  if(e){x.strokeStyle='rgba(255,179,71,.85)';x.lineWidth=2;x.beginPath();x.moveTo(e[0],e[1]-9);x.lineTo(e[0]+9,e[1]);x.lineTo(e[0],e[1]+9);x.lineTo(e[0]-9,e[1]);x.closePath();x.stroke();}
+  // known ore nodes within 50 m
+  const cp=camera.position,found=[];
+  for(const a of asteroids){
+    if(!a.deps||a.ctr.distanceTo(cp)>a.R+MH_ORE_R+4)continue;
+    for(const d of a.deps){if(d.dead||d.buried)continue;const dx=d.x-cp.x,dy=d.y-cp.y,dz=d.z-cp.z,dd=Math.hypot(dx,dy,dz);if(dd<=MH_ORE_R)found.push([dd,d]);}
+  }
+  found.sort((p,q)=>p[0]-q[0]);let ti=0;
+  for(const [dd,d] of found){
+    if(ti>=mhTags.length)break;const pr=mhProject(_mo.set(d.x,d.y,d.z));if(!pr||pr[0]<0||pr[0]>W||pr[1]<0||pr[1]>H)continue;
+    const el=mhTags[ti++];el.style.display='block';el.style.transform='translate3d('+(pr[0]-10).toFixed(1)+'px,'+(pr[1]-10).toFixed(1)+'px,0)';
+    const ok=RES[d.k];el.style.setProperty('--c',RCOL[ok]||'#f5a524');setT(el.lastChild,(SHORT[ok]||'Ore')+' '+Math.round(dd)+' m');
+  }
+  for(;ti<mhTags.length;ti++)mhTags[ti].style.display='none';
+}
+function pioMinerTick(T,dt){
+  const gl=T.glide===undefined?1:T.glide,k=T.view===0?clamp((gl-.3)/.7,0,1):0;
+  pioGhost(T,k);
+  if(!mhEl)mhBuild();
+  const on=k>.6;document.body.classList.toggle('mhud',on);
+  mhEl.style.opacity=on?String(clamp((k-.6)/.4,0,1)):'0';
+  if(on)mhDraw(T,dt);
+}
+function pioMinerOff(T){if(T){pioGhost(T,0);}document.body.classList.remove('mhud');if(mhEl)mhEl.style.opacity='0';}
 const weaponBonus=()=>({dmg:1,ammo:1});   // CLASS HOOK: a Soldier online will raise dmg (+1.5/3/7.5/15%) and ammo (+5/10/25/50%); every turret and pirate shot already reads this
 const TURRET={range:250,rate:.5,dmg:10,load:3,turn:2.6};   // metres; seconds between shots; damage on a ship; power load (a light is 1); head turn rad/s
 const PIRATE={hp:300,spd:42,fire:.4,blk:2.5,pio:8};         // a pirate hull, its top speed, seconds between shots, damage to a block, damage to the Pioneer
@@ -4216,6 +4297,7 @@ function pioEnter(T){
   if(T.hp<=0){toast('This ship is disabled. It needs repairs before you can fly it.','bad');return;}
   setRide(null);selfE.root.visible=false;fcamOn=false;
   player.mode='tseat';player.ship=null;player.tool=0;player.build=false;player.third=false;tool.visible=false;setBuildUI();
+  T._g0={p:camera.position.clone(),q:camera.quaternion.clone()};T.glide=0;
   pioSeat={T};T.view=0;T.cp.children[0].material=tplMatPioIn;
   document.body.classList.add('pioseat');player.vel.set(0,0,0);
   toast('In the cockpit. '+(coarse?'EXIT COCKPIT':'F')+' climbs out.','good');
@@ -4223,6 +4305,7 @@ function pioEnter(T){
 function pioLeave(force){
   const S=pioSeat;if(!S)return;
   if(!force&&S.T.vel.length()>3.1){toast('Slow down or dock before climbing out','bad');return;}
+  pioMinerOff(S.T);
   pioSeat=null;if(!S.T.lock&&S.T.vel.lengthSq()<.0036)S.T.vel.set(0,0,0);   // a ship left at a standstill stays put
   document.body.classList.remove('pioseat');if(termOpen)closeTerminal();
   const G=S.T.group;S.T.cp.children[0].material=tplMatPio;G.updateMatrixWorld(true);
@@ -4236,8 +4319,8 @@ function pioSeatUpdate(dt){
   if(!S||!tpShips.includes(S.T)){pioSeat=null;document.body.classList.remove('pioseat');player.mode='foot';tool.visible=true;player.tool=5;player.build=false;setBuildUI();return;}
   pioFly(S.T,dt);
   if(S.T._eject){S.T._eject=false;pioLeave(true);player.vel.copy(S.T.vel);toast('You were ejected from the cockpit','bad');return;}
-  S.T.cp.children[0].material=S.T.view===1?tplMatPio:tplMatPioIn;
-  fcamOn=false;selfE.root.visible=false;camera.updateMatrixWorld(true);
+  if(!S.T._ghost)S.T.cp.children[0].material=S.T.view===1?tplMatPio:tplMatPioIn;
+  fcamOn=false;selfE.root.visible=false;camera.updateMatrixWorld(true);pioMinerTick(S.T,dt);
 }
 /* ---- flight: the Pioneer flies like the old ships (swipe to turn, stick and UP/DOWN to move, DAMP, drill on the action button) ---- */
 const PIO_A=[5,5,7];   // full-thrust acceleration, m/s2: sideways, up, forward
@@ -4368,7 +4451,7 @@ function pioRefuel(){
   T.fuel=Math.min(cap,T.fuel+used*60);hudDirty=true;toast('+'+used*60+' L hydrogen ('+used+' ice)','good');
 }
 const pioIO=T=>({name:'Hold',space:()=>pioHoldCap(T)-pioHoldUsed(T),add:(k,n)=>{const m=Math.min(n,pioHoldCap(T)-pioHoldUsed(T));if(m>0)T.hold[k]=(T.hold[k]|0)+m;return Math.max(0,m);}});
-const PIO_SWIPE=.5,PIO_SWIPE_MAX=.8,PIO_ROLL=.1,PIO_ACC_SIDE=.75;   // swipe/flip turning, roll, and the share of acceleration (and braking) the maneuvering thrusters give up, down, left and right   // the Pioneer's swipe, flip, pitch and roll feel: lower is slower
+const PIO_SWIPE=.42,PIO_SWIPE_MAX=.42,PIO_ROLL=.1,PIO_ACC_SIDE=.75;   // swipe/flip turning, roll, and the share of acceleration (and braking) the maneuvering thrusters give up, down, left and right   // the Pioneer's swipe, flip, pitch and roll feel: lower is slower
 function pioFly(T,dt){
   const G=T.group,q=G.quaternion;
   const mv=T.lock?{x:0,y:0,z:0}:inputMove(),look=lookDelta(dt);
@@ -4450,11 +4533,12 @@ function pioFly(T,dt){
   }
   drillOn=drilling;
   pioExhaust(T,dt);
-  pioMarkers(T);
   audioLevels(Math.min(1,(T.burn||0)/7.5)*2.4,drilling);
   // the camera: the pilot's eye, or behind and above
   if(T.view===1){camera.position.copy(G.localToWorld(_pe.set(0,9*PIO_S,22*PIO_S)));camera.quaternion.copy(q).multiply(_q1.setFromAxisAngle(AXX,-.2));}
-  else{camera.position.copy(G.localToWorld(_pe.set(0,6.75*PIO_S,-.55*PIO_S)));camera.quaternion.copy(q).multiply(_q1.setFromAxisAngle(AXX,-.12));}
+  else{_gp.copy(G.localToWorld(_pe.set(0,6.75*PIO_S,-.55*PIO_S)));_gq.copy(q).multiply(_q1.setFromAxisAngle(AXX,-.12));
+    if(T.glide<1&&T._g0){T.glide=Math.min(1,T.glide+dt/.9);const kk=T.glide*T.glide*(3-2*T.glide);camera.position.lerpVectors(T._g0.p,_gp,kk);camera.quaternion.slerpQuaternions(T._g0.q,_gq,kk);}   // the glide in from outside
+    else{camera.position.copy(_gp);camera.quaternion.copy(_gq);}}
   player.pos.copy(G.localToWorld(_pe.set(0,6.75*PIO_S,-.55*PIO_S)));player.vel.copy(T.vel);driftReticle(T);
 }
 function pioSave(){
@@ -4727,7 +4811,7 @@ const ACT={
     setTool(nextTool(1));toast(TOOL_HINT[player.tool]);
   },
   build(){ACT.tool();},
-  term(){if(player.mode==='tseat'){pioPanel(pioTab);return;}openTerminal();},
+  term(){if(player.mode==='tseat'){pioPanel(pioTab);return;}openTerminal(0,'pack');},   // on foot, TERM is just your Pack; machines open from the machine itself
   page(){if(player.mode!=='foot')return;if(player.tool!==1)setTool(1);openPicker();},
   upg(){if(player.mode==='tseat'){pioPanel('upg');return;}openUpg();},
   dock(){if(player.mode==='tseat'){pioDock();return;}toggleDock();},
@@ -4743,7 +4827,7 @@ const ACT={
   spin(){const dr=BORDER[player.sel]==='door';spin=(spin+1)%(dr?8:4);ghostKey='';lastSig='';toast(dr&&spin>=4?'Spin: '+(spin-4)*90+'\u00b0 \u00b7 flush with the panels':'Spin: '+spin*90+'\u00b0'+(dr?' \u00b7 centred':''));},
   orient(){if(player.tool===4){paintSel=(paintSel+1)%PAINT_NAMES.length;toast('Paint: '+PAINT_NAMES[paintSel],'good');return;}orient=(orient+1)%ORIENTS.length;ghostKey='';lastSig='';toast('Facing: '+ORIENT_NAMES[orient]);},
   damp(){player.damp=!player.damp;},
-  cam(){if(player.mode==='tseat'){pioSeat.T.view^=1;toast(pioSeat.T.view?'Chase view':'Cockpit view','good');return;}
+  cam(){if(player.mode==='tseat'){const T=pioSeat.T;T.view^=1;if(T.view===0){T._g0={p:camera.position.clone(),q:camera.quaternion.clone()};T.glide=0;}toast(pioSeat.T.view?'Chase view':'Cockpit view','good');return;}
     if(player.mode==='foot'){fcam=fcam?0:1;toast(fcam?'Third person':'First person','good');return;}
     if(player.mode==='pilot'){camMode=(camMode+1)%CAM_NAMES.length;player.third=camMode===1||camMode===2;toast(CAM_NAMES[camMode]+(camMode===7?' (drag to orbit; the ship holds its heading)':''),'good');}},
   lamp(){const ab=player.mode==='tseat'||player.mode==='pilot';if(ab){shipLampOn=!shipLampOn;toast(shipLampOn?'Ship lamp on':'Ship lamp off','good');}else{lampOn=!lampOn;}lampTick();},
@@ -4919,7 +5003,6 @@ function goodsBuild(){
   }
   return h+'</table><div class="qrow" style="margin-top:8px;color:var(--dim);font-size:11px">Prices are the base ranges set by each settlement. Craft time is for one batch at machine tier 1 and tier 4. Every tier can run every recipe; higher tiers are faster. Bars use a square-root scale.</div>';
 }
-$('goodsbtn').addEventListener('click',()=>{try{$('goodsbody').innerHTML=goodsBuild();}catch(e){$('goodsbody').textContent='Chart error: '+e.message;}$('goodsv').hidden=false;});
 $('goodsclose').addEventListener('click',()=>{$('goodsv').hidden=true;});
 $('shotshare').addEventListener('click',async()=>{
   try{const r=await fetch($('shotimg').src),bl=await r.blob(),f=new File([bl],'void-engineers.jpg',{type:'image/jpeg'});
@@ -6078,22 +6161,23 @@ function upbTick(dt){
 
 const selGrid=()=>grids.find(g=>g.name===termSel&&viewOK(g))||storGrids()[0]||null;
 const ifaceGrids=()=>{const l=[],c=connGrid();if(c)l.push(c);for(const g of grids)if(!l.includes(g)&&l.length<4&&inReach(g))l.push(g);return l;};   // every ship or station you can reach has its own Interface tab
-const tabsHTML=(m,cur)=>'<div class="ttabs"><button class="ttab'+(m==='prod'?' on':'')+'" data-tab="prod">Production</button><button class="ttab'+(m==='trade'?' on':'')+'" data-tab="trade">Inventory</button><button class="ttab'+(m==='mkt'?' on':'')+'" data-tab="mkt">Market</button>'+ifaceGrids().map(g=>'<button class="ttab'+(m==='upg'&&cur===g?' on':'')+'" data-tab="upg" data-g="'+g.name.replace(/"/g,'&quot;')+'">Interface ('+g.name.replace(/[<>&]/g,'')+')</button>').join('')+'</div>';
+const tabsHTML=(m,cur)=>packOnly?'':'<div class="ttabs"><button class="ttab'+(m==='prod'?' on':'')+'" data-tab="prod">Production</button><button class="ttab'+(m==='trade'?' on':'')+'" data-tab="trade">Inventory</button><button class="ttab'+(m==='mkt'?' on':'')+'" data-tab="mkt">Market</button>'+ifaceGrids().map(g=>'<button class="ttab'+(m==='upg'&&cur===g?' on':'')+'" data-tab="upg" data-g="'+g.name.replace(/"/g,'&quot;')+'">Interface ('+g.name.replace(/[<>&]/g,'')+')</button>').join('')+'</div>';
 function openTerminal(focusUid,mode){
   if(mode==='upg'){openUpg();return;}
-  sheet='';setT(document.querySelector('.thead h2'),'Control panel');
+  packOnly=mode==='pack';if(packOnly)mode='trade';
+  sheet='';setT(document.querySelector('.thead h2'),packOnly?'Pack':'Control panel');
   const prodList=[];
   for(const g of grids){
     if(!inReach(g))continue;
     for(const b of g.machines)prodList.push({g,b});
   }
   const sg=viewGrids(),bg=beaconGrid();
-  if(!prodList.length&&!sg.length&&!bg){if(connGrid()){openUpg();return;}toast('No machines or storage in range','bad');return;}
+  if(!prodList.length&&!sg.length&&!bg&&!packOnly){if(connGrid()){openUpg();return;}toast('No machines or storage in range','bad');return;}
   let m=mode||termMode;
   if(focusUid){for(const g of grids)for(const b of g.blocks.values())if(b.uid===focusUid){m=BDEF[b.type].machine?'prod':'trade';if(b.type==='cargo')termSel=g.name;}}
   if(m==='prod'&&!prodList.length)m='trade';
   if(m==='mkt'&&!bg){toast('The Market needs a Trade Beacon and a Cargo Container at your station','bad');m=sg.length?'trade':'prod';}
-  if(m==='trade'&&!sg.length&&!bg)m='prod';
+  if(m==='trade'&&!sg.length&&!bg&&!packOnly)m='prod';
   termMode=m;termF=bg;
   if(!sg.some(g=>g.name===termSel))termSel=sg.length?sg[0].name:'';
   termOpen=true;termAcc=1;document.body.classList.add('termopen');
@@ -6170,6 +6254,7 @@ function termRefresh(){
 // ---- Inventory page: all commodities, Local Storage (view only), and a transfer section ----
 let ivView='';
 function ivStores(){
+  if(packOnly)return [{id:'pack',name:'Pack',pack:true}];
   const out=[],gs=viewGrids();
   const prim=gs.find(g=>!isCraft(g))||gs[0]||null;
   if(prim)out.push({id:'g:'+prim.name,name:prim.name,g:prim,primary:true});
@@ -7127,7 +7212,7 @@ function boot(){
     }else{try{begin();}catch(e){console.error(e);}if(tcv)tcv.hidden=true;}
   }
   try{if(window.claude&&window.claude.hot&&window.claude.hot.snapshot)window.claude.hot.snapshot(()=>({save:(wiping||TUTW)?null:serialize()}));}catch(e){}
-  window.__VE={HOLD,exTick,exPos,exT,exLife,pioFly,pioEnter,keys,stick,mktRows,mk,ITEMS,PRICE0,RECIPES,BDEF,openTerminal,ivRender,hint,inv,bolts,pirates,pirateSpawn,turretTest,makeMusic,asteroids,renderer,scene,THREE,kf,openRepair,repairBill,repairTick,repairShip,pioNetWorth,pioRepairValue,PRICE0,eco,pioDamage,pioMaxHP,inv,shipAmmo,tpShips,pioEnter,grindStep,gridOn,powerTick,spawnDrone,spawnPlayerDrone,droneTick,damageBlock,repairBlock,hpOf,dmgEff,fireBolt,boltsTick,bolts,wipOn,wipUnit,wipBegin,wipDone,mk,mktClick,mktTick,mktBuild,mktRefresh,MKT,mkFee,mkTier,player,grids,asteroids,update,begin,ACT,keys,tb,camera,inv,mineAt,rayAst,pickAll,aim,serialize,restoreSave,saveGame,
+  window.__VE={asteroids,pioSeatUpdate,pioLeave,mhProxT,pioProx,HOLD,exTick,exPos,exT,exLife,pioFly,pioEnter,keys,stick,mktRows,mk,ITEMS,PRICE0,RECIPES,BDEF,openTerminal,ivRender,hint,inv,bolts,pirates,pirateSpawn,turretTest,makeMusic,asteroids,renderer,scene,THREE,kf,openRepair,repairBill,repairTick,repairShip,pioNetWorth,pioRepairValue,PRICE0,eco,pioDamage,pioMaxHP,inv,shipAmmo,tpShips,pioEnter,grindStep,gridOn,powerTick,spawnDrone,spawnPlayerDrone,droneTick,damageBlock,repairBlock,hpOf,dmgEff,fireBolt,boltsTick,bolts,wipOn,wipUnit,wipBegin,wipDone,mk,mktClick,mktTick,mktBuild,mktRefresh,MKT,mkFee,mkTier,player,grids,asteroids,update,begin,ACT,keys,tb,camera,inv,mineAt,rayAst,pickAll,aim,serialize,restoreSave,saveGame,
     TX,MAT,setTier,growCheck,serialize,pioLeave,pioHits,pioDockOK,pioDockTarget,pioDock,padNear,pioLevel,pioFootGap,pioPadSnap,rebuildAst,pointSolid,padArmRoom,padArmAimed,gravHas,gravFloors,gravFlash,addToGrid,gridHas,gridSpace,takeFromGrid,packUsed,packSpace,PACK_CAP,PACKIO,shipIO,spawnShip,interiorOf,bodyHit,bodyMove,cellAt,setTier,growCheck,doorTick,rideSync,seatWorld,nearestSeat,spawnStation,haveK,spend,upgradeBlock,gravR,qMax,tierOf,upCost,recalc,eco,price,PRICE0,ITEMS,loadItem,takeItem,whTotals,payDebt,tradeTick,BEACON,CARGO_CAP,panelSummary,openTerminal,closeTerminal,scanOre,setTool,setPage,addBlock,makeGrid,removeBlock,RECIPES,BDEF,BORDER,
     setDev:v=>{DEV=!!v;},platePaint,openPicker,openUpg,connGrid,surveyAst,revealBuried,tutState:()=>tut,startTut,renameGrid,dockPlan,toggleDock,pointSolid,shipHitsAst,enterShip,exitShip,inReach,gridsTouch,isCraft,dockCheck,dockTick,startXfer,moveTarget,PAD_RATE,BASE_RATE,xferState:()=>xfer,
     state:()=>({inGrav,page,termOpen,detRange,detSummary,paused,running}),
