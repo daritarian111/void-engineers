@@ -636,7 +636,7 @@ body.uitut #camrow .tb,body.uitut #edge .tb,body.uitut #rbar .tb{visibility:visi
 'use strict';
 /* =====================  Void Engineers  =====================
    Part A: renderer, sky, procedural voxel asteroids, particles */
-const GAME_VER='249';
+const GAME_VER='250';
 {const vl=document.getElementById('verlab');if(vl)vl.textContent='v'+GAME_VER;}
 /* no page zoom while playing: pinch, double-tap and ctrl+wheel are swallowed */
 (()=>{const no=e=>{e.preventDefault();};
@@ -3062,8 +3062,8 @@ function shipUpdate(g,dt){
   let tgt;
   if(camMode<=2&&player.damp){
     const e=driftStep(g,_dB.copy(q).multiply(g.cq),look,ks);
-    tgt=[clamp(e[0]*DRIFT_K,-maxR,maxR),clamp(e[1]*DRIFT_K,-maxR,maxR),rollIn()*1.2*PIO_TURN];
-  }else{driftOff(g);tgt=[clamp(-look[1]*ks/dt,-maxR,maxR),clamp(-look[0]*ks/dt,-maxR,maxR),rollIn()*1.2*PIO_TURN];}
+    tgt=[clamp(e[0]*DRIFT_K,-maxR,maxR),clamp(e[1]*DRIFT_K,-maxR,maxR),rollIn()*1.2*.51];
+  }else{driftOff(g);tgt=[clamp(-look[1]*ks/dt,-maxR,maxR),clamp(-look[0]*ks/dt,-maxR,maxR),rollIn()*1.2*.51];}
   for(let i=0;i<3;i++){
     if(player.damp)g.rate[i]+=clamp(tgt[i]-g.rate[i],-alpha*dt,alpha*dt);   // dampers on: the turn settles to what you are asking for
     else if(tgt[i])g.rate[i]=clamp(g.rate[i]+alpha*dt*clamp(tgt[i]/maxR,-1,1),-maxR,maxR);   // dampers off: you push the spin, and it keeps going when you let go
@@ -4368,11 +4368,11 @@ function pioRefuel(){
   T.fuel=Math.min(cap,T.fuel+used*60);hudDirty=true;toast('+'+used*60+' L hydrogen ('+used+' ice)','good');
 }
 const pioIO=T=>({name:'Hold',space:()=>pioHoldCap(T)-pioHoldUsed(T),add:(k,n)=>{const m=Math.min(n,pioHoldCap(T)-pioHoldUsed(T));if(m>0)T.hold[k]=(T.hold[k]|0)+m;return Math.max(0,m);}});
-const PIO_TURN=.1,PIO_TURN_MAX=.1;   // the Pioneer's swipe, flip, pitch and roll feel: lower is slower
+const PIO_SWIPE=.5,PIO_SWIPE_MAX=.8,PIO_ROLL=.1,PIO_ACC_SIDE=.75;   // swipe/flip turning, roll, and the share of acceleration (and braking) the maneuvering thrusters give up, down, left and right   // the Pioneer's swipe, flip, pitch and roll feel: lower is slower
 function pioFly(T,dt){
   const G=T.group,q=G.quaternion;
   const mv=T.lock?{x:0,y:0,z:0}:inputMove(),look=lookDelta(dt);
-  if(HOLD.x||HOLD.y){look[0]+=HOLD.x*dt*520*PIO_TURN;look[1]+=HOLD.y*dt*520*PIO_TURN;}
+  if(HOLD.x||HOLD.y){look[0]+=HOLD.x*dt*520*PIO_SWIPE;look[1]+=HOLD.y*dt*520*PIO_SWIPE;}
   const prevPos=G.position.clone(),prevQ=q.clone();
   let ld=1;
   if(!T.lock){
@@ -4382,7 +4382,7 @@ function pioFly(T,dt){
     ld=pioLoad(T);const eng=POW[T.up.thr-1],rcs=RCSP[(T.up.rcs||1)-1];
     for(let k=0;k<3;k++){
       let c=Math.abs(cmd[k])<.02?0:cmd[k];
-      const base=PIO_A[k]*PIO_BASE*ld;
+      const base=PIO_A[k]*PIO_BASE*ld*(k<2?PIO_ACC_SIDE:1);
       if(c===0&&player.damp&&Math.abs(vl[k])>.03){   // braking is the maneuvering thrusters' job
         const Ab=base*rcs;c=clamp(-vl[k]/(.6*Ab),-1,1);
         if(T.fuel>0){F[k]=c*Ab;burn+=Math.abs(c)*2.5;}
@@ -4401,12 +4401,12 @@ function pioFly(T,dt){
     if(T.fuel<=0&&(mv.x||mv.y||mv.z)&&!T._warned){T._warned=true;toast('Out of hydrogen. '+(coarse?'Tap FUEL':'Press R')+' to melt ice from the hold or your pack.','bad');}
     if(T.fuel>0)T._warned=false;
     // turning
-    const sp=Math.sqrt(SPIN[T.up.gyr-1]),alpha=1.0*sp*sp*ld,maxR=.6*sp*(.5+.5*ld)*PIO_TURN_MAX,ks=(coarse?.0034:.0024)*PIO_TURN;
+    const sp=Math.sqrt(SPIN[T.up.gyr-1]),alpha=1.0*sp*sp*ld,maxR=.6*sp*(.5+.5*ld)*PIO_SWIPE_MAX,ks=(coarse?.0034:.0024)*PIO_SWIPE;
     let tgt;
     if(player.damp){
       const e=driftStep(T,_dB.copy(q).multiply(_dE.setFromAxisAngle(AXX,T.view===1?-.2:-.12)),look,ks);
-      tgt=[clamp(e[0]*DRIFT_K,-maxR,maxR),clamp(e[1]*DRIFT_K,-maxR,maxR),rollIn()*1.2*PIO_TURN];
-    }else{driftOff(T);tgt=[clamp(-look[1]*ks/dt,-maxR,maxR),clamp(-look[0]*ks/dt,-maxR,maxR),rollIn()*1.2*PIO_TURN];}
+      tgt=[clamp(e[0]*DRIFT_K,-maxR,maxR),clamp(e[1]*DRIFT_K,-maxR,maxR),rollIn()*1.2*PIO_ROLL];
+    }else{driftOff(T);tgt=[clamp(-look[1]*ks/dt,-maxR,maxR),clamp(-look[0]*ks/dt,-maxR,maxR),rollIn()*1.2*PIO_ROLL];}
     for(let i=0;i<3;i++){
       if(player.damp)T.rate[i]+=clamp(tgt[i]-T.rate[i],-alpha*dt,alpha*dt);
       else if(tgt[i])T.rate[i]=clamp(T.rate[i]+alpha*dt*clamp(tgt[i]/maxR,-1,1),-maxR,maxR);
@@ -7127,7 +7127,7 @@ function boot(){
     }else{try{begin();}catch(e){console.error(e);}if(tcv)tcv.hidden=true;}
   }
   try{if(window.claude&&window.claude.hot&&window.claude.hot.snapshot)window.claude.hot.snapshot(()=>({save:(wiping||TUTW)?null:serialize()}));}catch(e){}
-  window.__VE={exTick,exPos,exT,exLife,pioFly,pioEnter,keys,stick,mktRows,mk,ITEMS,PRICE0,RECIPES,BDEF,openTerminal,ivRender,hint,inv,bolts,pirates,pirateSpawn,turretTest,makeMusic,asteroids,renderer,scene,THREE,kf,openRepair,repairBill,repairTick,repairShip,pioNetWorth,pioRepairValue,PRICE0,eco,pioDamage,pioMaxHP,inv,shipAmmo,tpShips,pioEnter,grindStep,gridOn,powerTick,spawnDrone,spawnPlayerDrone,droneTick,damageBlock,repairBlock,hpOf,dmgEff,fireBolt,boltsTick,bolts,wipOn,wipUnit,wipBegin,wipDone,mk,mktClick,mktTick,mktBuild,mktRefresh,MKT,mkFee,mkTier,player,grids,asteroids,update,begin,ACT,keys,tb,camera,inv,mineAt,rayAst,pickAll,aim,serialize,restoreSave,saveGame,
+  window.__VE={HOLD,exTick,exPos,exT,exLife,pioFly,pioEnter,keys,stick,mktRows,mk,ITEMS,PRICE0,RECIPES,BDEF,openTerminal,ivRender,hint,inv,bolts,pirates,pirateSpawn,turretTest,makeMusic,asteroids,renderer,scene,THREE,kf,openRepair,repairBill,repairTick,repairShip,pioNetWorth,pioRepairValue,PRICE0,eco,pioDamage,pioMaxHP,inv,shipAmmo,tpShips,pioEnter,grindStep,gridOn,powerTick,spawnDrone,spawnPlayerDrone,droneTick,damageBlock,repairBlock,hpOf,dmgEff,fireBolt,boltsTick,bolts,wipOn,wipUnit,wipBegin,wipDone,mk,mktClick,mktTick,mktBuild,mktRefresh,MKT,mkFee,mkTier,player,grids,asteroids,update,begin,ACT,keys,tb,camera,inv,mineAt,rayAst,pickAll,aim,serialize,restoreSave,saveGame,
     TX,MAT,setTier,growCheck,serialize,pioLeave,pioHits,pioDockOK,pioDockTarget,pioDock,padNear,pioLevel,pioFootGap,pioPadSnap,rebuildAst,pointSolid,padArmRoom,padArmAimed,gravHas,gravFloors,gravFlash,addToGrid,gridHas,gridSpace,takeFromGrid,packUsed,packSpace,PACK_CAP,PACKIO,shipIO,spawnShip,interiorOf,bodyHit,bodyMove,cellAt,setTier,growCheck,doorTick,rideSync,seatWorld,nearestSeat,spawnStation,haveK,spend,upgradeBlock,gravR,qMax,tierOf,upCost,recalc,eco,price,PRICE0,ITEMS,loadItem,takeItem,whTotals,payDebt,tradeTick,BEACON,CARGO_CAP,panelSummary,openTerminal,closeTerminal,scanOre,setTool,setPage,addBlock,makeGrid,removeBlock,RECIPES,BDEF,BORDER,
     setDev:v=>{DEV=!!v;},platePaint,openPicker,openUpg,connGrid,surveyAst,revealBuried,tutState:()=>tut,startTut,renameGrid,dockPlan,toggleDock,pointSolid,shipHitsAst,enterShip,exitShip,inReach,gridsTouch,isCraft,dockCheck,dockTick,startXfer,moveTarget,PAD_RATE,BASE_RATE,xferState:()=>xfer,
     state:()=>({inGrav,page,termOpen,detRange,detSummary,paused,running}),
