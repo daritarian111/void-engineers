@@ -636,7 +636,7 @@ body.uitut #camrow .tb,body.uitut #edge .tb,body.uitut #rbar .tb{visibility:visi
 'use strict';
 /* =====================  Void Engineers  =====================
    Part A: renderer, sky, procedural voxel asteroids, particles */
-const GAME_VER='247';
+const GAME_VER='248';
 {const vl=document.getElementById('verlab');if(vl)vl.textContent='v'+GAME_VER;}
 /* no page zoom while playing: pinch, double-tap and ctrl+wheel are swallowed */
 (()=>{const no=e=>{e.preventDefault();};
@@ -3881,11 +3881,12 @@ const exMat=new THREE.ShaderMaterial({transparent:true,depthWrite:false,blending
   fragmentShader:'varying float vA;void main(){vec2 d=gl_PointCoord-.5;float r=length(d)*2.;if(r>1.||vA>=1.)discard;float a=(1.-r)*(1.-r);vec3 core=vec3(.8,.93,1.);vec3 blue=vec3(.16,.42,1.);vec3 col=mix(core,blue,smoothstep(0.,.45,vA));gl_FragColor=vec4(col*a*(1.-vA)*1.5,1.);}'});
 const exPts=new THREE.Points(exGeo,exMat);exPts.frustumCulled=false;exPts.renderOrder=4;scene.add(exPts);
 const _exd=new V3();
-function exEmit(p,dir,vel,sp,size,life){   // a puff at p: the ship's own velocity plus a push down the exhaust direction
+function exEmit(p,dir,vel,sp,size,life,own){   // own: the ship you fly, whose speed is applied by exTick's follow, so the puff keeps only its push   // a puff at p: the ship's own velocity plus a push down the exhaust direction
   const i=exI;exI=(exI+1)%EX_N;
   exPos[i*3]=p.x;exPos[i*3+1]=p.y;exPos[i*3+2]=p.z;
   const j=.16*sp,s2=sp*(.8+Math.random()*.4);
-  exVel[i*3]=vel.x+dir.x*s2+(Math.random()-.5)*j;exVel[i*3+1]=vel.y+dir.y*s2+(Math.random()-.5)*j;exVel[i*3+2]=vel.z+dir.z*s2+(Math.random()-.5)*j;
+  const vx=own?0:vel.x,vy=own?0:vel.y,vz=own?0:vel.z;
+  exVel[i*3]=vx+dir.x*s2+(Math.random()-.5)*j;exVel[i*3+1]=vy+dir.y*s2+(Math.random()-.5)*j;exVel[i*3+2]=vz+dir.z*s2+(Math.random()-.5)*j;
   exLife[i]=life*(.75+Math.random()*.5);exT[i]=0;exSz[i]=size*(.8+Math.random()*.4);
 }
 function exTick(dt){
@@ -3910,7 +3911,7 @@ function pioExhaust(T,dt){
   _exD.set(0,0,1).transformDirection(G.matrixWorld);   // the engines blow straight out of the back
   for(const n of PIO_NOZ){
     T._ea=(T._ea||0)+dt*70*th;
-    while(T._ea>=1){T._ea-=1;_exp.set(n[0]*1,n[1],n[2]-.2).multiplyScalar(1);G.localToWorld(_exp);exEmit(_exp.addScaledVector(T.vel,-Math.random()*dt),_exD,T.vel,9+th*7,n[3]*(.7+.3*th),.85);}
+    while(T._ea>=1){T._ea-=1;_exp.set(n[0]*1,n[1],n[2]-.2).multiplyScalar(1);G.localToWorld(_exp);exEmit(_exp.addScaledVector(T.vel,-Math.random()*dt),_exD,T.vel,9+th*7,n[3]*(.7+.3*th),.85,!!(pioSeat&&pioSeat.T===T));}
   }
 }
 function gridExhaust(g,b,th,dt){   // a block thruster: its flame points out along the block's +y
@@ -3918,7 +3919,7 @@ function gridExhaust(g,b,th,dt){   // a block thruster: its flame points out alo
   f.updateMatrixWorld(true);_exp.setFromMatrixPosition(f.matrixWorld);_exD.set(0,1,0).transformDirection(f.matrixWorld);
   const big=b.type==='bigthruster'?1.7:b.type==='mthruster'?.55:1;
   b._ea=(b._ea||0)+dt*55*th*(big>1?1.4:1);
-  while(b._ea>=1){b._ea-=1;exEmit(_exp,_exD,g.vel,7+th*6,.55*big,.7);}
+  while(b._ea>=1){b._ea-=1;exEmit(_exp,_exD,g.vel,7+th*6,.55*big,.7,player.ship===g);}
 }
 
 /* ---------- lamps: the suit lamp on foot, the ship's exterior lamp when aboard (one light, so no extra shader cost) ---------- */
@@ -7126,7 +7127,7 @@ function boot(){
     }else{try{begin();}catch(e){console.error(e);}if(tcv)tcv.hidden=true;}
   }
   try{if(window.claude&&window.claude.hot&&window.claude.hot.snapshot)window.claude.hot.snapshot(()=>({save:(wiping||TUTW)?null:serialize()}));}catch(e){}
-  window.__VE={pioFly,pioEnter,keys,stick,mktRows,mk,ITEMS,PRICE0,RECIPES,BDEF,openTerminal,ivRender,hint,inv,bolts,pirates,pirateSpawn,turretTest,makeMusic,asteroids,renderer,scene,THREE,kf,openRepair,repairBill,repairTick,repairShip,pioNetWorth,pioRepairValue,PRICE0,eco,pioDamage,pioMaxHP,inv,shipAmmo,tpShips,pioEnter,grindStep,gridOn,powerTick,spawnDrone,spawnPlayerDrone,droneTick,damageBlock,repairBlock,hpOf,dmgEff,fireBolt,boltsTick,bolts,wipOn,wipUnit,wipBegin,wipDone,mk,mktClick,mktTick,mktBuild,mktRefresh,MKT,mkFee,mkTier,player,grids,asteroids,update,begin,ACT,keys,tb,camera,inv,mineAt,rayAst,pickAll,aim,serialize,restoreSave,saveGame,
+  window.__VE={exTick,exPos,exT,exLife,pioFly,pioEnter,keys,stick,mktRows,mk,ITEMS,PRICE0,RECIPES,BDEF,openTerminal,ivRender,hint,inv,bolts,pirates,pirateSpawn,turretTest,makeMusic,asteroids,renderer,scene,THREE,kf,openRepair,repairBill,repairTick,repairShip,pioNetWorth,pioRepairValue,PRICE0,eco,pioDamage,pioMaxHP,inv,shipAmmo,tpShips,pioEnter,grindStep,gridOn,powerTick,spawnDrone,spawnPlayerDrone,droneTick,damageBlock,repairBlock,hpOf,dmgEff,fireBolt,boltsTick,bolts,wipOn,wipUnit,wipBegin,wipDone,mk,mktClick,mktTick,mktBuild,mktRefresh,MKT,mkFee,mkTier,player,grids,asteroids,update,begin,ACT,keys,tb,camera,inv,mineAt,rayAst,pickAll,aim,serialize,restoreSave,saveGame,
     TX,MAT,setTier,growCheck,serialize,pioLeave,pioHits,pioDockOK,pioDockTarget,pioDock,padNear,pioLevel,pioFootGap,pioPadSnap,rebuildAst,pointSolid,padArmRoom,padArmAimed,gravHas,gravFloors,gravFlash,addToGrid,gridHas,gridSpace,takeFromGrid,packUsed,packSpace,PACK_CAP,PACKIO,shipIO,spawnShip,interiorOf,bodyHit,bodyMove,cellAt,setTier,growCheck,doorTick,rideSync,seatWorld,nearestSeat,spawnStation,haveK,spend,upgradeBlock,gravR,qMax,tierOf,upCost,recalc,eco,price,PRICE0,ITEMS,loadItem,takeItem,whTotals,payDebt,tradeTick,BEACON,CARGO_CAP,panelSummary,openTerminal,closeTerminal,scanOre,setTool,setPage,addBlock,makeGrid,removeBlock,RECIPES,BDEF,BORDER,
     setDev:v=>{DEV=!!v;},platePaint,openPicker,openUpg,connGrid,surveyAst,revealBuried,tutState:()=>tut,startTut,renameGrid,dockPlan,toggleDock,pointSolid,shipHitsAst,enterShip,exitShip,inReach,gridsTouch,isCraft,dockCheck,dockTick,startXfer,moveTarget,PAD_RATE,BASE_RATE,xferState:()=>xfer,
     state:()=>({inGrav,page,termOpen,detRange,detSummary,paused,running}),
