@@ -442,6 +442,7 @@ body.devon #perfbtns{display:flex}
 @media (max-width:460px){#aux{grid-template-rows:auto repeat(2,36px);grid-template-columns:56px repeat(5,38px);gap:4px}#aux #shot{height:30px}}
 
 .mkr{display:grid;grid-template-columns:minmax(0,1.3fr) .8fr .8fr 1.25fr 1.25fr;gap:4px 6px;align-items:center;font-size:12px;font-variant-numeric:tabular-nums;padding:3px 0}
+.pmark{position:fixed;z-index:6;pointer-events:none;transform:translate(-50%,-50%);display:none}.pmark i{display:block;width:26px;height:14px;border:2px solid rgba(245,165,36,.9);border-radius:4px;box-shadow:0 0 6px rgba(245,165,36,.55)}.pmark span{position:absolute;left:50%;top:100%;transform:translateX(-50%);margin-top:1px;font:600 8px var(--display);letter-spacing:.12em;color:rgba(245,165,36,.85)}
 .mkg{margin:10px 0 2px;color:var(--dim);font:600 10px var(--display);letter-spacing:.14em;text-transform:uppercase;border-bottom:1px solid var(--edge);padding-bottom:2px}
 .mkr.h{color:var(--dim);font:600 10px var(--display);letter-spacing:.14em;text-transform:uppercase}
 .mkr .nm{display:flex;align-items:center;gap:5px;min-width:0}.mkr .nm small{color:var(--dim)}
@@ -635,7 +636,7 @@ body.uitut #camrow .tb,body.uitut #edge .tb,body.uitut #rbar .tb{visibility:visi
 'use strict';
 /* =====================  Void Engineers  =====================
    Part A: renderer, sky, procedural voxel asteroids, particles */
-const GAME_VER='245';
+const GAME_VER='247';
 {const vl=document.getElementById('verlab');if(vl)vl.textContent='v'+GAME_VER;}
 /* no page zoom while playing: pinch, double-tap and ctrl+wheel are swallowed */
 (()=>{const no=e=>{e.preventDefault();};
@@ -2481,7 +2482,7 @@ function poseEngineer(E,dt,feet,up,face,speed,tool,floating,seated,firing){
 
 /* =====================  Part C: player, tools, HUD, input, loop  ===================== */
 const player={pos:new V3(3,2.6,.5),vel:new V3(),mode:'foot',ship:null,tool:5,build:false,sel:0,damp:true,third:false,dt:0};
-let NOCLIP=false,spin=0,orient=0,lampOn=false,running=false,paused=true,locked=false,wasLocked=false,noLock=false,hudDirty=true;
+let NOCLIP=false,spin=0,orient=0,lampOn=false,shipLampOn=false,lampAboard=false,running=false,paused=true,locked=false,wasLocked=false,noLock=false,hudDirty=true;
 const ORIENTS=[null,[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];
 const ORIENT_NAMES=['Auto (surface normal)','+X','-X','+Y','-Y','+Z','-Z'];
 const flash={fe:0,si:0,ice:0,pt:0};
@@ -3666,7 +3667,7 @@ function droneTick(dt){
   }
 }
 function update(dt){
-  const lap=ptLap();hitCool-=dt;boltsTick(dt);droneTick(dt);pirateTick(dt);turretTick(dt);exTick(dt);lap('shots+drones');
+  const lap=ptLap();hitCool-=dt;boltsTick(dt);droneTick(dt);pirateTick(dt);turretTick(dt);exTick(dt);lampTick();lap('shots+drones');
   let bakedNow=false;
   for(const g of grids){
     let ch=false;if(g.hullDirty){rebuildHull(g);ch=true;}if(g.wipDirty){rebuildWip(g);ch=true;}
@@ -3869,7 +3870,7 @@ function tshipToggle(){
 /* ---------- combat (v229): pirate drones and the autocannon turret ---------- */
 
 /* ---------- exhaust: blue flame particles that stay where the ship left them, so they trail opposite to the way it TRAVELS ---------- */
-const EX_N=640,exPos=new Float32Array(EX_N*3),exVel=new Float32Array(EX_N*3),exP=new Float32Array(EX_N*2),exLife=new Float32Array(EX_N),exT=new Float32Array(EX_N).fill(9),exSz=new Float32Array(EX_N);
+const EX_FOLLOW=.75,EX_N=640,exPos=new Float32Array(EX_N*3),exVel=new Float32Array(EX_N*3),exP=new Float32Array(EX_N*2),exLife=new Float32Array(EX_N),exT=new Float32Array(EX_N).fill(9),exSz=new Float32Array(EX_N);
 let exI=0,exLive=0;
 for(let i=0;i<EX_N;i++)exLife[i]=1;
 const exGeo=new THREE.BufferGeometry();
@@ -3890,11 +3891,12 @@ function exEmit(p,dir,vel,sp,size,life){   // a puff at p: the ship's own veloci
 function exTick(dt){
   if(dt<=0)return;
   const dr=Math.exp(-1.6*dt);let live=0;
+  const rv=pioSeat?pioSeat.T.vel:(player.ship&&player.ship.vel)||null,fx=rv?rv.x*dt*EX_FOLLOW:0,fy=rv?rv.y*dt*EX_FOLLOW:0,fz=rv?rv.z*dt*EX_FOLLOW:0;   // the plume is carried along with the ship you fly, so it trails behind you instead of whipping past the camera
   for(let i=0;i<EX_N;i++){
     if(exT[i]>=exLife[i]){if(exP[i*2+1]!==0){exP[i*2]=1;exP[i*2+1]=0;live=-1;}continue;}
     exT[i]+=dt;const f=exT[i]/exLife[i];
     exVel[i*3]*=dr;exVel[i*3+1]*=dr;exVel[i*3+2]*=dr;
-    exPos[i*3]+=exVel[i*3]*dt;exPos[i*3+1]+=exVel[i*3+1]*dt;exPos[i*3+2]+=exVel[i*3+2]*dt;
+    exPos[i*3]+=exVel[i*3]*dt+fx;exPos[i*3+1]+=exVel[i*3+1]*dt+fy;exPos[i*3+2]+=exVel[i*3+2]*dt+fz;
     exP[i*2]=f;exP[i*2+1]=f>=1?0:exSz[i]*(.55+f*1.9);live=1;
   }
   exGeo.attributes.position.needsUpdate=true;exGeo.attributes.aP.needsUpdate=true;
@@ -3918,6 +3920,39 @@ function gridExhaust(g,b,th,dt){   // a block thruster: its flame points out alo
   b._ea=(b._ea||0)+dt*55*th*(big>1?1.4:1);
   while(b._ea>=1){b._ea-=1;exEmit(_exp,_exD,g.vel,7+th*6,.55*big,.7);}
 }
+
+/* ---------- lamps: the suit lamp on foot, the ship's exterior lamp when aboard (one light, so no extra shader cost) ---------- */
+const _lp=new V3(),_lf=new V3();
+function lampTick(){
+  if(!pioSeat)pioMarkHide();
+  const ab=player.mode==='tseat'||player.mode==='pilot';
+  if(ab&&!lampAboard)lampOn=false;   // stepping aboard switches the suit lamp off
+  lampAboard=ab;
+  if(!ab){
+    if(lamp.parent!==camera){camera.add(lamp);lamp.position.set(0,0,0);}
+    lamp.distance=70;lamp.intensity=lampOn?1.7:0;return;
+  }
+  if(lamp.parent!==scene)scene.add(lamp);
+  if(player.mode==='tseat'&&pioSeat){const G=pioSeat.T.group;G.updateMatrixWorld(true);lamp.position.copy(G.localToWorld(_lp.set(0,3.4,-13)));}
+  else if(player.ship){const g=player.ship,n=noseOf(g);_lf.copy(g.fwd);g.group.updateMatrixWorld(true);lamp.position.copy(g.group.localToWorld(_lp.copy(n).addScaledVector(_lf,6).addScaledVector(g.up,1.5)));}
+  lamp.distance=170;lamp.intensity=shipLampOn?3.4:0;
+}
+
+/* ---------- cab-view size markers: where the nose tip (the drill) and the belly are on screen ---------- */
+let pmN=null,pmB=null;const _pmv=new V3();
+function pmMake(txt){const d=document.createElement('div');d.className='pmark';d.innerHTML='<i></i><span>'+txt+'</span>';d.style.display='none';document.body.appendChild(d);return d;}
+function pmPlace(el,G,lx,ly,lz){
+  _pmv.set(lx,ly,lz);G.localToWorld(_pmv);_pmv.project(camera);
+  if(_pmv.z>=1||Math.abs(_pmv.x)>1.02||Math.abs(_pmv.y)>1.02){el.style.display='none';return;}
+  el.style.display='block';el.style.left=((_pmv.x*.5+.5)*innerWidth).toFixed(1)+'px';el.style.top=((-_pmv.y*.5+.5)*innerHeight).toFixed(1)+'px';
+}
+function pioMarkers(T){
+  if(!pmN){pmN=pmMake('NOSE');pmB=pmMake('BELLY');}
+  if(T.view!==0||T.lock){pmN.style.display=pmB.style.display='none';return;}
+  camera.updateMatrixWorld(true);const G=T.group;
+  pmPlace(pmN,G,0,2.2,-9.9);pmPlace(pmB,G,0,0,-9.2);
+}
+function pioMarkHide(){if(pmN)pmN.style.display=pmB.style.display='none';}
 const weaponBonus=()=>({dmg:1,ammo:1});   // CLASS HOOK: a Soldier online will raise dmg (+1.5/3/7.5/15%) and ammo (+5/10/25/50%); every turret and pirate shot already reads this
 const TURRET={range:250,rate:.5,dmg:10,load:3,turn:2.6};   // metres; seconds between shots; damage on a ship; power load (a light is 1); head turn rad/s
 const PIRATE={hp:300,spd:42,fire:.4,blk:2.5,pio:8};         // a pirate hull, its top speed, seconds between shots, damage to a block, damage to the Pioneer
@@ -4207,7 +4242,7 @@ function pioSeatUpdate(dt){
 const PIO_A=[5,5,7];   // full-thrust acceleration, m/s2: sideways, up, forward
 /* v186 handling: a utility craft lumbers. Everything is divided by total mass (hull + cargo carried + hydrogen). Tune these. */
 const PIO_HULL=60,PIO_CARGO_M=.03,PIO_FUEL_M=.003;   // mass: hull, per unit of cargo, per litre of hydrogen
-const PIO_BASE=.6,PIO_VMAX=45,RCSP=[1,1.4,1.9,2.5];   // base fraction of PIO_A at tier 1 (empty); top speed at tier 1; maneuvering-thruster power per tier
+const PIO_VSIDE=15,PIO_BASE=.6,PIO_VMAX=45,RCSP=[1,1.4,1.9,2.5];   // base fraction of PIO_A at tier 1 (empty); top speed at tier 1; maneuvering-thruster power per tier
 const pioMass=T=>PIO_HULL+pioHoldUsed(T)*PIO_CARGO_M+T.fuel*PIO_FUEL_M;
 const pioLoad=T=>Math.min(1,PIO_HULL/pioMass(T));   // 1 = light, lower = heavy
 const PIO_COM=[0,3.1,-1.3],PIO_FEET=[[-2.2,.3,3.6],[2.2,.3,3.6],[0,.3,-6.4]];
@@ -4332,7 +4367,7 @@ function pioRefuel(){
   T.fuel=Math.min(cap,T.fuel+used*60);hudDirty=true;toast('+'+used*60+' L hydrogen ('+used+' ice)','good');
 }
 const pioIO=T=>({name:'Hold',space:()=>pioHoldCap(T)-pioHoldUsed(T),add:(k,n)=>{const m=Math.min(n,pioHoldCap(T)-pioHoldUsed(T));if(m>0)T.hold[k]=(T.hold[k]|0)+m;return Math.max(0,m);}});
-const PIO_TURN=.6,PIO_TURN_MAX=.6;   // the Pioneer's swipe, flip, pitch and roll feel: lower is slower
+const PIO_TURN=.51,PIO_TURN_MAX=.51;   // the Pioneer's swipe, flip, pitch and roll feel: lower is slower
 function pioFly(T,dt){
   const G=T.group,q=G.quaternion;
   const mv=T.lock?{x:0,y:0,z:0}:inputMove(),look=lookDelta(dt);
@@ -4352,11 +4387,16 @@ function pioFly(T,dt){
         if(T.fuel>0){F[k]=c*Ab;burn+=Math.abs(c)*2.5;}
         continue;
       }
-      if(c!==0&&T.fuel>0){F[k]=c*base*((k===2&&c>0)?eng:rcs);burn+=Math.abs(c)*2.5;}   // only the engines push forward
+      if(c!==0&&T.fuel>0){
+        const fwd=k===2&&c<0,cap=fwd?PIO_VMAX*eng:PIO_VSIDE*rcs;   // forward is the engines' job; up, down, sideways and back are the maneuvering thrusters' (15 m/s at tier 1)
+        const along=vl[k]*Math.sign(c);   // speed already gained in the direction being pushed
+        const room=clamp((cap-along)/2,0,1);   // thrust fades out over the last 2 m/s below the cap
+        F[k]=c*base*(fwd?eng:rcs)*room;burn+=Math.abs(c)*2.5*(room>0?1:0);
+      }
     }
     T.vel.addScaledVector(new V3(F[0],F[1],F[2]).applyQuaternion(q),dt);
     const vmax=PIO_VMAX*eng;if(T.vel.length()>vmax)T.vel.setLength(Math.max(vmax,T.vel.length()-12*dt));
-    T.fuel=Math.max(0,T.fuel-burn*dt);T.burn=burn;T._thr=T.fuel>0&&cmd[2]>.02?Math.min(1,cmd[2]):0;
+    T.fuel=Math.max(0,T.fuel-burn*dt);T.burn=burn;T._thr=T.fuel>0&&cmd[2]<-.02?Math.min(1,-cmd[2]):0;
     if(T.fuel<=0&&(mv.x||mv.y||mv.z)&&!T._warned){T._warned=true;toast('Out of hydrogen. '+(coarse?'Tap FUEL':'Press R')+' to melt ice from the hold or your pack.','bad');}
     if(T.fuel>0)T._warned=false;
     // turning
@@ -4409,6 +4449,7 @@ function pioFly(T,dt){
   }
   drillOn=drilling;
   pioExhaust(T,dt);
+  pioMarkers(T);
   audioLevels(Math.min(1,(T.burn||0)/7.5)*2.4,drilling);
   // the camera: the pilot's eye, or behind and above
   if(T.view===1){camera.position.copy(G.localToWorld(_pe.set(0,9*PIO_S,22*PIO_S)));camera.quaternion.copy(q).multiply(_q1.setFromAxisAngle(AXX,-.2));}
@@ -4704,7 +4745,7 @@ const ACT={
   cam(){if(player.mode==='tseat'){pioSeat.T.view^=1;toast(pioSeat.T.view?'Chase view':'Cockpit view','good');return;}
     if(player.mode==='foot'){fcam=fcam?0:1;toast(fcam?'Third person':'First person','good');return;}
     if(player.mode==='pilot'){camMode=(camMode+1)%CAM_NAMES.length;player.third=camMode===1||camMode===2;toast(CAM_NAMES[camMode]+(camMode===7?' (drag to orbit; the ship holds its heading)':''),'good');}},
-  lamp(){lampOn=!lampOn;lamp.intensity=lampOn?1.7:0;},
+  lamp(){const ab=player.mode==='tseat'||player.mode==='pilot';if(ab){shipLampOn=!shipLampOn;toast(shipLampOn?'Ship lamp on':'Ship lamp off','good');}else{lampOn=!lampOn;}lampTick();},
   refuel(){if(player.mode==='tseat'){pioRefuel();return;}refuel();},
   menu(){openMenu();},
   radar(){radarToggle();},
@@ -7085,7 +7126,7 @@ function boot(){
     }else{try{begin();}catch(e){console.error(e);}if(tcv)tcv.hidden=true;}
   }
   try{if(window.claude&&window.claude.hot&&window.claude.hot.snapshot)window.claude.hot.snapshot(()=>({save:(wiping||TUTW)?null:serialize()}));}catch(e){}
-  window.__VE={mktRows,mk,ITEMS,PRICE0,RECIPES,BDEF,openTerminal,ivRender,hint,inv,bolts,pirates,pirateSpawn,turretTest,makeMusic,asteroids,renderer,scene,THREE,kf,openRepair,repairBill,repairTick,repairShip,pioNetWorth,pioRepairValue,PRICE0,eco,pioDamage,pioMaxHP,inv,shipAmmo,tpShips,pioEnter,grindStep,gridOn,powerTick,spawnDrone,spawnPlayerDrone,droneTick,damageBlock,repairBlock,hpOf,dmgEff,fireBolt,boltsTick,bolts,wipOn,wipUnit,wipBegin,wipDone,mk,mktClick,mktTick,mktBuild,mktRefresh,MKT,mkFee,mkTier,player,grids,asteroids,update,begin,ACT,keys,tb,camera,inv,mineAt,rayAst,pickAll,aim,serialize,restoreSave,saveGame,
+  window.__VE={pioFly,pioEnter,keys,stick,mktRows,mk,ITEMS,PRICE0,RECIPES,BDEF,openTerminal,ivRender,hint,inv,bolts,pirates,pirateSpawn,turretTest,makeMusic,asteroids,renderer,scene,THREE,kf,openRepair,repairBill,repairTick,repairShip,pioNetWorth,pioRepairValue,PRICE0,eco,pioDamage,pioMaxHP,inv,shipAmmo,tpShips,pioEnter,grindStep,gridOn,powerTick,spawnDrone,spawnPlayerDrone,droneTick,damageBlock,repairBlock,hpOf,dmgEff,fireBolt,boltsTick,bolts,wipOn,wipUnit,wipBegin,wipDone,mk,mktClick,mktTick,mktBuild,mktRefresh,MKT,mkFee,mkTier,player,grids,asteroids,update,begin,ACT,keys,tb,camera,inv,mineAt,rayAst,pickAll,aim,serialize,restoreSave,saveGame,
     TX,MAT,setTier,growCheck,serialize,pioLeave,pioHits,pioDockOK,pioDockTarget,pioDock,padNear,pioLevel,pioFootGap,pioPadSnap,rebuildAst,pointSolid,padArmRoom,padArmAimed,gravHas,gravFloors,gravFlash,addToGrid,gridHas,gridSpace,takeFromGrid,packUsed,packSpace,PACK_CAP,PACKIO,shipIO,spawnShip,interiorOf,bodyHit,bodyMove,cellAt,setTier,growCheck,doorTick,rideSync,seatWorld,nearestSeat,spawnStation,haveK,spend,upgradeBlock,gravR,qMax,tierOf,upCost,recalc,eco,price,PRICE0,ITEMS,loadItem,takeItem,whTotals,payDebt,tradeTick,BEACON,CARGO_CAP,panelSummary,openTerminal,closeTerminal,scanOre,setTool,setPage,addBlock,makeGrid,removeBlock,RECIPES,BDEF,BORDER,
     setDev:v=>{DEV=!!v;},platePaint,openPicker,openUpg,connGrid,surveyAst,revealBuried,tutState:()=>tut,startTut,renameGrid,dockPlan,toggleDock,pointSolid,shipHitsAst,enterShip,exitShip,inReach,gridsTouch,isCraft,dockCheck,dockTick,startXfer,moveTarget,PAD_RATE,BASE_RATE,xferState:()=>xfer,
     state:()=>({inGrav,page,termOpen,detRange,detSummary,paused,running}),
