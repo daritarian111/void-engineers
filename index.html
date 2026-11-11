@@ -644,7 +644,7 @@ body.uitut #camrow .tb,body.uitut #edge .tb,body.uitut #rbar .tb{visibility:visi
 'use strict';
 /* =====================  Void Engineers  =====================
    Part A: renderer, sky, procedural voxel asteroids, particles */
-const GAME_VER='253';
+const GAME_VER='255';
 {const vl=document.getElementById('verlab');if(vl)vl.textContent='v'+GAME_VER;}
 /* no page zoom while playing: pinch, double-tap and ctrl+wheel are swallowed */
 (()=>{const no=e=>{e.preventDefault();};
@@ -3407,6 +3407,7 @@ function spawnShip(){
   g.fuel=g.fuelCap;
 }
 /* The Belt: three nested arcs in front of the outpost (inner, middle, outer), four rocks each, larger than the old field. */
+const BELT_K=2;   // how far the belt sits from the Outpost, as a multiple of the original (v254: doubled)
 const PLAN=(()=>{
   const rnd=mulberry(20261029),out=[];
   const ZR=[{rho:105,R:[10,11,12,13]},{rho:195,R:[12,13,14,15]},{rho:295,R:[13,14,15,16]},{rho:430,R:[20,22,24,22]}];   // the fourth arc: three huge rocks with all their ore buried
@@ -3416,7 +3417,7 @@ const PLAN=(()=>{
     for(let i=0;i<cnt;i++){
       const R=z.R[(i+zi*2)%4];
       for(let tr=0;tr<40;tr++){
-        const ang=(-78+156*(i+.5)/cnt+(rnd()-.5)*26)*Math.PI/180,rho=z.rho+(rnd()-.5)*50,y=(rnd()-.5)*60;
+        const ang=(-78+156*(i+.5)/cnt+(rnd()-.5)*26)*Math.PI/180,rho=(z.rho+(rnd()-.5)*50)*BELT_K,y=(rnd()-.5)*60*BELT_K;
         const p=[Math.round(Math.sin(ang)*rho),Math.round(y),Math.round(-Math.cos(ang)*rho)];
         let ok=true;for(const o of out){if(Math.hypot(o.p[0]-p[0],o.p[1]-p[1],o.p[2]-p[2])<o.R+R+34){ok=false;break;}}
         if(ok||tr===39){out.push({p,R,c:zi*4+((i+zi)%4)});break;}
@@ -4208,15 +4209,15 @@ const tplMatPio=new THREE.MeshLambertMaterial({color:0x808080,side:THREE.DoubleS
 })();
 const tplMatGlass=new THREE.MeshLambertMaterial({vertexColors:true,transparent:true,opacity:.55,depthWrite:false,side:THREE.DoubleSide});
 
-const PIO_LAD={x:-4.3,y:2.8,z:-1.0};   // a ladder up the port side (ship-local metres): look at it to climb to the cockpit
+const PIO_LAD={x:-1.82,y:5.0,z:-1.0};   // the ladder's middle (ship-local metres): a short ladder down from the canopy on the port side, leaning with the hull. Look at it to climb to the cockpit
 let tplLadder=null;
 function pioLadder(){
   if(!tplLadder){
-    const m=new THREE.MeshLambertMaterial({color:0xb08a46}),g=new THREE.Group(),rail=new THREE.BoxGeometry(.08,5.8,.08),rung=new THREE.BoxGeometry(.07,.07,.9),brk=new THREE.BoxGeometry(.24,.07,.07);
-    for(const z of [-.45,.45]){const r=new THREE.Mesh(rail,m);r.position.set(0,2.9,z);g.add(r);}
-    for(let i=0;i<12;i++){const r=new THREE.Mesh(rung,m);r.position.set(0,.4+i*.47,0);g.add(r);}
-    for(const y of [1.1,3.0,5.0])for(const z of [-.45,.45]){const b=new THREE.Mesh(brk,m);b.position.set(.1,y,z);g.add(b);}
-    g.position.set(PIO_LAD.x,0,PIO_LAD.z);tplLadder=g;
+    const m=new THREE.MeshLambertMaterial({color:0xb08a46}),g=new THREE.Group(),rail=new THREE.BoxGeometry(.08,2.1,.08),rung=new THREE.BoxGeometry(.07,.07,.9),brk=new THREE.BoxGeometry(.24,.07,.07);
+    for(const z of [-.45,.45]){const r=new THREE.Mesh(rail,m);r.position.set(0,1.05,z);g.add(r);}
+    for(let i=0;i<5;i++){const r=new THREE.Mesh(rung,m);r.position.set(0,.3+i*.4,0);g.add(r);}
+    for(const y of [.5,1.6])for(const z of [-.45,.45]){const b=new THREE.Mesh(brk,m);b.position.set(.1,y,z);g.add(b);}
+    g.position.set(-2.12,4.0,PIO_LAD.z);g.rotation.z=-.291;tplLadder=g;   // the hull there leans in about 17 degrees, 0.12 m behind the rails
   }
   return tplLadder.clone();
 }
@@ -6909,7 +6910,7 @@ const r3=v=>[+v.x.toFixed(3),+v.y.toFixed(3),+v.z.toFixed(3)];
 function serialize(){
   const q=camera.quaternion;
   return{
-    v:3,der:1,lay:2,inv:Object.assign({},inv),eco:{sc:1,cr:Math.round(eco.cr),debt:Math.round(eco.debt),won:eco.won,price:Object.assign({},price),mk:{tm:mk.tm.slice(),q:mk.q.concat(...grids.filter(x=>x.md&&x.md.state===1).map(x=>x.md.orders))}},gs:gridSeq,ast:asteroids.map(a=>rle(a.data)),dep:asteroids.map(a=>a.deps.map(d=>d.dead?0:Math.round(d.stock))),
+    v:3,der:1,lay:3,inv:Object.assign({},inv),eco:{sc:1,cr:Math.round(eco.cr),debt:Math.round(eco.debt),won:eco.won,price:Object.assign({},price),mk:{tm:mk.tm.slice(),q:mk.q.concat(...grids.filter(x=>x.md&&x.md.state===1).map(x=>x.md.orders))}},gs:gridSeq,ast:asteroids.map(a=>rle(a.data)),dep:asteroids.map(a=>a.deps.map(d=>d.dead?0:Math.round(d.stock))),
     sv:asteroids.map(a=>a.surveyed?a.name:0),tut:tut,
     pl:{p:r3(player.pos),v:r3(player.vel),q:[q.x,q.y,q.z,q.w],tool:player.tool,damp:player.damp,pilot:player.ship?player.ship.name:null},
     grids:grids.filter(g=>g.kind!=='drone'&&g.kind!=='sec').map(g=>{
@@ -7132,7 +7133,7 @@ function saveGame(){
 function restoreSave(S){
   if(!S||S.v!==3||!S.grids||!S.grids.length)return false;
   // the rock is only restored if it still has the same layout; otherwise keep cargo and builds on the new rock
-  let astOK=!!S.ast&&S.ast.length===asteroids.length&&S.lay===2;
+  let astOK=!!S.ast&&S.ast.length===asteroids.length&&S.lay===3;
   if(astOK)for(let i=0;i<asteroids.length;i++){
     let tot=0;for(let k=0;k<S.ast[i].length;k+=2)tot+=S.ast[i][k+1];
     if(tot!==asteroids[i].data.length){astOK=false;break;}
