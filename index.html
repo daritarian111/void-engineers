@@ -636,7 +636,7 @@ body.uitut #camrow .tb,body.uitut #edge .tb,body.uitut #rbar .tb{visibility:visi
 'use strict';
 /* =====================  Void Engineers  =====================
    Part A: renderer, sky, procedural voxel asteroids, particles */
-const GAME_VER='248';
+const GAME_VER='249';
 {const vl=document.getElementById('verlab');if(vl)vl.textContent='v'+GAME_VER;}
 /* no page zoom while playing: pinch, double-tap and ctrl+wheel are swallowed */
 (()=>{const no=e=>{e.preventDefault();};
@@ -4368,7 +4368,7 @@ function pioRefuel(){
   T.fuel=Math.min(cap,T.fuel+used*60);hudDirty=true;toast('+'+used*60+' L hydrogen ('+used+' ice)','good');
 }
 const pioIO=T=>({name:'Hold',space:()=>pioHoldCap(T)-pioHoldUsed(T),add:(k,n)=>{const m=Math.min(n,pioHoldCap(T)-pioHoldUsed(T));if(m>0)T.hold[k]=(T.hold[k]|0)+m;return Math.max(0,m);}});
-const PIO_TURN=.51,PIO_TURN_MAX=.51;   // the Pioneer's swipe, flip, pitch and roll feel: lower is slower
+const PIO_TURN=.1,PIO_TURN_MAX=.1;   // the Pioneer's swipe, flip, pitch and roll feel: lower is slower
 function pioFly(T,dt){
   const G=T.group,q=G.quaternion;
   const mv=T.lock?{x:0,y:0,z:0}:inputMove(),look=lookDelta(dt);
