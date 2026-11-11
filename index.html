@@ -311,7 +311,7 @@ body[data-tool="3"] #cross::before,body[data-tool="3"] #cross::after{background:
 #wvlab{padding:8px 16px 14px;color:var(--dim);font:11px var(--mono);letter-spacing:.04em}
 #dev,#orient,#saver,#musicbtn{border:0;background:transparent;box-shadow:inset 0 0 0 1px var(--edge);color:var(--dim);font:600 15px var(--display);letter-spacing:.16em;text-transform:uppercase;padding:10px 20px;cursor:pointer}
 #tnote{position:fixed;left:50%;top:27%;transform:translateX(-50%);z-index:40;display:flex;gap:12px;align-items:center;max-width:min(520px,90vw);background:rgba(8,13,22,.92);box-shadow:inset 0 0 0 1px var(--hazard);padding:10px 14px;font:500 13px var(--mono);color:var(--ink)}
-#t-inv .ivr{display:flex;align-items:center;gap:10px;padding:6px 2px;border-bottom:1px solid var(--edge);font-size:13px}#t-inv .ivr .nm{flex:1;display:flex;align-items:center;gap:6px}#t-inv .ivr.z{color:var(--dim)}#t-inv .ivr b{min-width:46px;text-align:right}#t-inv .ivr .bt{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+#t-inv .ivr{display:flex;align-items:center;gap:10px;padding:6px 2px;border-bottom:1px solid var(--edge);font-size:13px}#t-inv .ivr .nm{flex:1;display:flex;align-items:center;gap:6px}#t-inv .ivr.z{color:var(--dim)}#t-inv .ivr b{min-width:46px;text-align:right}#t-inv .ivr .bt{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}#t-inv .ivr .bc{width:112px;display:flex;justify-content:flex-end}#t-inv .ivr .bc .rb{width:100%}#t-inv .ivall{display:flex;gap:6px;padding:4px 0 8px}#t-inv .ivall .rb{flex:1}
 #hint{position:fixed;left:50%;top:18%;transform:translateX(-50%);z-index:70;display:flex;gap:12px;align-items:center;max-width:min(520px,90vw);background:rgba(8,13,22,.94);box-shadow:inset 0 0 0 1px var(--ice);padding:10px 14px;font:500 13px var(--mono);color:var(--ink)}
 #hint[hidden]{display:none}#hint b{color:var(--ice)}#hint button{border:0;background:rgba(143,227,245,.2);box-shadow:inset 0 0 0 1px var(--ice);color:var(--ink);font:700 12px var(--display);letter-spacing:.12em;padding:8px 12px;min-height:40px;cursor:pointer;touch-action:manipulation}
 #tnote[hidden]{display:none}#tnote b{color:var(--hazard)}#tnote button{border:0;background:var(--hazard);color:var(--hazard-ink);font:700 13px var(--display);letter-spacing:.12em;padding:8px 14px;cursor:pointer}
@@ -462,6 +462,10 @@ body.devon #perfbtns{display:flex}
    MENU / TERM / INTERACT down the right edge, UP DOWN / rolls / CAM bottom, TOOL over DRILL bottom right */
 #rcol{gap:5px}
 #rbar{display:flex;gap:5px;justify-content:flex-end;pointer-events:none}
+#cbar{display:none;gap:5px;justify-content:flex-end;pointer-events:none}
+#cbar .tb{width:60px;height:34px;font:600 11px var(--mono);letter-spacing:.02em;pointer-events:auto}
+#cbar .tb.on{background:var(--accent,#f5a524);color:#171000;box-shadow:none}
+body.pioseat #cbar{display:flex}
 #rbar .tb,#rcol #dampbtn{width:60px;height:34px;font:600 11px var(--mono);letter-spacing:.04em;pointer-events:auto}
 .tb{pointer-events:auto}
 #rgt{display:flex;flex-direction:column;flex-wrap:nowrap;align-items:flex-end;justify-content:flex-end;gap:6px;margin-left:auto;pointer-events:none}
@@ -547,7 +551,8 @@ body.uitut #camrow .tb,body.uitut #edge .tb,body.uitut #rbar .tb{visibility:visi
     <div class="row ship-only"><span>MASS</span><b id="st-mass">0 t</b></div>
     <div class="row ship-only"><span>ACCEL</span><b id="st-acc">0.0 m/s&#178;</b></div>
   </div></div>
-  <div id="rbar"><button class="tb" id="fuelbtn" data-tap="refuel">FUEL</button><button class="tb" id="lampbtn" data-tap="lamp">LAMP</button><button class="tb" id="dampbtn" data-tap="damp">DAMP</button></div></div>
+  <div id="rbar"><button class="tb" id="fuelbtn" data-tap="refuel">FUEL</button><button class="tb" id="lampbtn" data-tap="lamp">LAMP</button><button class="tb" id="dampbtn" data-tap="damp">DAMP</button></div>
+  <div id="cbar"><button class="tb" id="cr10" data-tap="cr10">10 m/s</button><button class="tb" id="cr25" data-tap="cr25">25 m/s</button><button class="tb" id="crmax" data-tap="crmax">MAX</button></div></div>
   <div id="topslot"></div>
   <div></div>
   <div id="bottom">
@@ -644,7 +649,7 @@ body.uitut #camrow .tb,body.uitut #edge .tb,body.uitut #rbar .tb{visibility:visi
 'use strict';
 /* =====================  Void Engineers  =====================
    Part A: renderer, sky, procedural voxel asteroids, particles */
-const GAME_VER='255';
+const GAME_VER='261';
 {const vl=document.getElementById('verlab');if(vl)vl.textContent='v'+GAME_VER;}
 /* no page zoom while playing: pinch, double-tap and ctrl+wheel are swallowed */
 (()=>{const no=e=>{e.preventDefault();};
@@ -1233,8 +1238,9 @@ const C_MACH=[{plate:4,constr:4,comp:1},{plate:8,constr:8,comp:3},{plate:14,cons
 const C_TANK=[{plate:3,constr:3},{plate:6,constr:6,comp:1},{plate:10,constr:10,comp:2}];
 const C_BTNK=[{plate:6,constr:6,comp:1},{plate:12,constr:10,comp:3},{plate:18,constr:16,comp:5}];
 const C_PWR=[{plate:4,motor:2},{plate:8,motor:4,comp:2},{plate:14,motor:7,comp:4}];
-const CARGO_CAP=[1000,2000,3500,6000];
+const CARGO_CAP=[1000,2000,3500,6000],SSTORE_CAP=[10000,20000,35000,60000];   // Station Storage: ten times a Cargo Container
 const BEACON=[{cap:400,every:240,fee:.30},{cap:700,every:200,fee:.25},{cap:1100,every:160,fee:.20},{cap:1600,every:120,fee:.15}];
+const C_SSTORE=[{plate:12,constr:12,comp:2},{plate:24,constr:20,comp:6},{plate:40,constr:30,comp:12}];
 const C_CARGO=[{plate:4,constr:4},{plate:8,constr:8,comp:1},{plate:14,constr:12,comp:3}];
 const C_BCN=[{plate:6,motor:3,comp:3},{plate:12,motor:6,comp:6,ptI:3},{plate:20,motor:10,comp:10,ptI:8}];
 const PAD_RATE=[40,80,160,320],BASE_RATE=15,PAD_REACH=40;   // cargo transfer speed (units/s) with and without a Landing Pad
@@ -1245,6 +1251,7 @@ const TIER_DEF={
   pad:{cost:C_PAD,fx:t=>'transfers '+PAD_RATE[t-1]+' units/s'},
   padl:{cost:C_PADL,fx:t=>'transfers '+PAD_RATE[t-1]+' units/s'},
   cargo:{cost:C_CARGO,fx:t=>'holds '+CARGO_CAP[t-1]+' units'},
+  sstore:{cost:C_SSTORE,fx:t=>'holds '+SSTORE_CAP[t-1].toLocaleString('en-US')+' units'},
   beacon:{cost:C_BCN,fx:t=>BEACON[t-1].cap+' units per trader \u00b7 every '+(BEACON[t-1].every/60).toFixed(1).replace('.0','')+' min \u00b7 '+Math.round(BEACON[t-1].fee*100)+'% fee'},
   algae:{cost:C_ALG,fx:t=>'Phage '+PHAGE_RATE[t-1]+' lb a minute \u00b7 '+(t>=3?'fills 2\u00d72 blocks':'one block')},
   gravgen:{cost:C_GRAV,fx:t=>'floor gravity within '+GRAV_RT[t-1]/2+' blocks'},
@@ -1297,6 +1304,7 @@ const BDEF={
   bigtank:{name:'Large H\u2082 Tank',cost:{plate:10,constr:8,ice:20},mass:6000,spec:'+6000 L \u00b7 6.0 t'},
   bigdrill:{name:'Large Laser Drill',cost:{plate:8,motor:4,constr:6,comp:2},mass:5000,spec:'laser \u00b7 14 m reach \u00b7 wide bore \u00b7 5.0 t'},
   cargo:{name:'Cargo Container',cost:{fe:60,si:20},mass:3000,panel:true,spec:'storage \u00b7 holds 1000 \u00b7 3.0 t'},
+  sstore:{name:'Station Storage',cost:{fe:300,si:100,plate:6},mass:12000,panel:true,spec:'storage \u00b7 holds 10,000 \u00b7 12 t'},
   light:{name:'Light',cost:{fe:2,si:1},mass:50,ghost:true,spec:'mounts on a block face \u00b7 needs power \u00b7 no collision'},
   lightbar:{name:'Light Bar',cost:{fe:4,si:2},mass:80,ghost:true,spec:'long light for stations \u00b7 needs power \u00b7 no collision'},
   powergen:{name:'Power Generator',cost:{fe:40,si:20,pt:2},mass:4000,spec:'powers 10 lights \u00b7 burns hydrogen or ice \u00b7 upgradable \u00b7 4.0 t'},
@@ -1309,7 +1317,7 @@ const BDEF={
   repair:{name:'Repair Arm',cost:{plate:4,constr:4,motor:1},mass:2500,spin:true,spec:'mounts beside a Landing Pad \u00b7 two blocks tall \u00b7 repairs a Pioneer in reach, 1 HP a second \u00b7 2.5 t'},
   beacon:{name:'Trade Beacon',cost:{plate:3,constr:3,comp:1},mass:1500,panel:true,spec:'calls freight traders \u00b7 1.5 t'}
 };
-const BORDER=['hull','slope','corner','icorner','window','glass','glassc','glassd','plate','platd','platt','door','steps','seat','light','powergen','thruster','mthruster','gun','turret','bigthruster','gyro','lgyro','tank','bigtank','drill','bigdrill','cargo','leg','gravgen','repair','terminal'];
+const BORDER=['hull','slope','corner','icorner','window','glass','glassc','glassd','plate','platd','platt','door','steps','seat','light','powergen','thruster','mthruster','gun','turret','bigthruster','gyro','lgyro','tank','bigtank','drill','bigdrill','cargo','sstore','leg','gravgen','repair','terminal'];
 const kf=(i,j,k)=>(i+512)+((j+512)<<10)+((k+512)<<20);
 
 const ICONS={
@@ -1639,7 +1647,7 @@ function grindStep(g,b){
   const c=BDEF[b.type].cost;
   if(DEV){for(const k in c)gain(k,Math.floor(c[k]*.7));removeBlock(g,b);return true;}
   if(!wipOn(b)){   // a finished block starts coming apart: whatever it held spills out first
-    const spill=b.store&&Object.keys(b.store).length?b.store:null;b.store=BDEF[b.type].machine||b.type==='cargo'?{}:b.store;
+    const spill=b.store&&Object.keys(b.store).length?b.store:null;b.store=BDEF[b.type].machine||b.type==='cargo'||b.type==='sstore'?{}:b.store;
     refundJob(b,g);if(b.queue)b.queue.length=0;
     wipBegin(g,b);b.wi=Object.assign({},c);b.wp=b.wt;b.rf={};
     if(spill)relocStore(g,spill);
@@ -1759,6 +1767,8 @@ function buildBlock(type,f,ghostMat,rot,tier){
       add(G.box19,MAT.gyro,0,0,0);add(G.lgRing,MAT.ring,0,0,1.0);add(G.lgRing,MAT.ring,0,0,-1.0);add(G.lgRing,MAT.ring,0,1.0,0).rotation.x=Math.PI/2;break;
     case 'cargo':
       add(G.cgBox,MAT.cargoT,0,-.1,0);add(G.cgLid,MAT.dark,0,.85,0);break;
+    case 'sstore':   // the same crate with a banded ring round it
+      add(G.cgBox,MAT.cargoT,0,-.1,0);add(G.cgLid,MAT.dark,0,.85,0);add(G.lgRing,MAT.ring,0,.3,0).rotation.x=Math.PI/2;break;
     case 'algae': {   // a low tray with a glass dome and green plants; the plants glow while it works; tier 3 covers 2x2 blocks
       const T=tier||1,big=T>=3,o=big?1:0,R=big?1.6:.7,ox=big?BUILD_FP[0]:0,oz=big?BUILD_FP[1]:0,np=T===1?6:T===2?15:40,hmax=big?1.0:.8;
       const gl=ghostMat?null:ALG_MAT.plant.clone();
@@ -1884,7 +1894,7 @@ function recalc(g){
     if(b.type==='dronee')fc+=1500;if(b.type==='tank')fc+=1500*STOR[tierOf(b)-1];else if(b.type==='bigtank')fc+=6000*STOR[tierOf(b)-1];
     if(b.type==='gravgen'&&ef)g.gravs.push(b);
     if(d.machine)g.machines.push(b);
-    if(b.type==='cargo')g.cargos.push(b);if(b.type==='beacon')g.beacons.push(b);if(b.type==='leg')g.legs.push(b);if(b.type==='light'||b.type==='lightbar')g.lights.push(b);if(b.type==='powergen'||b.type==='dronee')g.gens.push(b);if(b.type==='pad'||b.type==='padl')g.pads.push(b);
+    if(b.type==='cargo'||b.type==='sstore')g.cargos.push(b);if(b.type==='beacon')g.beacons.push(b);if(b.type==='leg')g.legs.push(b);if(b.type==='light'||b.type==='lightbar')g.lights.push(b);if(b.type==='powergen'||b.type==='dronee')g.gens.push(b);if(b.type==='pad'||b.type==='padl')g.pads.push(b);
     if(b.type==='door')g.doors.push(b);
     if(b.type==='steps')g.steps.push(b);
     if(b.type==='seat'&&!g.seat)g.seat=b;
@@ -1963,7 +1973,7 @@ const BAKE_IDLE=2500;   // ms of quiet after the last build change before a grid
 // whole blocks that never move or change: merged completely
 const BAKE_FULL=new Set(['slope','corner','icorner','window','glass','glassc','glassd','plate','platt','platd','gyro','lgyro','tank','bigtank']);
 // blocks with a moving or glowing part: the still parts are merged, flames, lenses, force fields, drill heads and panels stay live
-const BAKE_PART=new Set(['light','lightbar','mthruster','thruster','bigthruster','leg','pad','padl','cargo','gravgen','powergen','beacon','drill','bigdrill']);
+const BAKE_PART=new Set(['light','lightbar','mthruster','thruster','bigthruster','leg','pad','padl','cargo','sstore','gravgen','powergen','beacon','drill','bigdrill']);
 const bakeSrcCache=new Map();
 function bakeSrc(geo){
   let s=bakeSrcCache.get(geo);if(s)return s;
@@ -2106,7 +2116,7 @@ function addBlock(g,i,j,k,type,f,spin,tier){
   const b={type,i,j,k,f,s:spin,node:m.group,flame:m.flame,spin:m.spin,lamp:m.lamp,field:m.field,glow:m.glow,panel:m.panel,oa:0,t:0,uid:++UID,n:heightOf(type,tier),tier:tier,arm:m.arm||null,armP:0,fp:(type==='algae'&&tier>=3)?(ADD_FP||[1,1]):null};
   b.iq=blockQuat(b).invert();b._bg=g;bakeSoon(g);
   if(BDEF[type].machine){b.queue=[];b.job=null;b.state=0;}
-  if(type==='cargo')b.store={};
+  if(type==='cargo'||type==='sstore')b.store={};
   let key=kf(i,j,k);for(let L=1;g.blocks.has(key);L++)key=kf(i,j,k)+L*LAYER;
   b.key=key;g.blocks.set(key,b);
   cells.forEach((c,n)=>{
@@ -3261,14 +3271,14 @@ function spawnStation(){
   const g=makeGrid('OUTPOST',new V3(0,0,0),null);g.station=true;g.tiles=!TUTW;
   if(TUTW){   // practice worlds keep the old flat platform
     for(let x=-5;x<=7;x++)for(let z=-5;z<=7;z++)addBlock(g,x,0,z,'hull',null);
-    addBlock(g,-4,1,-3,'cargo',null);addBlock(g,-4,1,4,'powergen',[0,1,0]);addBlock(g,-4,1,1,'gravgen',[0,1,0],0,3);
+    addBlock(g,-4,1,-3,'sstore',null);addBlock(g,-4,1,4,'powergen',[0,1,0]);addBlock(g,-4,1,1,'gravgen',[0,1,0],0,3);
     if(TUTW==='menus'){for(const e of [['refinery',-5,1,-5],['assembler',-5,1,-2],['beacon',-4,1,-1]])try{addBlock(g,e[1],e[2],e[3],e[0],[0,1,0]);}catch(err){console.error(err);}}
     g.fuel=g.fuelCap;return;
   }
   /* Mike's cramped mining base, as laid out in the game's own export: a clear deck on top with the Long Pad at (0,1,-1), the Algae Farm on the farm floor, airlocks, the stairs outside
      so the rooms always keep their air, the manufacturing hall (Terminal, Refinery, slot markers), a utility bay and the farm floor.
      Each row: type, i, j, k, face, spin, tier. Cells are 2 m; the deck row is j 0. */
-  const PLAN=[["hull",-5,0,-5,0,0,1],["hull",-5,0,-4,0,0,1],["hull",-5,0,-3,0,0,1],["hull",-5,0,-2,0,0,1],["hull",-5,0,-1,0,0,1],["hull",-5,0,0,0,0,1],["hull",-5,0,1,0,0,1],["hull",-5,0,2,0,0,1],["hull",-5,0,3,0,0,1],["hull",-5,0,4,0,0,1],["hull",-5,0,5,0,0,1],["hull",-5,0,6,0,0,1],["hull",-5,0,7,0,0,1],["hull",-4,0,-5,0,0,1],["hull",-4,0,-4,0,0,1],["hull",-4,0,-3,0,0,1],["hull",-4,0,-2,0,0,1],["hull",-4,0,-1,0,0,1],["hull",-4,0,0,0,0,1],["hull",-4,0,1,0,0,1],["hull",-4,0,2,0,0,1],["hull",-4,0,3,0,0,1],["hull",-4,0,4,0,0,1],["hull",-4,0,5,0,0,1],["hull",-4,0,6,0,0,1],["hull",-4,0,7,0,0,1],["hull",-3,0,-5,0,0,1],["hull",-3,0,-4,0,0,1],["hull",-3,0,-3,0,0,1],["hull",-3,0,-2,0,0,1],["hull",-3,0,-1,0,0,1],["hull",-3,0,0,0,0,1],["hull",-3,0,1,0,0,1],["hull",-3,0,2,0,0,1],["hull",-3,0,3,0,0,1],["hull",-3,0,4,0,0,1],["hull",-3,0,5,0,0,1],["hull",-3,0,6,0,0,1],["hull",-3,0,7,0,0,1],["hull",-2,0,-5,0,0,1],["hull",-2,0,-4,0,0,1],["hull",-2,0,-3,0,0,1],["hull",-2,0,-2,0,0,1],["hull",-2,0,-1,0,0,1],["hull",-2,0,0,0,0,1],["hull",-2,0,1,0,0,1],["hull",-2,0,2,0,0,1],["hull",-2,0,3,0,0,1],["hull",-2,0,4,0,0,1],["hull",-2,0,5,0,0,1],["hull",-2,0,6,0,0,1],["hull",-2,0,7,0,0,1],["hull",-1,0,-5,0,0,1],["hull",-1,0,-4,0,0,1],["hull",-1,0,-3,0,0,1],["hull",-1,0,-2,0,0,1],["hull",-1,0,-1,0,0,1],["hull",-1,0,0,0,0,1],["hull",-1,0,1,0,0,1],["hull",-1,0,2,0,0,1],["hull",-1,0,3,0,0,1],["hull",-1,0,4,0,0,1],["hull",-1,0,5,0,0,1],["hull",-1,0,6,0,0,1],["hull",-1,0,7,0,0,1],["hull",0,0,-5,0,0,1],["hull",0,0,-4,0,0,1],["hull",0,0,-3,0,0,1],["hull",0,0,-2,0,0,1],["hull",0,0,2,0,0,1],["hull",0,0,3,0,0,1],["hull",0,0,4,0,0,1],["hull",0,0,5,0,0,1],["hull",0,0,6,0,0,1],["hull",0,0,7,0,0,1],["hull",1,0,-5,0,0,1],["hull",1,0,-4,0,0,1],["hull",1,0,-3,0,0,1],["hull",1,0,-2,0,0,1],["hull",1,0,2,0,0,1],["hull",1,0,3,0,0,1],["hull",1,0,4,0,0,1],["hull",1,0,5,0,0,1],["hull",1,0,6,0,0,1],["hull",1,0,7,0,0,1],["hull",2,0,-5,0,0,1],["hull",2,0,-4,0,0,1],["hull",2,0,-3,0,0,1],["hull",2,0,-2,0,0,1],["hull",2,0,2,0,0,1],["hull",2,0,3,0,0,1],["hull",2,0,4,0,0,1],["hull",2,0,5,0,0,1],["hull",2,0,7,0,0,1],["hull",3,0,-5,0,0,1],["hull",3,0,-4,0,0,1],["hull",3,0,-3,0,0,1],["hull",3,0,-2,0,0,1],["hull",3,0,-1,0,0,1],["hull",3,0,0,0,0,1],["hull",3,0,1,0,0,1],["hull",3,0,2,0,0,1],["hull",3,0,3,0,0,1],["hull",3,0,4,0,0,1],["hull",3,0,5,0,0,1],["hull",3,0,7,0,0,1],["hull",4,0,-5,0,0,1],["hull",4,0,-4,0,0,1],["hull",4,0,-3,0,0,1],["hull",4,0,-2,0,0,1],["hull",4,0,-1,0,0,1],["hull",4,0,0,0,0,1],["hull",4,0,1,0,0,1],["hull",4,0,2,0,0,1],["hull",4,0,3,0,0,1],["hull",4,0,4,0,0,1],["hull",4,0,5,0,0,1],["hull",4,0,7,0,0,1],["hull",5,0,-5,0,0,1],["hull",5,0,-4,0,0,1],["hull",5,0,-3,0,0,1],["hull",5,0,-2,0,0,1],["hull",5,0,-1,0,0,1],["hull",5,0,0,0,0,1],["hull",5,0,1,0,0,1],["hull",5,0,2,0,0,1],["hull",5,0,3,0,0,1],["hull",5,0,4,0,0,1],["hull",5,0,5,0,0,1],["hull",5,0,7,0,0,1],["hull",6,0,-5,0,0,1],["hull",6,0,-4,0,0,1],["hull",6,0,-3,0,0,1],["hull",6,0,-2,0,0,1],["hull",6,0,-1,0,0,1],["hull",6,0,0,0,0,1],["hull",6,0,1,0,0,1],["hull",6,0,2,0,0,1],["hull",6,0,3,0,0,1],["hull",6,0,4,0,0,1],["hull",6,0,5,0,0,1],["hull",6,0,6,0,0,1],["hull",6,0,7,0,0,1],["hull",7,0,-5,0,0,1],["hull",7,0,-4,0,0,1],["hull",7,0,-3,0,0,1],["hull",7,0,-2,0,0,1],["hull",7,0,-1,0,0,1],["hull",7,0,0,0,0,1],["hull",7,0,1,0,0,1],["hull",7,0,2,0,0,1],["hull",7,0,3,0,0,1],["hull",7,0,4,0,0,1],["hull",7,0,5,0,0,1],["hull",7,0,6,0,0,1],["hull",7,0,7,0,0,1],["hull",-4,-4,-3,0,0,1],["hull",-4,-4,-2,0,0,1],["hull",-4,-4,-1,0,0,1],["hull",-4,-4,0,0,0,1],["hull",-4,-4,1,0,0,1],["hull",-4,-4,2,0,0,1],["hull",-3,-4,-3,0,0,1],["hull",-3,-4,-2,0,0,1],["hull",-2,-4,-3,0,0,1],["hull",-2,-4,-2,0,0,1],["hull",-2,-4,-1,0,0,1],["hull",-2,-4,0,0,0,1],["hull",-2,-4,1,0,0,1],["hull",-2,-4,2,0,0,1],["hull",-1,-4,-3,0,0,1],["hull",-1,-4,-1,0,0,1],["hull",-1,-4,0,0,0,1],["hull",-1,-4,1,0,0,1],["hull",-1,-4,2,0,0,1],["hull",0,-4,-3,0,0,1],["hull",0,-4,-1,0,0,1],["hull",0,-4,0,0,0,1],["hull",0,-4,1,0,0,1],["hull",0,-4,2,0,0,1],["hull",1,-4,-3,0,0,1],["hull",1,-4,-1,0,0,1],["hull",1,-4,0,0,0,1],["hull",1,-4,1,0,0,1],["hull",1,-4,2,0,0,1],["hull",2,-4,-3,0,0,1],["hull",2,-4,-1,0,0,1],["hull",2,-4,0,0,0,1],["hull",2,-4,1,0,0,1],["hull",2,-4,2,0,0,1],["hull",3,-4,-3,0,0,1],["hull",3,-4,-2,0,0,1],["hull",3,-4,-1,0,0,1],["hull",3,-4,0,0,0,1],["hull",3,-4,1,0,0,1],["hull",3,-4,2,0,0,1],["hull",4,-4,-3,0,0,1],["hull",4,-4,-2,0,0,1],["hull",4,-4,-1,0,0,1],["hull",4,-4,0,0,0,1],["hull",4,-4,1,0,0,1],["hull",4,-4,2,0,0,1],["hull",5,-4,-3,0,0,1],["hull",5,-4,-2,0,0,1],["hull",5,-4,-1,0,0,1],["hull",5,-4,0,0,0,1],["hull",5,-4,1,0,0,1],["hull",5,-4,2,0,0,1],["hull",6,-4,-3,0,0,1],["hull",6,-4,-2,0,0,1],["hull",6,-4,-1,0,0,1],["hull",6,-4,0,0,0,1],["hull",6,-4,1,0,0,1],["hull",6,-4,2,0,0,1],["hull",7,-4,-3,0,0,1],["hull",7,-4,-2,0,0,1],["hull",7,-4,-1,0,0,1],["hull",7,-4,0,0,0,1],["hull",7,-4,1,0,0,1],["hull",7,-4,2,0,0,1],["hull",-4,-3,-3,0,0,1],["hull",-4,-3,-2,0,0,1],["hull",-4,-3,-1,0,0,1],["hull",-4,-3,1,0,0,1],["hull",-4,-3,2,0,0,1],["hull",-4,-2,-3,0,0,1],["hull",-4,-2,-2,0,0,1],["hull",-4,-2,-1,0,0,1],["hull",-4,-2,1,0,0,1],["hull",-4,-2,2,0,0,1],["hull",-4,-1,-3,0,0,1],["hull",-4,-1,-2,0,0,1],["hull",-4,-1,-1,0,0,1],["hull",-4,-1,1,0,0,1],["hull",-4,-1,2,0,0,1],["hull",-3,-3,-3,0,0,1],["hull",-3,-3,2,0,0,1],["hull",-3,-2,-3,0,0,1],["hull",-3,-2,2,0,0,1],["hull",-3,-1,-3,0,0,1],["hull",-3,-1,2,0,0,1],["hull",-2,-3,-3,0,0,1],["hull",-2,-3,2,0,0,1],["hull",-2,-2,-3,0,0,1],["hull",-2,-2,2,0,0,1],["hull",-2,-1,-3,0,0,1],["hull",-2,-1,2,0,0,1],["hull",-1,-3,-3,0,0,1],["hull",-1,-3,2,0,0,1],["hull",-1,-2,-3,0,0,1],["hull",-1,-2,2,0,0,1],["hull",-1,-1,-3,0,0,1],["hull",-1,-1,2,0,0,1],["hull",0,-3,-3,0,0,1],["hull",0,-3,2,0,0,1],["hull",0,-2,-3,0,0,1],["hull",0,-2,2,0,0,1],["hull",0,-1,-3,0,0,1],["hull",0,-1,2,0,0,1],["hull",1,-3,-3,0,0,1],["hull",1,-3,2,0,0,1],["hull",1,-2,-3,0,0,1],["hull",1,-2,2,0,0,1],["hull",1,-1,-3,0,0,1],["hull",1,-1,2,0,0,1],["hull",2,-3,-3,0,0,1],["hull",2,-3,2,0,0,1],["hull",2,-2,-3,0,0,1],["hull",2,-2,2,0,0,1],["hull",2,-1,-3,0,0,1],["hull",2,-1,2,0,0,1],["hull",3,-3,-3,0,0,1],["hull",3,-3,-2,0,0,1],["hull",3,-3,1,0,0,1],["hull",3,-3,2,0,0,1],["hull",3,-2,-3,0,0,1],["hull",3,-2,-2,0,0,1],["hull",3,-2,-1,0,0,1],["hull",3,-2,1,0,0,1],["hull",3,-2,2,0,0,1],["hull",3,-1,-3,0,0,1],["hull",3,-1,-2,0,0,1],["hull",3,-1,-1,0,0,1],["hull",3,-1,0,0,0,1],["hull",3,-1,1,0,0,1],["hull",3,-1,2,0,0,1],["hull",4,-3,-3,0,0,1],["hull",4,-3,2,0,0,1],["hull",4,-2,-3,0,0,1],["hull",4,-2,2,0,0,1],["hull",4,-1,-3,0,0,1],["hull",4,-1,2,0,0,1],["hull",5,-3,-3,0,0,1],["hull",5,-3,2,0,0,1],["hull",5,-2,-3,0,0,1],["hull",5,-2,2,0,0,1],["hull",5,-1,-3,0,0,1],["hull",5,-1,2,0,0,1],["hull",6,-3,-3,0,0,1],["hull",6,-2,-3,0,0,1],["hull",6,-1,-3,0,0,1],["hull",6,-1,2,0,0,1],["hull",7,-3,-3,0,0,1],["hull",7,-3,-2,0,0,1],["hull",7,-3,-1,0,0,1],["hull",7,-3,0,0,0,1],["hull",7,-3,1,0,0,1],["hull",7,-3,2,0,0,1],["hull",7,-2,-3,0,0,1],["hull",7,-2,-2,0,0,1],["hull",7,-2,-1,0,0,1],["hull",7,-2,0,0,0,1],["hull",7,-2,1,0,0,1],["hull",7,-2,2,0,0,1],["hull",7,-1,-3,0,0,1],["hull",7,-1,-2,0,0,1],["hull",7,-1,-1,0,0,1],["hull",7,-1,0,0,0,1],["hull",7,-1,1,0,0,1],["hull",7,-1,2,0,0,1],["hull",-4,-8,-3,0,0,1],["hull",-4,-8,-2,0,0,1],["hull",-4,-8,-1,0,0,1],["hull",-4,-8,0,0,0,1],["hull",-4,-8,1,0,0,1],["hull",-4,-8,2,0,0,1],["hull",-3,-8,-3,0,0,1],["hull",-3,-8,-2,0,0,1],["hull",-3,-8,-1,0,0,1],["hull",-3,-8,0,0,0,1],["hull",-3,-8,1,0,0,1],["hull",-3,-8,2,0,0,1],["hull",-2,-8,-3,0,0,1],["hull",-2,-8,-2,0,0,1],["hull",-2,-8,-1,0,0,1],["hull",-2,-8,0,0,0,1],["hull",-2,-8,1,0,0,1],["hull",-2,-8,2,0,0,1],["hull",-1,-8,-3,0,0,1],["hull",-1,-8,-2,0,0,1],["hull",-1,-8,-1,0,0,1],["hull",-1,-8,0,0,0,1],["hull",-1,-8,1,0,0,1],["hull",-1,-8,2,0,0,1],["hull",0,-8,-3,0,0,1],["hull",0,-8,-2,0,0,1],["hull",0,-8,-1,0,0,1],["hull",0,-8,0,0,0,1],["hull",0,-8,1,0,0,1],["hull",0,-8,2,0,0,1],["hull",1,-8,-3,0,0,1],["hull",1,-8,-2,0,0,1],["hull",1,-8,-1,0,0,1],["hull",1,-8,0,0,0,1],["hull",1,-8,1,0,0,1],["hull",1,-8,2,0,0,1],["hull",2,-8,-3,0,0,1],["hull",2,-8,-2,0,0,1],["hull",2,-8,-1,0,0,1],["hull",2,-8,0,0,0,1],["hull",2,-8,1,0,0,1],["hull",2,-8,2,0,0,1],["hull",3,-8,-3,0,0,1],["hull",3,-8,-2,0,0,1],["hull",3,-8,-1,0,0,1],["hull",3,-8,0,0,0,1],["hull",3,-8,1,0,0,1],["hull",3,-8,2,0,0,1],["hull",-4,-7,-3,0,0,1],["hull",-4,-7,-2,0,0,1],["hull",-4,-7,-1,0,0,1],["hull",-4,-7,0,0,0,1],["hull",-4,-7,1,0,0,1],["hull",-4,-7,2,0,0,1],["hull",-4,-6,-3,0,0,1],["hull",-4,-6,-2,0,0,1],["hull",-4,-6,-1,0,0,1],["hull",-4,-6,0,0,0,1],["hull",-4,-6,1,0,0,1],["hull",-4,-6,2,0,0,1],["hull",-4,-5,-3,0,0,1],["hull",-4,-5,-2,0,0,1],["hull",-4,-5,-1,0,0,1],["hull",-4,-5,0,0,0,1],["hull",-4,-5,1,0,0,1],["hull",-4,-5,2,0,0,1],["hull",-3,-7,-3,0,0,1],["hull",-3,-7,2,0,0,1],["hull",-3,-6,-3,0,0,1],["hull",-3,-6,2,0,0,1],["hull",-3,-5,-3,0,0,1],["hull",-3,-5,2,0,0,1],["hull",-2,-7,-3,0,0,1],["hull",-2,-7,2,0,0,1],["hull",-2,-6,-3,0,0,1],["hull",-2,-6,2,0,0,1],["hull",-2,-5,-3,0,0,1],["hull",-2,-5,2,0,0,1],["hull",-1,-7,-3,0,0,1],["hull",-1,-7,2,0,0,1],["hull",-1,-6,-3,0,0,1],["hull",-1,-6,2,0,0,1],["hull",-1,-5,-3,0,0,1],["hull",-1,-5,2,0,0,1],["hull",0,-7,-3,0,0,1],["hull",0,-7,2,0,0,1],["hull",0,-6,-3,0,0,1],["hull",0,-6,2,0,0,1],["hull",0,-5,-3,0,0,1],["hull",0,-5,2,0,0,1],["hull",1,-7,-3,0,0,1],["hull",1,-7,2,0,0,1],["hull",1,-6,-3,0,0,1],["hull",1,-6,2,0,0,1],["hull",1,-5,-3,0,0,1],["hull",1,-5,2,0,0,1],["hull",2,-7,-3,0,0,1],["hull",2,-7,2,0,0,1],["hull",2,-6,-3,0,0,1],["hull",2,-6,2,0,0,1],["hull",2,-5,-3,0,0,1],["hull",2,-5,2,0,0,1],["hull",3,-7,-3,0,0,1],["hull",3,-7,2,0,0,1],["hull",3,-6,-3,0,0,1],["hull",3,-6,2,0,0,1],["hull",3,-5,-3,0,0,1],["hull",3,-5,2,0,0,1],["refinery",-3,-3,-2,[0,1,0],0,1],["plate",-2,-3,-2,[0,1,0],0,1],["plate",-2,-3,1,[0,1,0],0,1],["plate",-1,-3,1,[0,1,0],0,1],["powergen",4,-3,-2,[0,1,0],0,2],["cargo",6,-3,-2,0,0,1],["hull",-7,-4,-1,0,0,1],["hull",-7,-4,0,0,0,1],["hull",-7,-4,1,0,0,1],["hull",-6,-4,-1,0,0,1],["hull",-6,-4,0,0,0,1],["hull",-6,-4,1,0,0,1],["hull",-5,-4,-1,0,0,1],["hull",-5,-4,0,0,0,1],["hull",-5,-4,1,0,0,1],["lightbar",-2,-1,-1,[0,-1,0],0,1],["hull",3,-3,-1,[0,1,0],0,1],["door",3,-3,0,[0,1,0],1,1],["door",-4,-3,0,[0,1,0],1,1],["lightbar",0,-5,0,[0,-1,0],0,1],["lightbar",-2,-5,0,[0,-1,0],0,1],["steps",1,-6,-2,[0,1,0],2,1],["steps",0,-5,-2,[0,1,0],2,1],["steps",-1,-4,-2,[0,1,0],2,1],["plate",-3,-4,0,[0,1,0],0,1],["plate",-3,-4,-1,[0,1,0],0,1],["hull",-3,-4,2,[0,1,0],0,1],["plate",-3,-4,1,[0,1,0],0,1],["plate",-3,-3,1,[0,1,0],0,1],["hull",-1,-5,-2,[0,1,0],0,1],["hull",0,-6,-2,[0,1,0],0,1],["steps",2,-7,-2,[0,1,0],2,1],["hull",1,-7,-2,[0,1,0],0,1],["hull",0,-7,-2,[0,1,0],0,1],["gravgen",-3,-7,-2,[0,1,0],0,3],["hull",4,-5,2,[0,1,0],0,1],["hull",4,-6,2,[0,1,0],0,1],["hull",4,-7,2,[0,1,0],0,1],["hull",4,-8,2,[0,1,0],0,1],["hull",4,-8,1,[0,1,0],0,1],["hull",4,-5,-3,[0,1,0],0,1],["hull",4,-6,-3,[0,1,0],0,1],["hull",4,-7,-3,[0,1,0],0,1],["hull",4,-8,-3,[0,1,0],0,1],["hull",4,-8,-2,[0,1,0],0,1],["hull",4,-8,-1,[0,1,0],0,1],["hull",4,-8,0,[0,1,0],0,1],["hull",4,-7,-2,[0,1,0],0,1],["hull",4,-6,-2,[0,1,0],0,1],["hull",4,-5,-2,[0,1,0],0,1],["hull",4,-7,-1,[0,1,0],0,1],["hull",4,-6,-1,[0,1,0],0,1],["hull",4,-7,0,[0,-1,0],0,1],["hull",4,-7,1,[0,-1,0],0,1],["hull",4,-6,1,[0,-1,0],0,1],["hull",4,-5,1,[0,-1,0],0,1],["hull",4,-5,-1,[0,-1,0],0,1],["hull",4,-5,0,[0,-1,0],0,1],["hull",4,-6,0,[0,-1,0],0,1],["hull",2,0,1,[0,-1,0],0,1],["hull",2,0,0,[0,-1,0],0,1],["hull",2,0,-1,[0,-1,0],0,1],["hull",1,0,-1,[0,-1,0],0,1],["hull",0,0,-1,[0,-1,0],0,1],["hull",1,0,0,[0,-1,0],0,1],["hull",1,0,1,[0,-1,0],0,1],["hull",0,0,0,[0,-1,0],0,1],["hull",0,0,1,[0,-1,0],0,1],["hull",6,-4,3,[0,-1,0],0,1],["hull",5,-4,3,[0,-1,0],0,1],["hull",7,-4,3,[0,-1,0],0,1],["hull",2,-1,6,[0,-1,0],0,1],["hull",2,-2,6,[0,-1,0],0,1],["hull",3,-2,6,[0,-1,0],0,1],["hull",3,-3,6,[0,-1,0],0,1],["hull",4,-3,6,[0,-1,0],0,1],["hull",4,-4,6,[0,-1,0],0,1],["hull",5,-4,6,[0,-1,0],0,1],["steps",5,-3,6,[1,0,0],0,1],["steps",4,-2,6,[1,0,0],0,1],["steps",3,-1,6,[1,0,0],0,1],["steps",2,0,6,[1,0,0],0,1],["hull",5,-4,4,[0,0,1],0,1],["hull",6,-4,4,[0,0,1],0,1],["hull",7,-4,4,[1,0,0],0,1],["hull",5,-4,5,[0,0,1],0,1],["hull",6,-4,5,[0,0,1],0,1],["hull",7,-4,5,[0,0,1],0,1],["hull",6,-4,6,[0,0,1],0,1],["hull",7,-4,6,[1,0,0],0,1],["plate",5,-3,5,[-1,0,0],0,1],["plate",5,-3,4,[-1,0,0],0,1],["plate",5,-3,3,[-1,0,0],0,1],["plate",6,-3,6,[0,0,1],0,1],["plate",7,-3,6,[0,0,1],0,1],["plate",7,-3,5,[1,0,0],0,1],["plate",7,-3,4,[1,0,0],0,1],["plate",7,-3,3,[1,0,0],0,1],["plate",7,-3,6,[1,0,0],0,1],["plate",5,-3,7,[0,0,-1],0,1],["plate",4,-2,7,[0,0,-1],0,1],["plate",3,-1,7,[0,0,-1],0,1],["door",6,-3,2,[0,1,0],0,1],["door",-6,-3,0,[0,1,0],1,1],["hull",-5,-3,-1,[0,0,-1],0,1],["hull",-5,-2,-1,[0,0,-1],0,1],["hull",-6,-3,-1,[0,0,-1],0,1],["hull",-6,-2,-1,[0,0,-1],0,1],["hull",-5,-1,-1,[0,0,-1],0,1],["hull",-6,-1,-1,[0,0,-1],0,1],["hull",-4,-1,0,[0,0,-1],0,1],["hull",-5,-1,0,[0,0,-1],0,1],["hull",-5,-1,1,[0,0,-1],0,1],["hull",-5,-2,1,[0,0,-1],0,1],["hull",-5,-3,1,[0,0,-1],0,1],["hull",-6,-3,1,[0,0,-1],0,1],["hull",-6,-2,1,[0,0,-1],0,1],["hull",-6,-1,0,[0,0,-1],0,1],["hull",-6,-1,1,[0,0,-1],0,1],["hull",-7,-4,2,[0,0,-1],0,1],["hull",-8,-4,2,[0,0,-1],0,1],["hull",-8,-4,1,[0,0,-1],0,1],["hull",-8,-4,0,[0,0,-1],0,1],["hull",-9,-4,2,[0,0,-1],0,1],["hull",-9,-4,1,[0,0,-1],0,1],["hull",-8,-4,-1,[0,0,-1],0,1],["hull",-9,-4,0,[0,0,-1],0,1],["hull",-9,-4,-1,[0,0,-1],0,1],["lightbar",-5,-2,0,[0,-1,0],0,1],["beacon",-8,-3,0,[0,1,0],0,1],["lightbar",-7,-1,0,[-1,0,0],0,1],["plate",-7,-3,-1,[0,0,-1],0,1],["plate",-8,-3,-1,[0,0,-1],0,1],["plate",-9,-3,-1,[0,0,-1],0,1],["plate",-9,-3,0,[-1,0,0],0,1],["plate",-9,-3,1,[-1,0,0],0,1],["plate",-8,-3,2,[0,0,1],0,1],["plate",-7,-3,2,[0,0,1],0,1],["plate",-7,-3,1,[1,0,0],0,1],["plate",-9,-3,3,[0,0,-1],0,1],["plate",-9,-3,2,[-1,0,0],0,1],["plate",-9,-3,-1,[-1,0,0],0,1],["plate",-6,-3,2,[-1,0,0],0,1],["lightbar",4,-1,0,[0,-1,0],0,1],["lightbar",6,-1,3,[0,0,1],0,1],["hull",5,-3,1,[0,-1,0],0,1],["hull",5,-2,1,[0,-1,0],0,1],["hull",5,-1,1,[0,-1,0],0,1],["hull",6,-1,1,[0,-1,0],0,1],["hull",6,-1,0,[0,-1,0],0,1],["hull",5,-1,0,[0,-1,0],0,1],["hull",5,-2,0,[0,-1,0],0,1],["hull",5,-3,0,[0,-1,0],0,1],["door",6,-3,0,[0,1,0],0,1],["lightbar",5,-1,-2,[0,-1,0],0,1],["lightbar",6,-2,1,[0,-1,0],0,1],["lightbar",6,-1,4,[0,-1,0],0,1],["plate",5,-2,7,[0,0,-1],0,1],["plate",4,-1,7,[0,0,-1],0,1],["terminal",0,-2,1,[0,1,0],2,1],["algae",3,-7,1,[0,1,0],0,1],["lightbar",-4,1,6,[0,1,0],0,1],["lightbar",-4,1,-4,[0,1,0],0,1],["lightbar",6,1,-4,[0,1,0],0,1],["lightbar",6,1,6,[0,1,0],0,1],["padl",0,1,-1,[0,1,0],0,1],["lightbar",1,-1,0,[0,-1,0],0,1],["lightbar",1,-1,-1,[0,-1,0],0,1],["lightbar",-2,-1,0,[0,-1,0],0,1]];
+  const PLAN=[["hull",-5,0,-5,0,0,1],["hull",-5,0,-4,0,0,1],["hull",-5,0,-3,0,0,1],["hull",-5,0,-2,0,0,1],["hull",-5,0,-1,0,0,1],["hull",-5,0,0,0,0,1],["hull",-5,0,1,0,0,1],["hull",-5,0,2,0,0,1],["hull",-5,0,3,0,0,1],["hull",-5,0,4,0,0,1],["hull",-5,0,5,0,0,1],["hull",-5,0,6,0,0,1],["hull",-5,0,7,0,0,1],["hull",-4,0,-5,0,0,1],["hull",-4,0,-4,0,0,1],["hull",-4,0,-3,0,0,1],["hull",-4,0,-2,0,0,1],["hull",-4,0,-1,0,0,1],["hull",-4,0,0,0,0,1],["hull",-4,0,1,0,0,1],["hull",-4,0,2,0,0,1],["hull",-4,0,3,0,0,1],["hull",-4,0,4,0,0,1],["hull",-4,0,5,0,0,1],["hull",-4,0,6,0,0,1],["hull",-4,0,7,0,0,1],["hull",-3,0,-5,0,0,1],["hull",-3,0,-4,0,0,1],["hull",-3,0,-3,0,0,1],["hull",-3,0,-2,0,0,1],["hull",-3,0,-1,0,0,1],["hull",-3,0,0,0,0,1],["hull",-3,0,1,0,0,1],["hull",-3,0,2,0,0,1],["hull",-3,0,3,0,0,1],["hull",-3,0,4,0,0,1],["hull",-3,0,5,0,0,1],["hull",-3,0,6,0,0,1],["hull",-3,0,7,0,0,1],["hull",-2,0,-5,0,0,1],["hull",-2,0,-4,0,0,1],["hull",-2,0,-3,0,0,1],["hull",-2,0,-2,0,0,1],["hull",-2,0,-1,0,0,1],["hull",-2,0,0,0,0,1],["hull",-2,0,1,0,0,1],["hull",-2,0,2,0,0,1],["hull",-2,0,3,0,0,1],["hull",-2,0,4,0,0,1],["hull",-2,0,5,0,0,1],["hull",-2,0,6,0,0,1],["hull",-2,0,7,0,0,1],["hull",-1,0,-5,0,0,1],["hull",-1,0,-4,0,0,1],["hull",-1,0,-3,0,0,1],["hull",-1,0,-2,0,0,1],["hull",-1,0,-1,0,0,1],["hull",-1,0,0,0,0,1],["hull",-1,0,1,0,0,1],["hull",-1,0,2,0,0,1],["hull",-1,0,3,0,0,1],["hull",-1,0,4,0,0,1],["hull",-1,0,5,0,0,1],["hull",-1,0,6,0,0,1],["hull",-1,0,7,0,0,1],["hull",0,0,-5,0,0,1],["hull",0,0,-4,0,0,1],["hull",0,0,-3,0,0,1],["hull",0,0,-2,0,0,1],["hull",0,0,2,0,0,1],["hull",0,0,3,0,0,1],["hull",0,0,4,0,0,1],["hull",0,0,5,0,0,1],["hull",0,0,6,0,0,1],["hull",0,0,7,0,0,1],["hull",1,0,-5,0,0,1],["hull",1,0,-4,0,0,1],["hull",1,0,-3,0,0,1],["hull",1,0,-2,0,0,1],["hull",1,0,2,0,0,1],["hull",1,0,3,0,0,1],["hull",1,0,4,0,0,1],["hull",1,0,5,0,0,1],["hull",1,0,6,0,0,1],["hull",1,0,7,0,0,1],["hull",2,0,-5,0,0,1],["hull",2,0,-4,0,0,1],["hull",2,0,-3,0,0,1],["hull",2,0,-2,0,0,1],["hull",2,0,2,0,0,1],["hull",2,0,3,0,0,1],["hull",2,0,4,0,0,1],["hull",2,0,5,0,0,1],["hull",2,0,7,0,0,1],["hull",3,0,-5,0,0,1],["hull",3,0,-4,0,0,1],["hull",3,0,-3,0,0,1],["hull",3,0,-2,0,0,1],["hull",3,0,-1,0,0,1],["hull",3,0,0,0,0,1],["hull",3,0,1,0,0,1],["hull",3,0,2,0,0,1],["hull",3,0,3,0,0,1],["hull",3,0,4,0,0,1],["hull",3,0,5,0,0,1],["hull",3,0,7,0,0,1],["hull",4,0,-5,0,0,1],["hull",4,0,-4,0,0,1],["hull",4,0,-3,0,0,1],["hull",4,0,-2,0,0,1],["hull",4,0,-1,0,0,1],["hull",4,0,0,0,0,1],["hull",4,0,1,0,0,1],["hull",4,0,2,0,0,1],["hull",4,0,3,0,0,1],["hull",4,0,4,0,0,1],["hull",4,0,5,0,0,1],["hull",4,0,7,0,0,1],["hull",5,0,-5,0,0,1],["hull",5,0,-4,0,0,1],["hull",5,0,-3,0,0,1],["hull",5,0,-2,0,0,1],["hull",5,0,-1,0,0,1],["hull",5,0,0,0,0,1],["hull",5,0,1,0,0,1],["hull",5,0,2,0,0,1],["hull",5,0,3,0,0,1],["hull",5,0,4,0,0,1],["hull",5,0,5,0,0,1],["hull",5,0,7,0,0,1],["hull",6,0,-5,0,0,1],["hull",6,0,-4,0,0,1],["hull",6,0,-3,0,0,1],["hull",6,0,-2,0,0,1],["hull",6,0,-1,0,0,1],["hull",6,0,0,0,0,1],["hull",6,0,1,0,0,1],["hull",6,0,2,0,0,1],["hull",6,0,3,0,0,1],["hull",6,0,4,0,0,1],["hull",6,0,5,0,0,1],["hull",6,0,6,0,0,1],["hull",6,0,7,0,0,1],["hull",7,0,-5,0,0,1],["hull",7,0,-4,0,0,1],["hull",7,0,-3,0,0,1],["hull",7,0,-2,0,0,1],["hull",7,0,-1,0,0,1],["hull",7,0,0,0,0,1],["hull",7,0,1,0,0,1],["hull",7,0,2,0,0,1],["hull",7,0,3,0,0,1],["hull",7,0,4,0,0,1],["hull",7,0,5,0,0,1],["hull",7,0,6,0,0,1],["hull",7,0,7,0,0,1],["hull",-4,-4,-3,0,0,1],["hull",-4,-4,-2,0,0,1],["hull",-4,-4,-1,0,0,1],["hull",-4,-4,0,0,0,1],["hull",-4,-4,1,0,0,1],["hull",-4,-4,2,0,0,1],["hull",-3,-4,-3,0,0,1],["hull",-3,-4,-2,0,0,1],["hull",-2,-4,-3,0,0,1],["hull",-2,-4,-2,0,0,1],["hull",-2,-4,-1,0,0,1],["hull",-2,-4,0,0,0,1],["hull",-2,-4,1,0,0,1],["hull",-2,-4,2,0,0,1],["hull",-1,-4,-3,0,0,1],["hull",-1,-4,-1,0,0,1],["hull",-1,-4,0,0,0,1],["hull",-1,-4,1,0,0,1],["hull",-1,-4,2,0,0,1],["hull",0,-4,-3,0,0,1],["hull",0,-4,-1,0,0,1],["hull",0,-4,0,0,0,1],["hull",0,-4,1,0,0,1],["hull",0,-4,2,0,0,1],["hull",1,-4,-3,0,0,1],["hull",1,-4,-1,0,0,1],["hull",1,-4,0,0,0,1],["hull",1,-4,1,0,0,1],["hull",1,-4,2,0,0,1],["hull",2,-4,-3,0,0,1],["hull",2,-4,-1,0,0,1],["hull",2,-4,0,0,0,1],["hull",2,-4,1,0,0,1],["hull",2,-4,2,0,0,1],["hull",3,-4,-3,0,0,1],["hull",3,-4,-2,0,0,1],["hull",3,-4,-1,0,0,1],["hull",3,-4,0,0,0,1],["hull",3,-4,1,0,0,1],["hull",3,-4,2,0,0,1],["hull",4,-4,-3,0,0,1],["hull",4,-4,-2,0,0,1],["hull",4,-4,-1,0,0,1],["hull",4,-4,0,0,0,1],["hull",4,-4,1,0,0,1],["hull",4,-4,2,0,0,1],["hull",5,-4,-3,0,0,1],["hull",5,-4,-2,0,0,1],["hull",5,-4,-1,0,0,1],["hull",5,-4,0,0,0,1],["hull",5,-4,1,0,0,1],["hull",5,-4,2,0,0,1],["hull",6,-4,-3,0,0,1],["hull",6,-4,-2,0,0,1],["hull",6,-4,-1,0,0,1],["hull",6,-4,0,0,0,1],["hull",6,-4,1,0,0,1],["hull",6,-4,2,0,0,1],["hull",7,-4,-3,0,0,1],["hull",7,-4,-2,0,0,1],["hull",7,-4,-1,0,0,1],["hull",7,-4,0,0,0,1],["hull",7,-4,1,0,0,1],["hull",7,-4,2,0,0,1],["hull",-4,-3,-3,0,0,1],["hull",-4,-3,-2,0,0,1],["hull",-4,-3,-1,0,0,1],["hull",-4,-3,1,0,0,1],["hull",-4,-3,2,0,0,1],["hull",-4,-2,-3,0,0,1],["hull",-4,-2,-2,0,0,1],["hull",-4,-2,-1,0,0,1],["hull",-4,-2,1,0,0,1],["hull",-4,-2,2,0,0,1],["hull",-4,-1,-3,0,0,1],["hull",-4,-1,-2,0,0,1],["hull",-4,-1,-1,0,0,1],["hull",-4,-1,1,0,0,1],["hull",-4,-1,2,0,0,1],["hull",-3,-3,-3,0,0,1],["hull",-3,-3,2,0,0,1],["hull",-3,-2,-3,0,0,1],["hull",-3,-2,2,0,0,1],["hull",-3,-1,-3,0,0,1],["hull",-3,-1,2,0,0,1],["hull",-2,-3,-3,0,0,1],["hull",-2,-3,2,0,0,1],["hull",-2,-2,-3,0,0,1],["hull",-2,-2,2,0,0,1],["hull",-2,-1,-3,0,0,1],["hull",-2,-1,2,0,0,1],["hull",-1,-3,-3,0,0,1],["hull",-1,-3,2,0,0,1],["hull",-1,-2,-3,0,0,1],["hull",-1,-2,2,0,0,1],["hull",-1,-1,-3,0,0,1],["hull",-1,-1,2,0,0,1],["hull",0,-3,-3,0,0,1],["hull",0,-3,2,0,0,1],["hull",0,-2,-3,0,0,1],["hull",0,-2,2,0,0,1],["hull",0,-1,-3,0,0,1],["hull",0,-1,2,0,0,1],["hull",1,-3,-3,0,0,1],["hull",1,-3,2,0,0,1],["hull",1,-2,-3,0,0,1],["hull",1,-2,2,0,0,1],["hull",1,-1,-3,0,0,1],["hull",1,-1,2,0,0,1],["hull",2,-3,-3,0,0,1],["hull",2,-3,2,0,0,1],["hull",2,-2,-3,0,0,1],["hull",2,-2,2,0,0,1],["hull",2,-1,-3,0,0,1],["hull",2,-1,2,0,0,1],["hull",3,-3,-3,0,0,1],["hull",3,-3,-2,0,0,1],["hull",3,-3,1,0,0,1],["hull",3,-3,2,0,0,1],["hull",3,-2,-3,0,0,1],["hull",3,-2,-2,0,0,1],["hull",3,-2,-1,0,0,1],["hull",3,-2,1,0,0,1],["hull",3,-2,2,0,0,1],["hull",3,-1,-3,0,0,1],["hull",3,-1,-2,0,0,1],["hull",3,-1,-1,0,0,1],["hull",3,-1,0,0,0,1],["hull",3,-1,1,0,0,1],["hull",3,-1,2,0,0,1],["hull",4,-3,-3,0,0,1],["hull",4,-3,2,0,0,1],["hull",4,-2,-3,0,0,1],["hull",4,-2,2,0,0,1],["hull",4,-1,-3,0,0,1],["hull",4,-1,2,0,0,1],["hull",5,-3,-3,0,0,1],["hull",5,-3,2,0,0,1],["hull",5,-2,-3,0,0,1],["hull",5,-2,2,0,0,1],["hull",5,-1,-3,0,0,1],["hull",5,-1,2,0,0,1],["hull",6,-3,-3,0,0,1],["hull",6,-2,-3,0,0,1],["hull",6,-1,-3,0,0,1],["hull",6,-1,2,0,0,1],["hull",7,-3,-3,0,0,1],["hull",7,-3,-2,0,0,1],["hull",7,-3,-1,0,0,1],["hull",7,-3,0,0,0,1],["hull",7,-3,1,0,0,1],["hull",7,-3,2,0,0,1],["hull",7,-2,-3,0,0,1],["hull",7,-2,-2,0,0,1],["hull",7,-2,-1,0,0,1],["hull",7,-2,0,0,0,1],["hull",7,-2,1,0,0,1],["hull",7,-2,2,0,0,1],["hull",7,-1,-3,0,0,1],["hull",7,-1,-2,0,0,1],["hull",7,-1,-1,0,0,1],["hull",7,-1,0,0,0,1],["hull",7,-1,1,0,0,1],["hull",7,-1,2,0,0,1],["hull",-4,-8,-3,0,0,1],["hull",-4,-8,-2,0,0,1],["hull",-4,-8,-1,0,0,1],["hull",-4,-8,0,0,0,1],["hull",-4,-8,1,0,0,1],["hull",-4,-8,2,0,0,1],["hull",-3,-8,-3,0,0,1],["hull",-3,-8,-2,0,0,1],["hull",-3,-8,-1,0,0,1],["hull",-3,-8,0,0,0,1],["hull",-3,-8,1,0,0,1],["hull",-3,-8,2,0,0,1],["hull",-2,-8,-3,0,0,1],["hull",-2,-8,-2,0,0,1],["hull",-2,-8,-1,0,0,1],["hull",-2,-8,0,0,0,1],["hull",-2,-8,1,0,0,1],["hull",-2,-8,2,0,0,1],["hull",-1,-8,-3,0,0,1],["hull",-1,-8,-2,0,0,1],["hull",-1,-8,-1,0,0,1],["hull",-1,-8,0,0,0,1],["hull",-1,-8,1,0,0,1],["hull",-1,-8,2,0,0,1],["hull",0,-8,-3,0,0,1],["hull",0,-8,-2,0,0,1],["hull",0,-8,-1,0,0,1],["hull",0,-8,0,0,0,1],["hull",0,-8,1,0,0,1],["hull",0,-8,2,0,0,1],["hull",1,-8,-3,0,0,1],["hull",1,-8,-2,0,0,1],["hull",1,-8,-1,0,0,1],["hull",1,-8,0,0,0,1],["hull",1,-8,1,0,0,1],["hull",1,-8,2,0,0,1],["hull",2,-8,-3,0,0,1],["hull",2,-8,-2,0,0,1],["hull",2,-8,-1,0,0,1],["hull",2,-8,0,0,0,1],["hull",2,-8,1,0,0,1],["hull",2,-8,2,0,0,1],["hull",3,-8,-3,0,0,1],["hull",3,-8,-2,0,0,1],["hull",3,-8,-1,0,0,1],["hull",3,-8,0,0,0,1],["hull",3,-8,1,0,0,1],["hull",3,-8,2,0,0,1],["hull",-4,-7,-3,0,0,1],["hull",-4,-7,-2,0,0,1],["hull",-4,-7,-1,0,0,1],["hull",-4,-7,0,0,0,1],["hull",-4,-7,1,0,0,1],["hull",-4,-7,2,0,0,1],["hull",-4,-6,-3,0,0,1],["hull",-4,-6,-2,0,0,1],["hull",-4,-6,-1,0,0,1],["hull",-4,-6,0,0,0,1],["hull",-4,-6,1,0,0,1],["hull",-4,-6,2,0,0,1],["hull",-4,-5,-3,0,0,1],["hull",-4,-5,-2,0,0,1],["hull",-4,-5,-1,0,0,1],["hull",-4,-5,0,0,0,1],["hull",-4,-5,1,0,0,1],["hull",-4,-5,2,0,0,1],["hull",-3,-7,-3,0,0,1],["hull",-3,-7,2,0,0,1],["hull",-3,-6,-3,0,0,1],["hull",-3,-6,2,0,0,1],["hull",-3,-5,-3,0,0,1],["hull",-3,-5,2,0,0,1],["hull",-2,-7,-3,0,0,1],["hull",-2,-7,2,0,0,1],["hull",-2,-6,-3,0,0,1],["hull",-2,-6,2,0,0,1],["hull",-2,-5,-3,0,0,1],["hull",-2,-5,2,0,0,1],["hull",-1,-7,-3,0,0,1],["hull",-1,-7,2,0,0,1],["hull",-1,-6,-3,0,0,1],["hull",-1,-6,2,0,0,1],["hull",-1,-5,-3,0,0,1],["hull",-1,-5,2,0,0,1],["hull",0,-7,-3,0,0,1],["hull",0,-7,2,0,0,1],["hull",0,-6,-3,0,0,1],["hull",0,-6,2,0,0,1],["hull",0,-5,-3,0,0,1],["hull",0,-5,2,0,0,1],["hull",1,-7,-3,0,0,1],["hull",1,-7,2,0,0,1],["hull",1,-6,-3,0,0,1],["hull",1,-6,2,0,0,1],["hull",1,-5,-3,0,0,1],["hull",1,-5,2,0,0,1],["hull",2,-7,-3,0,0,1],["hull",2,-7,2,0,0,1],["hull",2,-6,-3,0,0,1],["hull",2,-6,2,0,0,1],["hull",2,-5,-3,0,0,1],["hull",2,-5,2,0,0,1],["hull",3,-7,-3,0,0,1],["hull",3,-7,2,0,0,1],["hull",3,-6,-3,0,0,1],["hull",3,-6,2,0,0,1],["hull",3,-5,-3,0,0,1],["hull",3,-5,2,0,0,1],["refinery",-3,-3,-2,[0,1,0],0,1],["plate",-2,-3,-2,[0,1,0],0,1],["plate",-2,-3,1,[0,1,0],0,1],["plate",-1,-3,1,[0,1,0],0,1],["powergen",4,-3,-2,[0,1,0],0,2],["sstore",6,-3,-2,0,0,1],["hull",-7,-4,-1,0,0,1],["hull",-7,-4,0,0,0,1],["hull",-7,-4,1,0,0,1],["hull",-6,-4,-1,0,0,1],["hull",-6,-4,0,0,0,1],["hull",-6,-4,1,0,0,1],["hull",-5,-4,-1,0,0,1],["hull",-5,-4,0,0,0,1],["hull",-5,-4,1,0,0,1],["lightbar",-2,-1,-1,[0,-1,0],0,1],["hull",3,-3,-1,[0,1,0],0,1],["door",3,-3,0,[0,1,0],1,1],["door",-4,-3,0,[0,1,0],1,1],["lightbar",0,-5,0,[0,-1,0],0,1],["lightbar",-2,-5,0,[0,-1,0],0,1],["steps",1,-6,-2,[0,1,0],2,1],["steps",0,-5,-2,[0,1,0],2,1],["steps",-1,-4,-2,[0,1,0],2,1],["plate",-3,-4,0,[0,1,0],0,1],["plate",-3,-4,-1,[0,1,0],0,1],["hull",-3,-4,2,[0,1,0],0,1],["plate",-3,-4,1,[0,1,0],0,1],["plate",-3,-3,1,[0,1,0],0,1],["hull",-1,-5,-2,[0,1,0],0,1],["hull",0,-6,-2,[0,1,0],0,1],["steps",2,-7,-2,[0,1,0],2,1],["hull",1,-7,-2,[0,1,0],0,1],["hull",0,-7,-2,[0,1,0],0,1],["gravgen",-3,-7,-2,[0,1,0],0,3],["hull",4,-5,2,[0,1,0],0,1],["hull",4,-6,2,[0,1,0],0,1],["hull",4,-7,2,[0,1,0],0,1],["hull",4,-8,2,[0,1,0],0,1],["hull",4,-8,1,[0,1,0],0,1],["hull",4,-5,-3,[0,1,0],0,1],["hull",4,-6,-3,[0,1,0],0,1],["hull",4,-7,-3,[0,1,0],0,1],["hull",4,-8,-3,[0,1,0],0,1],["hull",4,-8,-2,[0,1,0],0,1],["hull",4,-8,-1,[0,1,0],0,1],["hull",4,-8,0,[0,1,0],0,1],["hull",4,-7,-2,[0,1,0],0,1],["hull",4,-6,-2,[0,1,0],0,1],["hull",4,-5,-2,[0,1,0],0,1],["hull",4,-7,-1,[0,1,0],0,1],["hull",4,-6,-1,[0,1,0],0,1],["hull",4,-7,0,[0,-1,0],0,1],["hull",4,-7,1,[0,-1,0],0,1],["hull",4,-6,1,[0,-1,0],0,1],["hull",4,-5,1,[0,-1,0],0,1],["hull",4,-5,-1,[0,-1,0],0,1],["hull",4,-5,0,[0,-1,0],0,1],["hull",4,-6,0,[0,-1,0],0,1],["hull",2,0,1,[0,-1,0],0,1],["hull",2,0,0,[0,-1,0],0,1],["hull",2,0,-1,[0,-1,0],0,1],["hull",1,0,-1,[0,-1,0],0,1],["hull",0,0,-1,[0,-1,0],0,1],["hull",1,0,0,[0,-1,0],0,1],["hull",1,0,1,[0,-1,0],0,1],["hull",0,0,0,[0,-1,0],0,1],["hull",0,0,1,[0,-1,0],0,1],["hull",6,-4,3,[0,-1,0],0,1],["hull",5,-4,3,[0,-1,0],0,1],["hull",7,-4,3,[0,-1,0],0,1],["hull",2,-1,6,[0,-1,0],0,1],["hull",2,-2,6,[0,-1,0],0,1],["hull",3,-2,6,[0,-1,0],0,1],["hull",3,-3,6,[0,-1,0],0,1],["hull",4,-3,6,[0,-1,0],0,1],["hull",4,-4,6,[0,-1,0],0,1],["hull",5,-4,6,[0,-1,0],0,1],["steps",5,-3,6,[1,0,0],0,1],["steps",4,-2,6,[1,0,0],0,1],["steps",3,-1,6,[1,0,0],0,1],["steps",2,0,6,[1,0,0],0,1],["hull",5,-4,4,[0,0,1],0,1],["hull",6,-4,4,[0,0,1],0,1],["hull",7,-4,4,[1,0,0],0,1],["hull",5,-4,5,[0,0,1],0,1],["hull",6,-4,5,[0,0,1],0,1],["hull",7,-4,5,[0,0,1],0,1],["hull",6,-4,6,[0,0,1],0,1],["hull",7,-4,6,[1,0,0],0,1],["plate",5,-3,5,[-1,0,0],0,1],["plate",5,-3,4,[-1,0,0],0,1],["plate",5,-3,3,[-1,0,0],0,1],["plate",6,-3,6,[0,0,1],0,1],["plate",7,-3,6,[0,0,1],0,1],["plate",7,-3,5,[1,0,0],0,1],["plate",7,-3,4,[1,0,0],0,1],["plate",7,-3,3,[1,0,0],0,1],["plate",7,-3,6,[1,0,0],0,1],["plate",5,-3,7,[0,0,-1],0,1],["plate",4,-2,7,[0,0,-1],0,1],["plate",3,-1,7,[0,0,-1],0,1],["door",6,-3,2,[0,1,0],0,1],["door",-6,-3,0,[0,1,0],1,1],["hull",-5,-3,-1,[0,0,-1],0,1],["hull",-5,-2,-1,[0,0,-1],0,1],["hull",-6,-3,-1,[0,0,-1],0,1],["hull",-6,-2,-1,[0,0,-1],0,1],["hull",-5,-1,-1,[0,0,-1],0,1],["hull",-6,-1,-1,[0,0,-1],0,1],["hull",-4,-1,0,[0,0,-1],0,1],["hull",-5,-1,0,[0,0,-1],0,1],["hull",-5,-1,1,[0,0,-1],0,1],["hull",-5,-2,1,[0,0,-1],0,1],["hull",-5,-3,1,[0,0,-1],0,1],["hull",-6,-3,1,[0,0,-1],0,1],["hull",-6,-2,1,[0,0,-1],0,1],["hull",-6,-1,0,[0,0,-1],0,1],["hull",-6,-1,1,[0,0,-1],0,1],["hull",-7,-4,2,[0,0,-1],0,1],["hull",-8,-4,2,[0,0,-1],0,1],["hull",-8,-4,1,[0,0,-1],0,1],["hull",-8,-4,0,[0,0,-1],0,1],["hull",-9,-4,2,[0,0,-1],0,1],["hull",-9,-4,1,[0,0,-1],0,1],["hull",-8,-4,-1,[0,0,-1],0,1],["hull",-9,-4,0,[0,0,-1],0,1],["hull",-9,-4,-1,[0,0,-1],0,1],["lightbar",-5,-2,0,[0,-1,0],0,1],["beacon",-8,-3,0,[0,1,0],0,1],["lightbar",-7,-1,0,[-1,0,0],0,1],["plate",-7,-3,-1,[0,0,-1],0,1],["plate",-8,-3,-1,[0,0,-1],0,1],["plate",-9,-3,-1,[0,0,-1],0,1],["plate",-9,-3,0,[-1,0,0],0,1],["plate",-9,-3,1,[-1,0,0],0,1],["plate",-8,-3,2,[0,0,1],0,1],["plate",-7,-3,2,[0,0,1],0,1],["plate",-7,-3,1,[1,0,0],0,1],["plate",-9,-3,3,[0,0,-1],0,1],["plate",-9,-3,2,[-1,0,0],0,1],["plate",-9,-3,-1,[-1,0,0],0,1],["plate",-6,-3,2,[-1,0,0],0,1],["lightbar",4,-1,0,[0,-1,0],0,1],["lightbar",6,-1,3,[0,0,1],0,1],["hull",5,-3,1,[0,-1,0],0,1],["hull",5,-2,1,[0,-1,0],0,1],["hull",5,-1,1,[0,-1,0],0,1],["hull",6,-1,1,[0,-1,0],0,1],["hull",6,-1,0,[0,-1,0],0,1],["hull",5,-1,0,[0,-1,0],0,1],["hull",5,-2,0,[0,-1,0],0,1],["hull",5,-3,0,[0,-1,0],0,1],["door",6,-3,0,[0,1,0],0,1],["lightbar",5,-1,-2,[0,-1,0],0,1],["lightbar",6,-2,1,[0,-1,0],0,1],["lightbar",6,-1,4,[0,-1,0],0,1],["plate",5,-2,7,[0,0,-1],0,1],["plate",4,-1,7,[0,0,-1],0,1],["terminal",0,-2,1,[0,1,0],2,1],["algae",3,-7,1,[0,1,0],0,1],["lightbar",-4,1,6,[0,1,0],0,1],["lightbar",-4,1,-4,[0,1,0],0,1],["lightbar",6,1,-4,[0,1,0],0,1],["lightbar",6,1,6,[0,1,0],0,1],["padl",0,1,-1,[0,1,0],0,1],["lightbar",1,-1,0,[0,-1,0],0,1],["lightbar",1,-1,-1,[0,-1,0],0,1],["lightbar",-2,-1,0,[0,-1,0],0,1]];
 
   for(const r of PLAN){try{const nb=addBlock(g,r[1],r[2],r[3],r[0],r[4]||null,r[5]||0,r[6]||1);if(nb&&nb.type==='plate'){nb.pf=[0,4];platePaint(nb);}}catch(err){console.error(err);}}   // plates by the stairs and the beacon: the plain tile on the inside
   // start with enough Ice in the Storage Container to run everything above for 20 real minutes: gravity generator, the sealed rooms, the lights and a working Refinery
@@ -4033,6 +4043,11 @@ function pioMinerTick(T,dt){
   if(on)mhDraw(T,dt);
 }
 function pioMinerOff(T){if(T){pioGhost(T,0);}document.body.classList.remove('mhud');if(mhEl)mhEl.style.opacity='0';}
+
+function pioCruise(v){   // the rear boosters hold a set speed: tap again to go back to normal flight
+  if(player.mode!=='tseat'||!pioSeat)return;const T=pioSeat.T;T.cruise=T.cruise===v?0:v;cruiseUI(T);
+}
+function cruiseUI(T){for(const [id,v] of [['cr10',10],['cr25',25],['crmax',99]]){const b=$(id);if(b)b.classList.toggle('on',!!T&&T.cruise===v);}}
 const weaponBonus=()=>({dmg:1,ammo:1});   // CLASS HOOK: a Soldier online will raise dmg (+1.5/3/7.5/15%) and ammo (+5/10/25/50%); every turret and pirate shot already reads this
 const TURRET={range:250,rate:.5,dmg:10,load:3,turn:2.6};   // metres; seconds between shots; damage on a ship; power load (a light is 1); head turn rad/s
 const PIRATE={hp:300,spd:42,fire:.4,blk:2.5,pio:8};         // a pirate hull, its top speed, seconds between shots, damage to a block, damage to the Pioneer
@@ -4209,15 +4224,16 @@ const tplMatPio=new THREE.MeshLambertMaterial({color:0x808080,side:THREE.DoubleS
 })();
 const tplMatGlass=new THREE.MeshLambertMaterial({vertexColors:true,transparent:true,opacity:.55,depthWrite:false,side:THREE.DoubleSide});
 
-const PIO_LAD={x:-1.82,y:5.0,z:-1.0};   // the ladder's middle (ship-local metres): a short ladder down from the canopy on the port side, leaning with the hull. Look at it to climb to the cockpit
+const PIO_LAD={x:-2.32,y:3.65,z:-1.0};   // the ladder's middle (ship-local metres): its top is level with the bottom of the closed canopy (y 4.7), it hangs down the port side. Look at it to climb to the cockpit
 let tplLadder=null;
 function pioLadder(){
   if(!tplLadder){
-    const m=new THREE.MeshLambertMaterial({color:0xb08a46}),g=new THREE.Group(),rail=new THREE.BoxGeometry(.08,2.1,.08),rung=new THREE.BoxGeometry(.07,.07,.9),brk=new THREE.BoxGeometry(.24,.07,.07);
+    const m=new THREE.MeshLambertMaterial({color:0xb08a46}),g=new THREE.Group(),rail=new THREE.BoxGeometry(.08,2.1,.08),rung=new THREE.BoxGeometry(.07,.07,.9),brk=new THREE.BoxGeometry(.24,.07,.07),brkL=new THREE.BoxGeometry(.8,.07,.07);
     for(const z of [-.45,.45]){const r=new THREE.Mesh(rail,m);r.position.set(0,1.05,z);g.add(r);}
     for(let i=0;i<5;i++){const r=new THREE.Mesh(rung,m);r.position.set(0,.3+i*.4,0);g.add(r);}
-    for(const y of [.5,1.6])for(const z of [-.45,.45]){const b=new THREE.Mesh(brk,m);b.position.set(.1,y,z);g.add(b);}
-    g.position.set(-2.12,4.0,PIO_LAD.z);g.rotation.z=-.291;tplLadder=g;   // the hull there leans in about 17 degrees, 0.12 m behind the rails
+    for(const y of [.5,1.3])for(const z of [-.45,.45]){const b=new THREE.Mesh(brk,m);b.position.set(.1,y,z);g.add(b);}
+    for(const z of [-.45,.45]){const b=new THREE.Mesh(brkL,m);b.position.set(.38,1.95,z);g.add(b);}   // the cabin steps in above the ladder: a longer bracket reaches it
+    g.position.set(PIO_LAD.x,2.6,PIO_LAD.z);tplLadder=g;
   }
   return tplLadder.clone();
 }
@@ -4315,14 +4331,14 @@ function pioEnter(T){
   setRide(null);selfE.root.visible=false;fcamOn=false;
   player.mode='tseat';player.ship=null;player.tool=0;player.build=false;player.third=false;tool.visible=false;setBuildUI();
   T._g0={p:camera.position.clone(),q:camera.quaternion.clone()};T.glide=0;
-  pioSeat={T};T.view=0;T.cp.children[0].material=tplMatPioIn;
+  pioSeat={T};T.view=0;T.cruise=0;cruiseUI(T);T.cp.children[0].material=tplMatPioIn;
   document.body.classList.add('pioseat');player.vel.set(0,0,0);
   toast('In the cockpit. '+(coarse?'EXIT COCKPIT':'F')+' climbs out.','good');
 }
 function pioLeave(force){
   const S=pioSeat;if(!S)return;
   if(!force&&S.T.vel.length()>3.1){toast('Slow down or dock before climbing out','bad');return;}
-  pioMinerOff(S.T);
+  pioMinerOff(S.T);S.T.cruise=0;cruiseUI(null);
   pioSeat=null;if(!S.T.lock&&S.T.vel.lengthSq()<.0036)S.T.vel.set(0,0,0);   // a ship left at a standstill stays put
   document.body.classList.remove('pioseat');if(termOpen)closeTerminal();
   const G=S.T.group;S.T.cp.children[0].material=tplMatPio;G.updateMatrixWorld(true);
@@ -4479,10 +4495,16 @@ function pioFly(T,dt){
     // thrust, in the ship's own axes: right, up and forward (-z)
     const vL=T.vel.clone().applyQuaternion(q.clone().invert()),vl=[vL.x,vL.y,vL.z],cmd=[mv.x,mv.y,-mv.z],F=[0,0,0];let burn=0;
     if(player.damp&&Math.abs(cmd[0])<.02&&Math.abs(cmd[1])<.02&&Math.abs(cmd[2])<.02&&T.vel.lengthSq()<.0036){T.vel.set(0,0,0);vl[0]=vl[1]=vl[2]=0;}   // the dampers brake to a true stop, not a 0.02 m/s creep
-    ld=pioLoad(T);const eng=POW[T.up.thr-1],rcs=RCSP[(T.up.rcs||1)-1];
+    ld=pioLoad(T);const eng=POW[T.up.thr-1],rcs=RCSP[(T.up.rcs||1)-1];T._cr=0;
     for(let k=0;k<3;k++){
       let c=Math.abs(cmd[k])<.02?0:cmd[k];
       const base=PIO_A[k]*PIO_BASE*ld*(k<2?PIO_ACC_SIDE:1);
+      if(k===2&&T.cruise&&c<=0&&T.fuel>0){   // cruise: the engines hold the chosen forward speed
+        const tg=T.cruise===99?PIO_VMAX*eng:T.cruise,fs=-vl[2];
+        if(fs<tg-.2){const a=clamp((tg-fs)/3,0,1);F[2]=-a*base*eng;burn+=a*2.5;T._cr=a;}
+        else if(fs>tg+1){const a=clamp((fs-tg)/3,0,1);F[2]=a*base*rcs;burn+=a*2.5;}   // over the set speed: the maneuvering thrusters ease it back
+        continue;
+      }
       if(c===0&&player.damp&&Math.abs(vl[k])>.03){   // braking is the maneuvering thrusters' job
         const Ab=base*rcs;c=clamp(-vl[k]/(.6*Ab),-1,1);
         if(T.fuel>0){F[k]=c*Ab;burn+=Math.abs(c)*2.5;}
@@ -4497,7 +4519,7 @@ function pioFly(T,dt){
     }
     T.vel.addScaledVector(new V3(F[0],F[1],F[2]).applyQuaternion(q),dt);
     const vmax=PIO_VMAX*eng;if(T.vel.length()>vmax)T.vel.setLength(Math.max(vmax,T.vel.length()-12*dt));
-    T.fuel=Math.max(0,T.fuel-burn*dt);T.burn=burn;T._thr=T.fuel>0&&cmd[2]<-.02?Math.min(1,-cmd[2]):0;
+    T.fuel=Math.max(0,T.fuel-burn*dt);T.burn=burn;T._thr=T.fuel>0?Math.max(cmd[2]<-.02?Math.min(1,-cmd[2]):0,T._cr||0):0;
     if(T.fuel<=0&&(mv.x||mv.y||mv.z)&&!T._warned){T._warned=true;toast('Out of hydrogen. '+(coarse?'Tap FUEL':'Press R')+' to melt ice from the hold or your pack.','bad');}
     if(T.fuel>0)T._warned=false;
     // turning
@@ -4554,7 +4576,7 @@ function pioFly(T,dt){
   // the camera: the pilot's eye, or behind and above
   if(T.view===1){camera.position.copy(G.localToWorld(_pe.set(0,9*PIO_S,22*PIO_S)));camera.quaternion.copy(q).multiply(_q1.setFromAxisAngle(AXX,-.2));}
   else{_gp.copy(G.localToWorld(_pe.set(0,6.75*PIO_S,-.55*PIO_S)));_gq.copy(q).multiply(_q1.setFromAxisAngle(AXX,-.12));
-    if(T.glide<1&&T._g0){T.glide=Math.min(1,T.glide+dt/.9);const kk=T.glide*T.glide*(3-2*T.glide);camera.position.lerpVectors(T._g0.p,_gp,kk);camera.quaternion.slerpQuaternions(T._g0.q,_gq,kk);}   // the glide in from outside
+    if(T.glide<1&&T._g0){T.glide=Math.min(1,T.glide+dt/.9);const kk=T.glide*T.glide*(3-2*T.glide);camera.position.lerpVectors(T._g0.p,_gp,kk);if(T._g0.r)camera.quaternion.copy(_gq);else camera.quaternion.slerpQuaternions(T._g0.q,_gq,kk);}   // the glide in from outside (a view switch keeps the tilt, so the reticle stays put)
     else{camera.position.copy(_gp);camera.quaternion.copy(_gq);}}
   player.pos.copy(G.localToWorld(_pe.set(0,6.75*PIO_S,-.55*PIO_S)));player.vel.copy(T.vel);driftReticle(T);
 }
@@ -4845,7 +4867,9 @@ const ACT={
   spin(){const dr=BORDER[player.sel]==='door';spin=(spin+1)%(dr?8:4);ghostKey='';lastSig='';toast(dr&&spin>=4?'Spin: '+(spin-4)*90+'\u00b0 \u00b7 flush with the panels':'Spin: '+spin*90+'\u00b0'+(dr?' \u00b7 centred':''));},
   orient(){if(player.tool===4){paintSel=(paintSel+1)%PAINT_NAMES.length;toast('Paint: '+PAINT_NAMES[paintSel],'good');return;}orient=(orient+1)%ORIENTS.length;ghostKey='';lastSig='';toast('Facing: '+ORIENT_NAMES[orient]);},
   damp(){player.damp=!player.damp;},
-  cam(){if(player.mode==='tseat'){const T=pioSeat.T;T.view^=1;if(T.view===0){T._g0={p:camera.position.clone(),q:camera.quaternion.clone()};T.glide=0;}toast(pioSeat.T.view?'Chase view':'Cockpit view','good');return;}
+  cr10(){pioCruise(10);},cr25(){pioCruise(25);},crmax(){pioCruise(99);},
+  cam(){if(player.mode==='tseat'){const T=pioSeat.T;T.view^=1;if(T._A){const dl=(T.view===1?-.2:-.12)-(T.view===1?-.12:-.2),qb=T.group.quaternion.clone().multiply(new Q().setFromAxisAngle(AXX,T.view===1?-.12:-.2));T._A.premultiply(qb.clone().multiply(new Q().setFromAxisAngle(AXX,dl)).multiply(qb.clone().invert())).normalize();}   // keep the reticle where it was: the aim moves with the camera's tilt
+    if(T.view===0){T._g0={p:camera.position.clone(),q:camera.quaternion.clone(),r:1};T.glide=0;}toast(pioSeat.T.view?'Chase view':'Cockpit view','good');return;}
     if(player.mode==='foot'){fcam=fcam?0:1;toast(fcam?'Third person':'First person','good');return;}
     if(player.mode==='pilot'){camMode=(camMode+1)%CAM_NAMES.length;player.third=camMode===1||camMode===2;toast(CAM_NAMES[camMode]+(camMode===7?' (drag to orbit; the ship holds its heading)':''),'good');}},
   lamp(){const ab=player.mode==='tseat'||player.mode==='pilot';if(ab){shipLampOn=!shipLampOn;toast(shipLampOn?'Ship lamp on':'Ship lamp off','good');}else{lampOn=!lampOn;}lampTick();},
@@ -5036,7 +5060,7 @@ Object.assign(RCOL,{rub:'#3c4048',disp:'#5aa8d6',ammo:'#e8c24a',algae:'#5fcf6e',
 const SHORT={ammo:'Iron ammo',algae:'Algae paste',phage:'Phage',fe:'Iron',si:'Silicon',ice:'Ice',pt:'Platinum',carb:'Carbon',cu:'Copper',al:'Aluminium',ti:'Titanium',feI:'Iron ingot',siI:'Silicon ingot',ptI:'Platinum ingot',cuI:'Copper ingot',stI:'Steel ingot',alI:'Aluminium ingot',tiI:'Titanium ingot',stP:'Steel Plate',tAl:'Transparent Aluminium',thP:'Thruster Parts',plate:'Iron Plate',constr:'Construction Parts',wire:'Wire',board:'Circuit Board',motor:'Motor',comp:'CPU',rub:'Rubber',disp:'Display'};
 const ALLK=Object.keys(inv);
 // ship and structure parts can be built anywhere; station machines need a gravity field
-const PAGE_BASIC=['hull','slope','corner','icorner','glass','glassc','glassd','plate','platd','platt','door','steps','seat','light','powergen','thruster','mthruster','gun','turret','bigthruster','gyro','lgyro','tank','bigtank','drill','bigdrill','cargo','refinery','assembler','leg','gravgen','dronee'];
+const PAGE_BASIC=['hull','slope','corner','icorner','glass','glassc','glassd','plate','platd','platt','door','steps','seat','light','powergen','thruster','mthruster','gun','turret','bigthruster','gyro','lgyro','tank','bigtank','drill','bigdrill','cargo','sstore','refinery','assembler','leg','gravgen','dronee'];
 const DEVONLY=['dronee'];
 const PAGE_STN=['beacon','pad','padl','lightbar','terminal','algae'];   // the Repair Arm is part of every Landing Pad now
 let page=0,inGrav=false,booted=false;
@@ -5488,7 +5512,7 @@ function priceTick(dt){
 }
 /* ---- storage: the player's pack, each craft's hold (its cargo containers), station warehouses ---- */
 const PACK_CAP=500;
-const capOf=b=>CARGO_CAP[tierOf(b)-1];
+const capOf=b=>(b.type==='sstore'?SSTORE_CAP:CARGO_CAP)[tierOf(b)-1];
 const usedOf=b=>{let s=0;for(const k in b.store)s+=b.store[k];return s;};
 const packUsed=()=>{let s=0;for(const k of ITEMS)s+=inv[k]|0;return s;};
 const packSpace=()=>Math.max(0,PACK_CAP-packUsed());
@@ -5573,11 +5597,11 @@ function payDebt(amount){
 }
 /* ---------- the Market: five settlements, orders, and drones that run them ---------- */
 const MKT=[   // dist: 1 near .. 5 far; every: seconds between drones; max: units per order each way; m: demand multiplier on base price (0 = they don't want it)
-  {id:0,name:'Alnra Station',type:'Base',dist:1,every:450,max:15,m:{algae:1,phage:1,fe:.9,si:.9,ice:1.6,pt:0,feI:1,siI:1,ptI:0,plate:1.2,constr:1.1,motor:1.3,comp:1,carb:1,cu:.9,cuI:1,stI:1.2,wire:1,board:.9,al:.8,ti:1,alI:1,tiI:1,stP:1.1,tAl:1.2,thP:1.1,rub:1,disp:1.1}},
-  {id:1,name:'Vergera',type:'Moon',dist:2,every:600,max:20,m:{algae:1,phage:1,fe:1.2,si:1.2,ice:.8,pt:.9,feI:1.3,siI:1.3,ptI:.9,plate:1,constr:1.3,motor:1,comp:.9,carb:1.3,cu:1.3,cuI:1.3,stI:1.1,wire:1.2,board:1,al:1.1,ti:1.3,alI:1.2,tiI:1.3,stP:1,tAl:1.4,thP:1,rub:1.1,disp:1}},
-  {id:2,name:'Mara 4',type:'Planet',dist:3,every:900,max:25,m:{algae:1,phage:1,fe:.9,si:.9,ice:0,pt:1.5,feI:1,siI:1.1,ptI:1.8,plate:1.1,constr:1,motor:1.4,comp:1.8,carb:1.1,cu:1,cuI:1.1,stI:1,wire:1.3,board:1.6,al:1.3,ti:1.2,alI:1.4,tiI:1.2,stP:1.1,tAl:1,thP:1.2,rub:1.2,disp:1.5}},
-  {id:3,name:'Mara 7',type:'Planet',dist:4,every:1200,max:55,m:{algae:1,phage:1,fe:.8,si:.8,ice:0,pt:1.2,feI:1.1,siI:1.1,ptI:1.3,plate:1.7,constr:1.2,motor:1.6,comp:1.4,carb:.8,cu:1.2,cuI:1.2,stI:1.6,wire:1.1,board:1.3,al:1.4,ti:1.7,alI:1.3,tiI:1.7,stP:1.7,tAl:.9,thP:1.6,rub:1.4,disp:1.2}},
-  {id:4,name:'Hernolon 5',type:'Planet',dist:5,every:1800,max:70,m:{algae:1,phage:1,fe:1.3,si:1.3,ice:0,pt:1.8,feI:1.5,siI:1.5,ptI:1.7,plate:1.5,constr:1.5,motor:1.5,comp:1.6,carb:1.4,cu:1.4,cuI:1.5,stI:1.5,wire:1.5,board:1.6,al:1.5,ti:1.5,alI:1.5,tiI:1.5,stP:1.5,tAl:1.5,thP:1.5,rub:1.5,disp:1.6}}];
+  {id:0,name:'Alnra Station',drones:7,type:'Base',dist:1,every:450,max:15,m:{algae:1,phage:1,fe:.9,si:.9,ice:1.6,pt:0,feI:1,siI:1,ptI:0,plate:1.2,constr:1.1,motor:1.3,comp:1,carb:1,cu:.9,cuI:1,stI:1.2,wire:1,board:.9,al:.8,ti:1,alI:1,tiI:1,stP:1.1,tAl:1.2,thP:1.1,rub:1,disp:1.1}},
+  {id:1,name:'Vergera',drones:10,type:'Moon',dist:2,every:600,max:20,m:{algae:1,phage:1,fe:1.2,si:1.2,ice:.8,pt:.9,feI:1.3,siI:1.3,ptI:.9,plate:1,constr:1.3,motor:1,comp:.9,carb:1.3,cu:1.3,cuI:1.3,stI:1.1,wire:1.2,board:1,al:1.1,ti:1.3,alI:1.2,tiI:1.3,stP:1,tAl:1.4,thP:1,rub:1.1,disp:1}},
+  {id:2,name:'Mara 4',drones:13,type:'Planet',dist:3,every:900,max:25,m:{algae:1,phage:1,fe:.9,si:.9,ice:0,pt:1.5,feI:1,siI:1.1,ptI:1.8,plate:1.1,constr:1,motor:1.4,comp:1.8,carb:1.1,cu:1,cuI:1.1,stI:1,wire:1.3,board:1.6,al:1.3,ti:1.2,alI:1.4,tiI:1.2,stP:1.1,tAl:1,thP:1.2,rub:1.2,disp:1.5}},
+  {id:3,name:'Mara 7',drones:20,type:'Planet',dist:4,every:1200,max:55,m:{algae:1,phage:1,fe:.8,si:.8,ice:0,pt:1.2,feI:1.1,siI:1.1,ptI:1.3,plate:1.7,constr:1.2,motor:1.6,comp:1.4,carb:.8,cu:1.2,cuI:1.2,stI:1.6,wire:1.1,board:1.3,al:1.4,ti:1.7,alI:1.3,tiI:1.7,stP:1.7,tAl:.9,thP:1.6,rub:1.4,disp:1.2}},
+  {id:4,name:'Hernolon 5',drones:40,type:'Planet',dist:5,every:1800,max:70,m:{algae:1,phage:1,fe:1.3,si:1.3,ice:0,pt:1.8,feI:1.5,siI:1.5,ptI:1.7,plate:1.5,constr:1.5,motor:1.5,comp:1.6,carb:1.4,cu:1.4,cuI:1.5,stI:1.5,wire:1.5,board:1.6,al:1.5,ti:1.5,alI:1.5,tiI:1.5,stP:1.5,tAl:1.5,thP:1.5,rub:1.5,disp:1.6}}];
 const MK_WT={rub:1,disp:3,ammo:1,algae:1,phage:1,fe:1,si:1,ice:1,pt:2,carb:1,cu:2,feI:2,siI:2,ptI:3,cuI:2,stI:2,plate:4,constr:5,wire:1,board:2,motor:8,comp:6,al:1,ti:2,alI:1,tiI:3,stP:5,tAl:3,thP:6};   // weight of one unit
 const MK_FLAT=20,MK_RATE=.6,MK_DAY=180,MK_SPREAD=1.3,MK_STEP=5;
 const mk={sel:0,sortP:false,carts:{},tm:MKT.map(s=>s.every*.5),q:[]};
@@ -5590,6 +5614,7 @@ const mkFee=(s,sell,buy)=>{const w=mkW(sell)+mkW(buy);return w<=0?{w:0,t:0,fee:0
 const mkEta=s=>{const t=Math.max(0,mk.tm[s.id]);return fmtClock(t)+' ('+Math.max(1,Math.round(t/MK_DAY))+(Math.round(t/MK_DAY)===1||t<MK_DAY?' day':' days')+')';};
 const mkGuest=()=>{try{return !!MP.guest;}catch(e){return false;}};
 const mkG=()=>{const g=(typeof termF!=='undefined'&&termF&&grids.includes(termF))?termF:beaconGrid();return g;};
+const mkActive=s=>{let n=0;for(const o of mk.q)if(o.s===s.id)n++;for(const g of grids)if(g.md&&g.md.orders)for(const o of g.md.orders)if(o.s===s.id)n++;return n;};   // orders (supply drones) out for one settlement
 const mkCart=()=>mk.carts[mk.sel]||(mk.carts[mk.sel]={sell:{},buy:{}});
 const mkIncoming=g=>{let n=0;for(const o of mk.q)if(o.g===g.name)n+=mkSum(o.buy);if(g.md&&g.md.state===1&&g.md.orders)for(const o of g.md.orders)n+=mkSum(o.buy);return n;};
 /* ---- drones ---- */
@@ -5643,7 +5668,7 @@ function mktBuild(){
     '<div class="mkr h"><span>Goods</span><span>They pay</span><span>You pay</span><span>Sell</span><span>Buy</span></div>'+
     '<div id="m-rows">'+mktRows()+'</div>'+
     '<div class="qrow" id="m-sum" style="white-space:pre-line"></div>'+
-    '<div class="mfoot"><button class="rb" data-mk="clear">Clear</button><button class="rb up" data-mk="submit" id="m-go">Submit order</button></div></div>';
+    '<div class="mfoot"><button class="rb" data-mk="clear">Reset Form</button><button class="rb up" data-mk="submit" id="m-go">Submit order</button></div></div>';
   h+='<div class="mcard"><div class="mh"><b>Orders on the way</b></div><div class="qrow" id="m-q" style="white-space:pre-line"></div></div>';
   return h;
 }
@@ -5679,16 +5704,17 @@ function mktClick(btn){
     if(n>0)cart.buy[k]=n;else delete cart.buy[k];return;}
   if(a==='submit'){
     const ns=mkSum(cart.sell),nb=mkSum(cart.buy);
+    if(mkActive(s)>=s.drones){toast(s.name+' can only handle '+s.drones+' supply drones at once. Wait for one to arrive','bad');return;}
     if(!ns&&!nb){toast('Add something to sell or buy first','bad');return;}
     let cost=0,rev=0;for(const q in cart.buy)cost+=cart.buy[q]*mkCost(s,q);for(const q in cart.sell)rev+=cart.sell[q]*mkPay(s,q);
     const F=mkFee(s,cart.sell,cart.buy);
     if(eco.cr<cost+F.fee){toast('Not enough credits for the cost and shipping','bad');return;}
-    for(const q in cart.sell)if(gridHas(g,q)<cart.sell[q]){toast('Stock changed: '+SHORT[q]+' is short. Clear and try again','bad');return;}
+    for(const q in cart.sell)if(gridHas(g,q)<cart.sell[q]){toast('Stock changed: '+SHORT[q]+' is short. Reset the form and try again','bad');return;}
     if(nb>Math.max(0,gridSpace(g)-mkIncoming(g))){toast(g.name+' storage is full','bad');return;}
     for(const q in cart.sell)takeFromGrid(g,q,cart.sell[q]);
     eco.cr-=cost+F.fee;
     mk.q.push({s:s.id,g:g.name,sell:Object.assign({},cart.sell),buy:Object.assign({},cart.buy),rev,cost,fee:F.fee,t:s.every});
-    cart.sell={};cart.buy={};hudDirty=true;
+    hudDirty=true;   // the form keeps its values so the same order can be placed again; Reset Form clears it
     toast('Order sent to '+s.name+'. Drone due in '+fmtClock(s.every),'good');return;}
 }
 const mkSellPlanCost=(s,cart,except)=>{let c=0;for(const q in cart.buy)if(q!==except)c+=cart.buy[q]*mkCost(s,q);return c+mkFee(s,cart.sell,cart.buy).fee;};
@@ -5705,8 +5731,8 @@ function mktRefresh(){
   const s=MKT[mk.sel],g=mkG(),cart=mkCart();
   setT($('m-cr'),fmtCr(eco.cr));setT($('m-gn'),g?g.name:'none');
   setT($('m-note'),mkGuest()?'Guests can look around. The host runs the Market for now.':!g?'Needs a station with a Trade Beacon and a Cargo Container.':'Goods leave '+g.name+' storage when you submit. Drones deliver and pay when they arrive. Shipping depends on distance and weight.');
-  for(const c of $('tbody').querySelectorAll('.chip[data-mk=sel]')){const t=MKT[+c.dataset.s];c.classList.toggle('on',t.id===mk.sel);setT(c.lastChild,fmtClock(Math.max(0,mk.tm[t.id])));}
-  setT($('m-info'),s.name+' ('+s.type+') · distance '+s.dist+' · '+(mk.q.some(o=>o.s===s.id)?'next arrival ':'trip time ')+mkEta(s)+' · up to '+s.max+' units each way, per order');
+  for(const c of $('tbody').querySelectorAll('.chip[data-mk=sel]')){const t=MKT[+c.dataset.s];c.classList.toggle('on',t.id===mk.sel);setT(c.lastChild,fmtClock(t.every));}
+  setT($('m-info'),s.name+' ('+s.type+') · distance '+s.dist+' · '+'trip time '+fmtClock(s.every)+' · up to '+s.max+' units each way, per order · drones out '+mkActive(s)+' / '+s.drones);
   setT($('m-title'),'Orders for '+s.name);
   let rev=0,cost=0;
   for(const row of $('tbody').querySelectorAll('.mkr[data-k]')){
@@ -5722,7 +5748,7 @@ function mktRefresh(){
   const F=mkFee(s,cart.sell,cart.buy);
   setT($('m-sum'),F.w?'Weight '+F.w+(F.t?' (+'+Math.round(F.t*100)+'% heavy-load surcharge)':'')+' · shipping '+fmtCr(F.fee)+' cr\nYou receive '+fmtCr(rev)+' · you pay '+fmtCr(cost)+' · net '+fmtCr(rev-cost-F.fee)+' cr':'Pick goods to sell (from '+(g?g.name:'your station')+' storage) or to buy.');
   $('m-go').disabled=!F.w||mkGuest();
-  const lines=mk.q.map(o=>{const t=MKT[o.s];return t.name+(o.g?' ← '+o.g:'')+': '+(mkSum(o.sell)?'sell '+mkSum(o.sell)+' ':'')+(mkSum(o.buy)?'buy '+mkSum(o.buy):'')+' · drone in '+mkEta(t);});
+  const lines=mk.q.map(o=>{const t=MKT[o.s];return t.name+(o.g?' ← '+o.g:'')+': '+(mkSum(o.sell)?'sell '+mkSum(o.sell)+' ':'')+(mkSum(o.buy)?'buy '+mkSum(o.buy):'')+' · drone in '+fmtClock(Math.max(0,o.t==null?t.every:o.t));});
   for(const gg of grids)if(gg.md)lines.push(gg.name+': drone '+['','arriving','loading','leaving'][gg.md.state]);
   setT($('m-q'),lines.length?lines.join('\n'):'None right now.');
 }
@@ -5799,7 +5825,7 @@ function ecoTick(dt){
 function panelSummary(g,b){
   if(b.type==='terminal')return gridOn(g)?'control panel \u00b7 powered':'no power';
   if(b.type==='gravgen')return GM_NAMES[b.gm|0]+' \u00b7 T'+tierOf(b)+' \u00b7 '+gravR(b)+' m \u00b7 '+(b.pw?'powered':'no power');
-  if(b.type==='cargo')return 'this container '+usedOf(b)+' / '+capOf(b)+(g.cargos.length>1?' \u00b7 '+g.name+' total '+gridUsed(g)+' / '+gridCap(g):'')+' \u00b7 T'+tierOf(b);
+  if(b.type==='cargo'||b.type==='sstore')return 'this container '+usedOf(b)+' / '+capOf(b)+(g.cargos.length>1?' \u00b7 '+g.name+' total '+gridUsed(g)+' / '+gridCap(g):'')+' \u00b7 T'+tierOf(b);
   const tr=g.trade;return 'T'+tierOf(b)+' · '+(!tr||tr.state===0?'next trader '+fmtClock(tr?tr.timer:BEACON[tierOf(b)-1].every):'trader '+['','inbound','loading','departing'][tr.state]);
 }
 const fmtClock=s=>{s=Math.max(0,Math.ceil(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');};
@@ -6192,7 +6218,7 @@ function openTerminal(focusUid,mode){
   const sg=viewGrids(),bg=beaconGrid();
   if(!prodList.length&&!sg.length&&!bg&&!packOnly){if(connGrid()){openUpg();return;}toast('No machines or storage in range','bad');return;}
   let m=mode||termMode;
-  if(focusUid){for(const g of grids)for(const b of g.blocks.values())if(b.uid===focusUid){m=BDEF[b.type].machine?'prod':'trade';if(b.type==='cargo')termSel=g.name;}}
+  if(focusUid){for(const g of grids)for(const b of g.blocks.values())if(b.uid===focusUid){m=BDEF[b.type].machine?'prod':'trade';if(b.type==='cargo'||b.type==='sstore')termSel=g.name;}}
   if(m==='prod'&&!prodList.length)m='trade';
   if(m==='mkt'&&!bg){toast('The Market needs a Trade Beacon and a Cargo Container at your station','bad');m=sg.length?'trade':'prod';}
   if(m==='trade'&&!sg.length&&!bg&&!packOnly)m='prod';
@@ -6305,19 +6331,19 @@ function ivGoods(s,act,prim){
     let btns='';
     if(act){
       const pn=ivEsc(prim.name),back=ivHas(prim,k)>0;
-      btns='<span class="bt">'+(n>0?'<button class="rb" data-iv="add" data-k="'+k+'">Add to '+pn+'</button>':'')+(back?'<button class="rb" data-iv="pull" data-k="'+k+'">Pull from '+pn+'</button>':'')+'</span>';
+      btns='<span class="bc">'+(n>0?'<button class="rb" data-iv="add" data-k="'+k+'">Add to '+pn+'</button>':'')+'</span><span class="bc">'+(back?'<button class="rb" data-iv="pull" data-k="'+k+'">Pull from '+pn+'</button>':'')+'</span>';
     }
     rows.push('<div class="ivr'+(n>0?'':' z')+'"><span class="nm"><i style="'+ITEM_ICON(k)+'"></i>'+SHORT[k]+'</span><b>'+n+'</b>'+btns+'</div>');
   }
   return rows.length?rows.join(''):'<div class="qrow">Nothing stored here.</div>';
 }
-let ivJob=null;   // a timed transfer between the primary storage and a craft or the Pioneer (the Pack is carried by hand, instantly)
+let ivJob=null;   // a timed transfer between the primary storage and a craft or the Pioneer (the Pack included, at the same rate)
 const ivRate=s=>s.craft&&s.g.dock?s.g.dock.rate:BASE_RATE;
 function ivStart(dir,xs,prim,k,amt){
   if(ivJob){toast('A transfer is already running','bad');return;}
   if(xs.craft&&!gridOn(prim.g)&&!gridOn(xs.g)){toast('Transfers need power: neither grid has a running generator','bad');return;}
   ivJob={dir,xsId:xs.id,k,left:amt,moved:0,acc:0};
-  toast((dir==='add'?'Moving ':'Pulling ')+SHORT[k]+(dir==='add'?' to ':' from ')+prim.name+'\u2026 '+ivRate(xs)+' units/s');ivRender();
+  toast((dir==='add'?'Moving ':'Pulling ')+(k==='*'?'everything':SHORT[k])+(dir==='add'?' to ':' from ')+prim.name+'\u2026 '+ivRate(xs)+' units/s');ivRender();
 }
 function ivJobTick(dt){
   if(!ivJob)return;
@@ -6326,12 +6352,14 @@ function ivJobTick(dt){
   if(!prim||!xs||(xs.craft&&undocked(xs.g)))return end('Transfer interrupted ('+j.moved+' units moved)','bad');
   if(xs.craft&&!gridOn(prim.g)&&!gridOn(xs.g))return end('Transfer stopped: no power on either grid ('+j.moved+' units moved)','bad');
   j.acc+=ivRate(xs)*dt;let n=Math.floor(j.acc);if(n<1)return;j.acc-=n;
-  const from=j.dir==='add'?xs:prim,to=j.dir==='add'?prim:xs;
-  n=Math.min(n,j.left,ivHas(from,j.k),ivSpace(to));
-  if(n<=0){const full=ivHas(from,j.k)>0&&j.left>0;if(full&&to===prim)hint('full2',HINT_STATION_FULL);return end(j.moved?'Transfer complete: '+j.moved+' '+SHORT[j.k]+' to '+to.name:(full?to.name+' storage is full':'Nothing to move'),j.moved?'good':'bad');}
-  const got=ivGet(from,j.k,n),put=ivPut(to,j.k,got);if(got>put)ivPut(from,j.k,got-put);
+  const from=j.dir==='add'?xs:prim,to=j.dir==='add'?prim:xs,all=j.k==='*',keep=k=>all&&k==='ice'?50:0;   // Move all always leaves 50 ice behind
+  if(all){j.cur=(j.cur&&ivHas(from,j.cur)-keep(j.cur)>0)?j.cur:ITEMS.find(k=>ivHas(from,k)-keep(k)>0);if(!j.cur){return end(j.moved?'Transfer complete: '+j.moved+' units to '+to.name:'Nothing to move',j.moved?'good':'bad');}}
+  const kk=all?j.cur:j.k;
+  n=Math.min(n,j.left,ivHas(from,kk)-keep(kk),ivSpace(to));
+  if(n<=0){const full=ivHas(from,kk)-keep(kk)>0&&j.left>0;if(full&&to===prim)hint('full2',HINT_STATION_FULL);return end(j.moved?'Transfer complete: '+j.moved+' '+(all?'units':SHORT[kk])+' to '+to.name:(full?to.name+' storage is full':'Nothing to move'),j.moved?'good':'bad');}
+  const got=ivGet(from,kk,n),put=ivPut(to,kk,got);if(got>put)ivPut(from,kk,got-put);
   j.moved+=put;j.left-=put;
-  if(j.left<=0)return end('Transfer complete: '+j.moved+' '+SHORT[j.k]+' to '+to.name,'good');
+  if(j.left<=0)return end('Transfer complete: '+j.moved+' '+(all?'units':SHORT[kk])+' to '+to.name,'good');
   if(termOpen)ivRender();
 }
 function ivRender(){
@@ -6343,8 +6371,8 @@ function ivRender(){
   let h='<div class="mcard" id="iv-view"><div class="mh"><b>Local Storage</b><span>'+c[0]+' / '+c[1]+'</span></div>'+ivTabs(st,ivView,'view');
   if(!prim||xs===prim)h+=ivGoods(xs,false,prim);
   else if(xs.craft&&undocked(xs.g))h+='<div class="qrow">'+ivEsc(xs.name)+' is not docked. Set it down on a station with its Landing Legs to move cargo.</div>'+ivGoods(xs,false,prim);
-  else h+=ivGoods(xs,true,prim);
-  if(ivJob){const jx=st.find(s=>s.id===ivJob.xsId);h+='<div class="mfoot"><button class="rb" data-iv="stop">Moving '+SHORT[ivJob.k]+'\u2026 '+ivJob.left+' left \u00b7 '+(jx?ivRate(jx):BASE_RATE)+' units/s \u00b7 tap to stop</button></div>';}
+  else h+='<div class="ivall"><button class="rb" data-iv="addall">Move all to '+ivEsc(prim.name)+'</button><button class="rb" data-iv="pullall">Move all from '+ivEsc(prim.name)+'</button></div>'+ivGoods(xs,true,prim);
+  if(ivJob){const jx=st.find(s=>s.id===ivJob.xsId);h+='<div class="mfoot"><button class="rb" data-iv="stop">Moving '+(ivJob.k==='*'?'everything':SHORT[ivJob.k]+'\u2026 '+ivJob.left+' left')+' \u00b7 '+(jx?ivRate(jx):BASE_RATE)+' units/s \u00b7 tap to stop</button></div>';}
   h+='</div>';
   if(el._h!==h){el._h=h;el.innerHTML=h;}
 }
@@ -6370,9 +6398,7 @@ pullw.addEventListener('click',e=>{
     const want=Math.max(0,Math.min(pullw._max,Math.floor(+$('pull-n').value||0)));
     if(want<=0)return;
     if(xs.craft&&!gridOn(prim.g)&&!gridOn(xs.g)){toast('Transfers need power: neither grid has a running generator','bad');return;}
-    if(!xs.pack){ivStart('pull',xs,prim,k,want);return;}
-    const got=ivGet(prim,k,want),put=ivPut(xs,k,got);if(got>put)ivPut(prim,k,got-put);
-    toast(put?'Pulled '+put+' '+SHORT[k]+' from '+prim.name:'Nothing moved',put?'good':'bad');ivRender();
+    ivStart('pull',xs,prim,k,want);
   }
 });
 function ivClick(btn){
@@ -6381,15 +6407,19 @@ function ivClick(btn){
   if(d==='view'){ivView=btn.dataset.id;ivRender();return;}
   const k=btn.dataset.k,st=ivStores(),prim=st.find(s=>s.primary),xs=st.find(s=>s.id===ivView);
   if(!prim||!xs||xs===prim)return;
+  if(d==='addall'||d==='pullall'){
+    if(xs.craft&&!gridOn(prim.g)&&!gridOn(xs.g)){toast('Transfers need power: neither grid has a running generator','bad');return;}
+    const add=d==='addall',from=add?xs:prim,to=add?prim:xs;
+    if(!ITEMS.some(q=>ivHas(from,q)-(q==='ice'?50:0)>0)){toast('Nothing to move','bad');return;}
+    if(ivSpace(to)<=0){toast(to.name+' is full','bad');if(to===prim)hint('full2',HINT_STATION_FULL);return;}
+    ivStart(add?'add':'pull',xs,prim,'*',Infinity);return;
+  }
   if(d==='pull'){ivPullPrompt(k);return;}
   if(d==='add'){
     if(xs.craft&&!gridOn(prim.g)&&!gridOn(xs.g)){toast('Transfers need power: neither grid has a running generator','bad');return;}
     const have=ivHas(xs,k);
-    if(!xs.pack){if(ivSpace(prim)<=0){toast(prim.name+' storage is full','bad');hint('full2',HINT_STATION_FULL);return;}ivStart('add',xs,prim,k,have);return;}
     if(ivSpace(prim)<=0){toast(prim.name+' storage is full','bad');hint('full2',HINT_STATION_FULL);return;}
-    const got=ivGet(xs,k,have),put=ivPut(prim,k,got);if(got>put)ivPut(xs,k,got-put);
-    if(put<have)hint('full2',HINT_STATION_FULL);
-    toast(put?'Added '+put+' '+SHORT[k]+' to '+prim.name+(put<have?' ('+(have-put)+' left, storage full)':''):'Nothing moved',put?'good':'bad');ivRender();
+    ivStart('add',xs,prim,k,have);
   }
 }
 function tradeRefresh(){
@@ -7148,9 +7178,10 @@ function restoreSave(S){
   if(S.eco){eco.cr=ecoOld?Math.round(S.eco.cr/1000):S.eco.cr;eco.debt=S.eco.debt;eco.won=!!S.eco.won;if(S.eco.price&&!ecoOld)for(const k of ITEMS)if(S.eco.price[k])price[k]=S.eco.price[k];if(S.eco.mk){if(S.eco.mk.tm)S.eco.mk.tm.forEach((v,i)=>{if(i<mk.tm.length)mk.tm[i]=v;});mk.q=(S.eco.mk.q||[]).slice();for(const o of mk.q)if(o.t==null)o.t=Math.max(0,(S.eco.mk.tm&&S.eco.mk.tm[o.s])||MKT[o.s].every);if(ecoOld)for(const o of mk.q){o.rev=Math.round((o.rev||0)/1000);o.cost=Math.round((o.cost||0)/1000);o.fee=Math.round((o.fee||0)/1000);}}}
   for(const sg of S.grids){
     const g=makeGrid(sg.n,new V3(sg.p[0],sg.p[1],sg.p[2]),new Q(sg.q[0],sg.q[1],sg.q[2],sg.q[3]));
-    g.station=!!sg.s;g.vel.set(sg.v[0],sg.v[1],sg.v[2]);g.kind=sg.k||(sg.n==='PIONEER'?'pioneer':undefined);g.bulk=true;
+    g.station=!!sg.s;g.tiles=g.station&&sg.n==='OUTPOST'&&!TUTW;g.vel.set(sg.v[0],sg.v[1],sg.v[2]);   // the Outpost's tiles are a flag, not saved: put it backg.kind=sg.k||(sg.n==='PIONEER'?'pioneer':undefined);g.bulk=true;
     for(const e of sg.b){
       if(!BDEF[e[0]])continue;
+      if(e[0]==='cargo'&&g.station&&sg.n==='OUTPOST'&&((e[1]===-4&&e[2]===1&&e[3]===-3)||(e[1]===6&&e[2]===-3&&e[3]===-2)))e[0]='sstore';   // the Outpost's own crate becomes Station Storage
       ADD_FP=e[15]?FP4[e[15]-1]:null;const b=addBlock(g,e[1],e[2],e[3],e[0],e[4]||null,e[9]|0,Math.min(TIER_MAX,Math.max(1,e[7]|0)));ADD_FP=null;
       if(b&&e[10]&&(b.type==='hull'||b.type==='plate')){b.pf=String(e[10]).split('').map(Number);if(b.type==='plate')platePaint(b);else g.hullDirty=true;}
       if(b&&e[11])wipRestore(g,b,e[11]);
@@ -7230,7 +7261,7 @@ function boot(){
     }else{try{begin();}catch(e){console.error(e);}if(tcv)tcv.hidden=true;}
   }
   try{if(window.claude&&window.claude.hot&&window.claude.hot.snapshot)window.claude.hot.snapshot(()=>({save:(wiping||TUTW)?null:serialize()}));}catch(e){}
-  window.__VE={pioAimed,asteroids,pioSeatUpdate,pioLeave,mhProxT,pioProx,HOLD,exTick,exPos,exT,exLife,pioFly,pioEnter,keys,stick,mktRows,mk,ITEMS,PRICE0,RECIPES,BDEF,openTerminal,ivRender,hint,inv,bolts,pirates,pirateSpawn,turretTest,makeMusic,asteroids,renderer,scene,THREE,kf,openRepair,repairBill,repairTick,repairShip,pioNetWorth,pioRepairValue,PRICE0,eco,pioDamage,pioMaxHP,inv,shipAmmo,tpShips,pioEnter,grindStep,gridOn,powerTick,spawnDrone,spawnPlayerDrone,droneTick,damageBlock,repairBlock,hpOf,dmgEff,fireBolt,boltsTick,bolts,wipOn,wipUnit,wipBegin,wipDone,mk,mktClick,mktTick,mktBuild,mktRefresh,MKT,mkFee,mkTier,player,grids,asteroids,update,begin,ACT,keys,tb,camera,inv,mineAt,rayAst,pickAll,aim,serialize,restoreSave,saveGame,
+  window.__VE={ivJobTick,mktClick,pioAimed,asteroids,pioSeatUpdate,pioLeave,mhProxT,pioProx,HOLD,exTick,exPos,exT,exLife,pioFly,pioEnter,keys,stick,mktRows,mk,ITEMS,PRICE0,RECIPES,BDEF,openTerminal,ivRender,hint,inv,bolts,pirates,pirateSpawn,turretTest,makeMusic,asteroids,renderer,scene,THREE,kf,openRepair,repairBill,repairTick,repairShip,pioNetWorth,pioRepairValue,PRICE0,eco,pioDamage,pioMaxHP,inv,shipAmmo,tpShips,pioEnter,grindStep,gridOn,powerTick,spawnDrone,spawnPlayerDrone,droneTick,damageBlock,repairBlock,hpOf,dmgEff,fireBolt,boltsTick,bolts,wipOn,wipUnit,wipBegin,wipDone,mk,mktClick,mktTick,mktBuild,mktRefresh,MKT,mkFee,mkTier,player,grids,asteroids,update,begin,ACT,keys,tb,camera,inv,mineAt,rayAst,pickAll,aim,serialize,restoreSave,saveGame,
     TX,MAT,setTier,growCheck,serialize,pioLeave,pioHits,pioDockOK,pioDockTarget,pioDock,padNear,pioLevel,pioFootGap,pioPadSnap,rebuildAst,pointSolid,padArmRoom,padArmAimed,gravHas,gravFloors,gravFlash,addToGrid,gridHas,gridSpace,takeFromGrid,packUsed,packSpace,PACK_CAP,PACKIO,shipIO,spawnShip,interiorOf,bodyHit,bodyMove,cellAt,setTier,growCheck,doorTick,rideSync,seatWorld,nearestSeat,spawnStation,haveK,spend,upgradeBlock,gravR,qMax,tierOf,upCost,recalc,eco,price,PRICE0,ITEMS,loadItem,takeItem,whTotals,payDebt,tradeTick,BEACON,CARGO_CAP,panelSummary,openTerminal,closeTerminal,scanOre,setTool,setPage,addBlock,makeGrid,removeBlock,RECIPES,BDEF,BORDER,
     setDev:v=>{DEV=!!v;},platePaint,openPicker,openUpg,connGrid,surveyAst,revealBuried,tutState:()=>tut,startTut,renameGrid,dockPlan,toggleDock,pointSolid,shipHitsAst,enterShip,exitShip,inReach,gridsTouch,isCraft,dockCheck,dockTick,startXfer,moveTarget,PAD_RATE,BASE_RATE,xferState:()=>xfer,
     state:()=>({inGrav,page,termOpen,detRange,detSummary,paused,running}),
@@ -7299,6 +7330,10 @@ function tutNoteTick(){if(showTutNote&&running&&!paused){showTutNote=false;lette
   try{SAVER=localStorage.getItem('void-engineers-saver')==='1';}catch(e){}
   sb.addEventListener('click',()=>{SAVER=!SAVER;try{localStorage.setItem('void-engineers-saver',SAVER?'1':'0');}catch(e){}applyS();});
   applyS();
+}
+{ // the title music starts on the first tap or key (browsers only allow audio after a gesture) and keeps playing into the game
+  const ar=()=>{try{initAudio();if(AC&&AC.state==='suspended')AC.resume();}catch(e){}if(AC&&AC.state==='running'){for(const ev of['pointerdown','touchend','keydown','click'])removeEventListener(ev,ar,true);}};
+  for(const ev of['pointerdown','touchend','keydown','click'])addEventListener(ev,ar,true);
 }
 { // new game: two taps, because confirm() is not available in a page like this
   const nb=$('newg');let armed=0;
