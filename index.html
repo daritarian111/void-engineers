@@ -649,7 +649,7 @@ body.uitut #camrow .tb,body.uitut #edge .tb,body.uitut #rbar .tb{visibility:visi
 'use strict';
 /* =====================  Void Engineers  =====================
    Part A: renderer, sky, procedural voxel asteroids, particles */
-const GAME_VER='261';
+const GAME_VER='263';
 {const vl=document.getElementById('verlab');if(vl)vl.textContent='v'+GAME_VER;}
 /* no page zoom while playing: pinch, double-tap and ctrl+wheel are swallowed */
 (()=>{const no=e=>{e.preventDefault();};
@@ -682,7 +682,7 @@ const sunDir=new V3(0.55,0.35,0.76).normalize();
 const sun=new THREE.DirectionalLight(0xfff0dc,1.95);sun.position.copy(sunDir).multiplyScalar(500);scene.add(sun);
 scene.add(new THREE.HemisphereLight(0x7690c0,0x1b1511,0.42));
 scene.add(new THREE.AmbientLight(0x20293a,0.7));
-const lamp=new THREE.PointLight(0xe4f0ff,0,70,1.5);camera.add(lamp);
+const lamp=new THREE.SpotLight(0xe4f0ff,0,70,.55,.5,1.5),lampT=new THREE.Object3D();camera.add(lamp);camera.add(lampT);lampT.position.set(0,0,-10);lamp.target=lampT;   // ONE light: a beam on your head, or on the nose of the ship you fly
 
 /* ---------- sky (follows the camera, never clips) ---------- */
 const sky=new THREE.Group();scene.add(sky);
@@ -2467,6 +2467,10 @@ function makeEngineer(){
   
   const mkArm=(s,g)=>{const p=new THREE.Group();p.position.set(s*.8,2.7,0);body.add(p);add(p,G[g],0,-.5,0);return p;};
   E.armL=mkArm(-1,'armL');E.armR=mkArm(1,'arm');
+  {   // two shoulder lamps: glowing bulbs only (no real lights), shown to other players when this player's lamp is on
+    E.lampM=new THREE.MeshBasicMaterial({color:0xfff2c8,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
+    const lg=new THREE.SphereGeometry(.34,8,6);E.lamps=[-1,1].map(sd=>{const m=new THREE.Mesh(lg,E.lampM);m.position.set(sd*.95,3.05,-.45);m.visible=false;m.renderOrder=5;body.add(m);return m;});
+  }
   const mkLeg=(s,g)=>{const p=new THREE.Group();p.position.set(s*.3,1.5,0);root.add(p);add(p,G[g],0,-.7,0);return p;};
   E.legL=mkLeg(-1,'legL');E.legR=mkLeg(1,'leg');
   for(let i=0;i<5;i++){const t=engTool(i);t.position.set(0,-1.15,0);t.visible=false;E.armR.add(t);E.tools.push(t);}
@@ -3948,13 +3952,15 @@ function lampTick(){
   if(ab&&!lampAboard)lampOn=false;   // stepping aboard switches the suit lamp off
   lampAboard=ab;
   if(!ab){
-    if(lamp.parent!==camera){camera.add(lamp);lamp.position.set(0,0,0);}
-    lamp.distance=70;lamp.intensity=lampOn?1.7:0;return;
+    if(lamp.parent!==camera){camera.add(lamp);camera.add(lampT);lamp.position.set(0,0,0);lampT.position.set(0,0,-10);}
+    lamp.angle=.55;lamp.penumbra=.5;lamp.distance=70;lamp.intensity=lampOn?3.2:0;return;
   }
-  if(lamp.parent!==scene)scene.add(lamp);
+  if(lamp.parent!==scene){scene.add(lamp);scene.add(lampT);}
   if(player.mode==='tseat'&&pioSeat){const G=pioSeat.T.group;G.updateMatrixWorld(true);lamp.position.copy(G.localToWorld(_lp.set(0,3.4,-13)));}
   else if(player.ship){const g=player.ship,n=noseOf(g);_lf.copy(g.fwd);g.group.updateMatrixWorld(true);lamp.position.copy(g.group.localToWorld(_lp.copy(n).addScaledVector(_lf,6).addScaledVector(g.up,1.5)));}
-  lamp.distance=170;lamp.intensity=shipLampOn?3.4:0;
+  if(player.mode==='tseat'&&pioSeat){_lf.set(0,0,-1).applyQuaternion(pioSeat.T.group.quaternion);}else if(player.ship)_lf.copy(player.ship.fwd).applyQuaternion(player.ship.group.quaternion);
+  lampT.position.copy(lamp.position).addScaledVector(_lf,20);
+  lamp.angle=.8;lamp.penumbra=.6;lamp.distance=170;lamp.intensity=shipLampOn?4.2:0;
 }
 
 
@@ -7033,7 +7039,7 @@ function mpHandle(m){
   if(m.t==='p'){
     let p=MP.peers.get(m.from);if(!p){p=mpPeer(m.from,'Engineer');MP.peers.set(m.from,p);mpBadge();}
     p.tp.set(m.p[0],m.p[1],m.p[2]);p.up.set(m.u[0],m.u[1],m.u[2]);p.face.set(m.f[0],m.f[1],m.f[2]);
-    p.tool=m.tl|0;p.fl=!!m.fl;p.pi=m.pi||0;p.fi=m.fi|0;
+    p.tool=m.tl|0;p.lm=m.lm|0;p.fl=!!m.fl;p.pi=m.pi||0;p.fi=m.fi|0;
     if(!p.seen){p.pos.copy(p.tp);p.seen=true;}
     return;
   }
@@ -7130,7 +7136,7 @@ function mpFrame(dt){
     _mpf.set(0,0,-1).applyQuaternion(camera.quaternion);
     if(pil)_mpf.copy(pil.fwd).applyQuaternion(pil.group.quaternion);
     const r=a=>+a.toFixed(2);
-    mpSend({t:'p',p:[r(pos.x),r(pos.y),r(pos.z)],u:[r(player.lastUp.x),r(player.lastUp.y),r(player.lastUp.z)],f:[r(_mpf.x),r(_mpf.y),r(_mpf.z)],tl:player.tool,fl:(player.grav&&player.air<=.25)?0:1,pi:pil?pil.name:0,fi:(mFire||tb.fire||mGrind)?1:0});
+    mpSend({t:'p',p:[r(pos.x),r(pos.y),r(pos.z)],u:[r(player.lastUp.x),r(player.lastUp.y),r(player.lastUp.z)],f:[r(_mpf.x),r(_mpf.y),r(_mpf.z)],lm:lampOn&&!pil?1:0,tl:player.tool,fl:(player.grav&&player.air<=.25)?0:1,pi:pil?pil.name:0,fi:(mFire||tb.fire||mGrind)?1:0});
   }
   const W=gW(),H=gH();
   for(const p of MP.peers.values()){
@@ -7142,6 +7148,8 @@ function mpFrame(dt){
     p.feet=p.feet||new V3();
     if(p.pi)p.feet.copy(p.pos).addScaledVector(p.up,-1.7);else p.feet.copy(p.pos).addScaledVector(p.up,-BODY_CEN);
     poseEngineer(p.E,dt,p.feet,p.up,p.face,p.sp,p.tool,p.fl,!!p.pi,p.fi);
+    {const on=!!p.lm&&!p.pi;for(const l of p.E.lamps)l.visible=on;   // the bulbs glow brighter the more squarely you face them
+     if(on){_mpv.copy(camera.position).sub(p.pos).normalize();p.E.lampM.opacity=.3+.7*Math.max(0,_mpv.dot(p.face));}}
     _mpv.copy(p.pos).addScaledVector(p.up,2.4).project(camera);
     if(_mpv.z>1||_mpv.z<-1||Math.abs(_mpv.x)>1.1){p.label.hidden=true;continue;}
     p.label.hidden=false;p.label.style.transform='translate('+((_mpv.x*.5+.5)*W).toFixed(0)+'px,'+((-_mpv.y*.5+.5)*H).toFixed(0)+'px) translate(-50%,-100%)';
